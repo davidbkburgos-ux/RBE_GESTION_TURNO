@@ -1,0 +1,78 @@
+{
+  "channels": {
+    "autoking": { "label": "AutoKing", "icon": "🚗", "shape": "diamond" },
+    "counter": { "label": "Mostrador / sala", "icon": "🛎️", "shape": "circle" },
+    "delivery": { "label": "Delivery", "icon": "🛵", "shape": "square" }
+  },
+  "types": {
+    "vehicle": {
+      "label": "Vehículo en punto de recogida", "short": "Coche en recogida", "channel": "autoking", "priority": 3,
+      "timerSec": 30, "action": "deliver", "actionSec": 2.0, "indicatorIcon": "🚗",
+      "bubbleStart": "Un coche espera en el punto de recogida.",
+      "bubbleOk": "¡Pedido entregado en ventana!", "bubbleFail": "El coche se marcha sin su pedido.",
+      "scoreOverride": {}, "playerRequired": true
+    },
+    "counter": {
+      "label": "Cliente en mostrador", "short": "Cliente en mostrador", "channel": "counter", "priority": 2,
+      "timerSec": 28, "action": "talk", "actionSec": 1.8, "indicatorIcon": "🛎️",
+      "bubbleStart": "Un cliente espera en el mostrador.",
+      "bubbleOk": "Cliente atendido.", "bubbleFail": "El cliente se cansa de esperar y se marcha.",
+      "scoreOverride": {}, "playerRequired": true
+    },
+    "kiosk": {
+      "label": "Problema en kiosco", "short": "Problema en kiosco", "channel": "counter", "priority": 2,
+      "timerSec": 26, "action": "kiosk", "actionSec": 2.2, "indicatorIcon": "🖥️",
+      "bubbleStart": "Un cliente no consigue terminar su pedido en el kiosco.",
+      "bubbleOk": "Pedido de kiosco completado.", "bubbleFail": "El cliente abandona el kiosco.",
+      "scoreOverride": {}, "playerRequired": true
+    },
+    "dirtyTable": {
+      "label": "Mesa sucia", "short": "Mesa sucia", "channel": "counter", "priority": 1,
+      "timerSec": 45, "action": "clean", "actionSec": 2.6, "indicatorIcon": "🧽",
+      "bubbleStart": "Mesa sucia: hay que limpiarla.",
+      "bubbleOk": "Mesa limpia y lista.", "bubbleFail": "La mesa sigue sucia y el salón lo nota.",
+      "scoreOverride": { "excellent": 75 }, "playerRequired": true
+    },
+    "pendingOrder": {
+      "label": "Pedido pendiente de entrega", "short": "Pedido listo", "channel": "counter", "priority": 3,
+      "timerSec": 26, "action": "deliver", "actionSec": 1.8, "indicatorIcon": "🛍️",
+      "bubbleStart": "Pedido listo en expedición: hay un cliente esperando.",
+      "bubbleOk": "Pedido entregado.", "bubbleFail": "El cliente se va sin su pedido.",
+      "scoreOverride": {}, "playerRequired": true
+    },
+    "delivery": {
+      "label": "Repartidor de delivery", "short": "Repartidor esperando", "channel": "delivery", "priority": 3,
+      "timerSec": 36, "action": "deliver", "actionSec": 2.0, "indicatorIcon": "🛵",
+      "bubbleStart": "Un repartidor espera su pedido.",
+      "bubbleOk": "Pedido entregado al repartidor.", "bubbleFail": "El repartidor se marcha sin el pedido.",
+      "scoreOverride": { "excellent": 100 }, "playerRequired": true
+    },
+    "productShortage": {
+      "label": "Falta de producto", "short": "Producto agotado", "channel": "counter", "priority": 3,
+      "timerSec": 50, "action": "inspect", "actionSec": 1.8, "indicatorIcon": "📦",
+      "bubbleStart": "Un producto se ha agotado. Hay que preparar un lote.",
+      "bubbleOk": "Reposición iniciada.", "bubbleFail": "La falta de producto sigue afectando al servicio.",
+      "scoreOverride": {}, "playerRequired": true
+    },
+    "restroom": {
+      "label": "Limpieza de baños", "short": "Baños por limpiar", "channel": "counter", "priority": 2,
+      "timerSec": 60, "action": "clean", "actionSec": 3.0, "indicatorIcon": "🚻",
+      "bubbleStart": "Los baños necesitan una revisión y limpieza.",
+      "bubbleOk": "Baños revisados y limpios.", "bubbleFail": "Los baños siguen sin limpiar y los clientes lo notan.",
+      "scoreOverride": { "excellent": 80, "acceptable": 35, "failed": -90 }, "playerRequired": true
+    },
+    "complaint": {
+      "label": "Queja de cliente", "short": "Cliente solicita ayuda", "channel": "counter", "priority": 3,
+      "timerSec": 52, "action": "talk", "actionSec": 1.5, "indicatorIcon": "❓",
+      "bubbleStart": "Un cliente solicita hablar con el encargado.",
+      "bubbleOk": "La incidencia se ha atendido.", "bubbleFail": "La queja no se ha resuelto.",
+      "scoreOverride": { "excellent": 80, "acceptable": 30, "failed": -120 }, "playerRequired": true
+    }
+  },
+  "states": ["scheduled", "appearing", "pending", "acknowledged", "playerMoving", "inProgress", "resolvedExcellent", "resolvedAcceptable", "failed", "dismissed"],
+  "results": {
+    "excellent": { "label": "Excelente", "icon": "😀", "shape": "circle", "color": "#35c46a" },
+    "acceptable": { "label": "Aceptable", "icon": "😐", "shape": "square", "color": "#f2c230" },
+    "failed": { "label": "Fallido", "icon": "😠", "shape": "triangle", "color": "#e5483b" }
+  }
+}

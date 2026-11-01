@@ -1,0 +1,1057 @@
+{
+  "_nota": "Cada pregunta incluye zona, tema, tipo de tarea y sourceId para selección contextual y trazabilidad. La fuente nunca se muestra al jugador; las opciones se barajan en partida.",
+  "pools": {
+    "kitchen-opening": [
+      {
+        "id": "K1",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY",
+          "RECORDS"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3 Apps · Zenput|124",
+        "question": "Revisión de cocina: ¿qué se registra de forma obligatoria en la herramienta de registros diarios (Zenput)?",
+        "correct": "Temperaturas de equipos y producto, temperatura de la carne y otras rutinas",
+        "distractors": [
+          "Solo el horario del personal",
+          "Únicamente las ventas del día"
+        ],
+        "explanation": "Zenput recoge los registros obligatorios: temperaturas de equipos y producto, toma de temperatura de la carne y rutinas como control de pH/cloro del agua.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3 Apps · Zenput",
+          "page": 124
+        }
+      },
+      {
+        "id": "K2",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "TEMPERATURES",
+          "FOOD_SAFETY"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.2 RAM · horarios del restaurante|116",
+        "question": "El registro de temperatura de la carne se abre antes del inicio de almuerzo y cena. ¿Cuándo se abre y cuánto permanece disponible?",
+        "correct": "30 minutos antes del inicio y permanece abierto 2 horas",
+        "distractors": [
+          "Al cerrar el restaurante, durante 15 minutos",
+          "Una hora después de abrir, sin límite"
+        ],
+        "explanation": "Se abre media hora antes de lo marcado como inicio de almuerzo y cena y permanece abierto dos horas.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.2 RAM · horarios del restaurante",
+          "page": 116
+        }
+      },
+      {
+        "id": "K3",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY",
+          "RECORDS"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3 Apps · Zenput · Cumplimiento|125",
+        "question": "Un registro de temperatura no se ha podido completar a tiempo. ¿Qué corresponde hacer?",
+        "correct": "Realizar el plan de acción correspondiente",
+        "distractors": [
+          "Ignorarlo si no hay inspección",
+          "Rellenarlo después con valores estimados"
+        ],
+        "explanation": "Si el registro no se ha podido llevar a cabo o completar, se debe realizar el plan de acción correspondiente. Los registros incompletos de la carne penalizan en REV.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3 Apps · Zenput · Cumplimiento",
+          "page": 125
+        }
+      },
+      {
+        "id": "K4",
+        "zones": [
+          "COLD_ROOMS",
+          "STORAGE"
+        ],
+        "topics": [
+          "STOCK",
+          "ROTATION"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "MANUAL GESTION STOCK RBE V2025 1 1.pdf|1. Inventario · ¿Cuándo contamos el inventario?|3",
+        "question": "Revisión de producto: ¿con qué frecuencia se cuenta e introduce el inventario diario?",
+        "correct": "Todos los días del año",
+        "distractors": [
+          "Solo los lunes",
+          "Únicamente el último día del mes"
+        ],
+        "explanation": "El inventario diario se contabiliza todos los días del año; además existen semanal, quincenal y mensual.",
+        "source": {
+          "doc": "MANUAL GESTION STOCK RBE V2025 1 1.pdf",
+          "section": "1. Inventario · ¿Cuándo contamos el inventario?",
+          "page": 3
+        }
+      },
+      {
+        "id": "K5",
+        "zones": [
+          "COLD_ROOMS",
+          "STORAGE"
+        ],
+        "topics": [
+          "FOOD_SAFETY",
+          "CONSERVATION",
+          "STOCK"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|1.4 Gestión de comida · costes de desperdicio|41",
+        "question": "Ha fallado una cámara frigorífica y hay producto que desechar. ¿Qué requiere ese desperdicio?",
+        "correct": "Aprobación explícita del director de operaciones o superior",
+        "distractors": [
+          "Nada, basta con tirarlo",
+          "Que lo apruebe el turno siguiente"
+        ],
+        "explanation": "El desperdicio registrado por motivo justificado (p. ej. rotura de cámara) requiere aprobación explícita del director de operaciones o superior.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "1.4 Gestión de comida · costes de desperdicio",
+          "page": 41
+        }
+      },
+      {
+        "id": "K6",
+        "zones": [
+          "COLD_ROOMS",
+          "STORAGE"
+        ],
+        "topics": [
+          "STOCK",
+          "ROTATION"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "MANUAL GESTION STOCK RBE V2025.pdf|1.a Inventario · dónde introducirlo|5",
+        "question": "Al introducir el inventario en la herramienta de gestión, ¿qué fecha hay que usar?",
+        "correct": "La del día anterior al que nos encontramos",
+        "distractors": [
+          "La del día en curso",
+          "La del último día del mes"
+        ],
+        "explanation": "El inventario se introduce con fecha del día anterior; hay que recordar cambiar la fecha en la herramienta.",
+        "source": {
+          "doc": "MANUAL GESTION STOCK RBE V2025.pdf",
+          "section": "1.a Inventario · dónde introducirlo",
+          "page": 5
+        }
+      },
+      {
+        "id": "K7",
+        "zones": [
+          "COLD_ROOMS",
+          "STORAGE"
+        ],
+        "topics": [
+          "STOCK",
+          "CONSERVATION"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "MANUAL GESTION STOCK RBE V2025.pdf|1.c Diferencias de inventario|7",
+        "question": "En el informe de diferencias de inventario, una diferencia POSITIVA de un producto significa que…",
+        "correct": "Falta producto respecto al teórico",
+        "distractors": [
+          "Sobra producto respecto al teórico",
+          "El producto está caducado"
+        ],
+        "explanation": "Diferencia positiva = falta producto; negativa = sobra producto.",
+        "source": {
+          "doc": "MANUAL GESTION STOCK RBE V2025.pdf",
+          "section": "1.c Diferencias de inventario",
+          "page": 7
+        }
+      },
+      {
+        "id": "K8",
+        "zones": [
+          "STORAGE",
+          "COLD_ROOMS"
+        ],
+        "topics": [
+          "STOCK",
+          "ROTATION"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "MANUAL GESTION STOCK RBE V2025.pdf|1.c Causas de las diferencias|9",
+        "question": "Al recepcionar un pedido, ¿qué hay que comprobar para evitar diferencias de inventario?",
+        "correct": "Que el producto que entra coincida con el reflejado en el albarán",
+        "distractors": [
+          "Solo que el número de cajas sea correcto",
+          "Que el pedido llegue antes de la hora de apertura"
+        ],
+        "explanation": "Si se acepta un pedido cuyo producto no coincide con el albarán, se refleja como diferencia positiva en el inventario.",
+        "source": {
+          "doc": "MANUAL GESTION STOCK RBE V2025.pdf",
+          "section": "1.c Causas de las diferencias",
+          "page": 9
+        }
+      },
+      {
+        "id": "K9",
+        "zones": [
+          "STORAGE"
+        ],
+        "topics": [
+          "STOCK",
+          "RECORDS"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "MANUAL GESTION STOCK RBE V2025.pdf|2.a Albaranes pendientes de facturar|12",
+        "question": "Un albarán pendiente es de un mes anterior y hay que anularlo. ¿Qué número de albarán se pone?",
+        "correct": "NOVALE seguido del número de pedido",
+        "distractors": [
+          "El número de pedido sin más",
+          "La fecha de hoy"
+        ],
+        "explanation": "Se elimina el producto dejando solo uno con cantidad e importe a cero, y como número de albarán se indica NOVALE seguido del número de pedido.",
+        "source": {
+          "doc": "MANUAL GESTION STOCK RBE V2025.pdf",
+          "section": "2.a Albaranes pendientes de facturar",
+          "page": 12
+        }
+      },
+      {
+        "id": "K10",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY",
+          "RECORDS"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.5 Zenput · Cumplimiento|125",
+        "question": "Los registros incompletos de toma de temperatura de la carne…",
+        "correct": "Se penalizan en REV y exigen un plan de acción",
+        "distractors": [
+          "No tienen consecuencias si se completan al día siguiente",
+          "Solo se revisan una vez al año"
+        ],
+        "explanation": "Un registro incompleto de temperatura de la carne se penaliza en REV y, si no pudo completarse, hay que realizar el plan de acción correspondiente.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.5 Zenput · Cumplimiento",
+          "page": 125
+        }
+      },
+      {
+        "id": "K11",
+        "zones": [
+          "KITCHEN",
+          "RESTROOMS"
+        ],
+        "topics": [
+          "FOOD_SAFETY",
+          "RECORDS"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.5 Zenput · Galería|126",
+        "question": "En las tareas que exigen foto de confirmación, ¿cómo deben ser las fotos?",
+        "correct": "Claras, y sin duplicar ni reutilizar",
+        "distractors": [
+          "Cualquiera, aunque se reutilice la del día anterior",
+          "Solo hace falta una por semana"
+        ],
+        "explanation": "Las fotos de confirmación deben ser claras y no estar duplicadas ni reutilizadas.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.5 Zenput · Galería",
+          "page": 126
+        }
+      }
+    ],
+    "hall-opening": [
+      {
+        "id": "S1",
+        "zones": [
+          "COUNTER",
+          "AUTO_KING"
+        ],
+        "topics": [
+          "SERVICE_SPEED",
+          "SERVICE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|1.3.2 Resultados OPS · SOS|25",
+        "question": "Revisión de sala y mostrador: ¿cuál es el objetivo de tiempo de mostrador?",
+        "correct": "3:30 minutos",
+        "distractors": [
+          "55 segundos",
+          "8:00 minutos"
+        ],
+        "explanation": "El objetivo de tiempo de mostrador (y de Auto) es de 3:30 minutos.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "1.3.2 Resultados OPS · SOS",
+          "page": 25
+        }
+      },
+      {
+        "id": "S2",
+        "zones": [
+          "AUTO_KING"
+        ],
+        "topics": [
+          "SERVICE_SPEED",
+          "DRIVE_THRU"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|1.3.2 Resultados OPS · SOS|25",
+        "question": "¿Cuál es el objetivo de tiempo de servicio en la Ventana 1 del AutoKing?",
+        "correct": "1:30 minutos",
+        "distractors": [
+          "5:00 minutos",
+          "10 segundos"
+        ],
+        "explanation": "El tiempo de servicio en Ventana 1 es de 1:30 minutos; el speaker, 55 segundos.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "1.3.2 Resultados OPS · SOS",
+          "page": 25
+        }
+      },
+      {
+        "id": "S3",
+        "zones": [
+          "DINING",
+          "AUTO_KING",
+          "KIOSKS"
+        ],
+        "topics": [
+          "SALES_CHANNELS",
+          "SERVICE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|Definiciones de venta · Venta natural|27",
+        "question": "¿Qué canales componen la «venta natural» (no delivery)?",
+        "correct": "Sala, drive-thru, kioscos y mobile ordering",
+        "distractors": [
+          "Solo sala y delivery",
+          "Únicamente agregadores"
+        ],
+        "explanation": "Venta natural: sala, drive-thru, kioscos y mobile ordering. La venta HD es la de domicilio.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "Definiciones de venta · Venta natural",
+          "page": 27
+        }
+      },
+      {
+        "id": "S4",
+        "zones": [
+          "AUTO_KING"
+        ],
+        "topics": [
+          "SERVICE_SPEED",
+          "DRIVE_THRU"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|1.3.2 Resultados OPS · SOS|25",
+        "question": "¿Cuál es el objetivo del Tiempo Speaker en AutoKing?",
+        "correct": "55 segundos",
+        "distractors": [
+          "3:30 minutos",
+          "8:00 minutos"
+        ],
+        "explanation": "El tiempo de speaker objetivo es de 55 segundos.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "1.3.2 Resultados OPS · SOS",
+          "page": 25
+        }
+      },
+      {
+        "id": "S5",
+        "zones": [
+          "DINING",
+          "COUNTER"
+        ],
+        "topics": [
+          "CUSTOMER_EXPERIENCE",
+          "SERVICE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL",
+          "COMPLAINT"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.6 Qualtrics · GXI|128",
+        "question": "Experiencia del cliente: ¿qué calificación mínima de Google marca la compañía?",
+        "correct": "4,1 estrellas",
+        "distractors": [
+          "3,0 estrellas",
+          "5,0 estrellas"
+        ],
+        "explanation": "El mínimo marcado por la compañía en Google es de 4,1 estrellas; el GXI objetivo es del 92 %.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.6 Qualtrics · GXI",
+          "page": 128
+        }
+      },
+      {
+        "id": "S6",
+        "zones": [
+          "COUNTER",
+          "KIOSKS",
+          "AUTO_KING"
+        ],
+        "topics": [
+          "SERVICE",
+          "CUSTOMER_EXPERIENCE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|2 Informes · Nulos|30",
+        "question": "¿Qué canales detalla el informe de tickets nulos?",
+        "correct": "Auto King, HD, kiosko y sala",
+        "distractors": [
+          "Solo el mostrador",
+          "Únicamente el delivery"
+        ],
+        "explanation": "El informe de nulos se divide por canal: Auto King, HD, kiosko y sala.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "2 Informes · Nulos",
+          "page": 30
+        }
+      },
+      {
+        "id": "S7",
+        "zones": [
+          "COUNTER",
+          "KIOSKS",
+          "AUTO_KING"
+        ],
+        "topics": [
+          "SERVICE",
+          "CUSTOMER_EXPERIENCE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|2 Informes · Nulos|30",
+        "question": "En un restaurante con HD, ¿cuál es el máximo de nulos sobre la venta?",
+        "correct": "0,55 %",
+        "distractors": [
+          "5 %",
+          "0,01 %"
+        ],
+        "explanation": "Con HD el máximo es 0,55 % de nulos sobre la venta; sin HD, 0,30 %.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "2 Informes · Nulos",
+          "page": 30
+        }
+      },
+      {
+        "id": "S8",
+        "zones": [
+          "DINING",
+          "COUNTER",
+          "KIOSKS"
+        ],
+        "topics": [
+          "CUSTOMER_EXPERIENCE",
+          "SERVICE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL",
+          "COMPLAINT"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|1.11 Incentivos · Reclamaciones|65",
+        "question": "¿Cuál es el objetivo de reclamaciones?",
+        "correct": "Menos de 1,2 por cada 1000 clientes",
+        "distractors": [
+          "Menos de 12 por cada 100 clientes",
+          "Cero reclamaciones al mes"
+        ],
+        "explanation": "El objetivo es inferior a 1,2 reclamaciones por cada 1000 clientes.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "1.11 Incentivos · Reclamaciones",
+          "page": 65
+        }
+      },
+      {
+        "id": "S9",
+        "zones": [
+          "DINING",
+          "COUNTER",
+          "KIOSKS"
+        ],
+        "topics": [
+          "CUSTOMER_EXPERIENCE",
+          "SERVICE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL",
+          "COMPLAINT"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.6 Qualtrics · GXI|128",
+        "question": "En la encuesta interna OSAT, ¿qué porcentaje máximo de encuestas con nota 1, 2 o 3 marca el objetivo?",
+        "correct": "Inferior al 6 %",
+        "distractors": [
+          "Inferior al 30 %",
+          "Inferior al 0,5 %"
+        ],
+        "explanation": "El objetivo de compañía es menos de un 6 % de encuestas con puntuación 1, 2 o 3.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.6 Qualtrics · GXI",
+          "page": 128
+        }
+      }
+    ],
+    "restroom-opening": [
+      {
+        "id": "B1",
+        "zones": [
+          "DINING",
+          "RESTROOMS",
+          "KITCHEN"
+        ],
+        "topics": [
+          "CLEANING",
+          "INSPECTION"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.6 Qualtrics · Visita nivel área|127",
+        "question": "Revisión de baños y limpieza: ¿qué comprueba la visita de limpieza?",
+        "correct": "Todas las áreas críticas de limpieza, para dar seguimiento a los planes de acción de limpieza",
+        "distractors": [
+          "Solo la caja y los arqueos",
+          "Únicamente la fachada"
+        ],
+        "explanation": "La visita de limpieza revisa todas las áreas críticas del restaurante y da seguimiento a los planes de acción de limpieza.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.6 Qualtrics · Visita nivel área",
+          "page": 127
+        }
+      },
+      {
+        "id": "B2",
+        "zones": [
+          "RESTROOMS",
+          "STORAGE"
+        ],
+        "topics": [
+          "CLEANING",
+          "SUPPLIES"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "V2.26 Dosier de Resultados (P&L) + Guía.pdf|Otros servicios · gastos controlables|13",
+        "question": "Los productos de limpieza y los uniformes pertenecen a los gastos…",
+        "correct": "Controlables, y se comparan con presupuesto y año anterior",
+        "distractors": [
+          "No controlables",
+          "Que no se miden"
+        ],
+        "explanation": "Productos de limpieza y uniformes son gastos controlables y se comparan frente a presupuesto y año anterior.",
+        "source": {
+          "doc": "V2.26 Dosier de Resultados (P&L) + Guía.pdf",
+          "section": "Otros servicios · gastos controlables",
+          "page": 13
+        }
+      },
+      {
+        "id": "B3",
+        "zones": [
+          "KITCHEN",
+          "RESTROOMS"
+        ],
+        "topics": [
+          "WATER",
+          "FOOD_SAFETY",
+          "RECORDS"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3 Apps · Zenput|124",
+        "question": "Además de temperaturas, ¿qué otras rutinas del agua se controlan en la herramienta de registros?",
+        "correct": "Pruebas organolépticas del agua, pH y cloro",
+        "distractors": [
+          "Solo la presión del grifo",
+          "Ninguna"
+        ],
+        "explanation": "Zenput incluye pruebas organolépticas del agua y control de pH y de cloro, entre otras rutinas.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3 Apps · Zenput",
+          "page": 124
+        }
+      },
+      {
+        "id": "B4",
+        "zones": [
+          "DINING",
+          "KITCHEN",
+          "RESTROOMS"
+        ],
+        "topics": [
+          "CLEANING",
+          "INSPECTION"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.5 REV|147",
+        "question": "Limpieza y auditoría REV: ¿por debajo de qué puntaje de estándares de operaciones se recibe la calificación «F» o «No aprobado»?",
+        "correct": "Por debajo del 60 %",
+        "distractors": [
+          "Por debajo del 90 %",
+          "Por debajo del 30 %"
+        ],
+        "explanation": "Con un puntaje de operaciones del 60 % o mejor se obtiene calificación A–D; por debajo del 60 % es «F».",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.5 REV",
+          "page": 147
+        }
+      },
+      {
+        "id": "B5",
+        "zones": [
+          "DINING",
+          "KITCHEN",
+          "RESTROOMS"
+        ],
+        "topics": [
+          "CLEANING",
+          "INSPECTION"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.5 REV|147",
+        "question": "La limpieza y el mantenimiento de la parte posterior de la casa y del equipo, ¿dónde se evalúan?",
+        "correct": "En una de las 5 secciones de estándares de operaciones de la REV",
+        "distractors": [
+          "Solo en la visita administrativa",
+          "No se evalúan en ninguna visita"
+        ],
+        "explanation": "La REV incluye una sección de limpieza y mantenimiento de la parte posterior de la casa y del equipo, además de la de sala.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.5 REV",
+          "page": 147
+        }
+      },
+      {
+        "id": "B6",
+        "zones": [
+          "DINING",
+          "KITCHEN",
+          "RESTROOMS"
+        ],
+        "topics": [
+          "CLEANING",
+          "INSPECTION"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.5.1 Plan de acción REV|148",
+        "question": "Tras recibir el informe de una visita REV, ¿qué hay que hacer?",
+        "correct": "Realizar un plan de acción para solventar todas las oportunidades detectadas",
+        "distractors": [
+          "Esperar a la siguiente visita para corregir",
+          "Archivar el informe sin más"
+        ],
+        "explanation": "Después de recibir el informe de auditoría se debe realizar un plan de acción que resuelva todas las oportunidades detectadas.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.5.1 Plan de acción REV",
+          "page": 148
+        }
+      }
+    ],
+    "customer-recovery": [
+      {
+        "id": "CR1",
+        "zones": [
+          "DINING",
+          "COUNTER"
+        ],
+        "topics": [
+          "CUSTOMER_EXPERIENCE",
+          "COMPLAINT"
+        ],
+        "taskTypes": [
+          "COMPLAINT"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.6 Qualtrics · GXI|128",
+        "question": "En esta simulación, ¿qué calificación mínima de Google marca la compañía como objetivo de experiencia de cliente?",
+        "correct": "4,1 estrellas",
+        "distractors": [
+          "3,0 estrellas",
+          "5,0 estrellas"
+        ],
+        "explanation": "El mínimo indicado es 4,1 estrellas. La documentación disponible no describe un protocolo específico de recuperación de quejas.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.6 Qualtrics · GXI",
+          "page": 128
+        }
+      }
+    ],
+    "exterior-opening": [
+      {
+        "id": "E1",
+        "zones": [
+          "EXTERIOR"
+        ],
+        "topics": [
+          "EXTERIOR",
+          "CUSTOMER_TRAFFIC"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|MKT · Posición interior/exterior|157",
+        "question": "En una acción de marketing, ¿qué objetivo tiene la colocación de POPS en posición exterior?",
+        "correct": "Generar tráfico y atraer clientes al restaurante",
+        "distractors": [
+          "Aumentar el ticket medio y/o conseguir un segundo ticket",
+          "Mejorar el tiempo de servicio de cocina"
+        ],
+        "explanation": "El manual diferencia la posición exterior, enfocada en generar tráfico, de la posición interior, orientada a aumentar el ticket medio o conseguir un segundo ticket.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "MKT · Posición interior/exterior",
+          "page": 157
+        }
+      },
+      {
+        "id": "E2",
+        "zones": [
+          "EXTERIOR",
+          "AUTO_KING"
+        ],
+        "topics": [
+          "EXTERIOR",
+          "DRIVE_THRU",
+          "SERVICE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.2 RAM · Horarios|116",
+        "question": "Antes de abrir, ¿cómo se define el horario del Auto en la plataforma de horarios?",
+        "correct": "Apertura y cierre de cara a clientes; suele coincidir con el comedor",
+        "distractors": [
+          "La hora de llegada del primer turno",
+          "El horario del turno de cena únicamente"
+        ],
+        "explanation": "Auto marca la apertura y cierre de cara a clientes y generalmente coincide con el horario del comedor.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.2 RAM · Horarios",
+          "page": 116
+        }
+      },
+      {
+        "id": "E3",
+        "zones": [
+          "EXTERIOR",
+          "DINING",
+          "COUNTER",
+          "KIOSKS"
+        ],
+        "topics": [
+          "EXTERIOR",
+          "CUSTOMER_EXPERIENCE"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.6 Qualtrics · GXI|128",
+        "question": "¿Cuál es el objetivo mínimo mensual de reseñas de Google registradas?",
+        "correct": "30 reseñas",
+        "distractors": [
+          "5 reseñas",
+          "300 reseñas"
+        ],
+        "explanation": "El objetivo mínimo de reseñas mensuales es de 30, igual que el de encuestas internas.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.6 Qualtrics · GXI",
+          "page": 128
+        }
+      }
+    ],
+    "food-safety": [
+      {
+        "id": "F1",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.5 REV|147",
+        "question": "Factores críticos: ¿en qué dos áreas críticas se centra la visita REV?",
+        "correct": "Seguridad alimentaria y estándares de operaciones",
+        "distractors": [
+          "Solo ventas y costes de personal",
+          "Marketing local y decoración del restaurante"
+        ],
+        "explanation": "La REV se centra en 2 áreas críticas: Seguridad Alimentaria y Estándares de Operaciones.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.5 REV",
+          "page": 147
+        }
+      },
+      {
+        "id": "F2",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.5 REV|147",
+        "question": "Si la seguridad alimentaria falla durante una visita REV, el resultado de la REV es…",
+        "correct": "Un fallo, aunque el resto de la puntuación sea buena",
+        "distractors": [
+          "Solo una deducción de 30 puntos",
+          "Se ignora si el puntaje de operaciones supera el 60 %"
+        ],
+        "explanation": "La REV puede calificarse como fallo si la Seguridad Alimentaria falla o se activa la Política de Tolerancia Cero.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.5 REV",
+          "page": 147
+        }
+      },
+      {
+        "id": "F3",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|1.6.4 Transferencias|45",
+        "question": "Antes de ceder producto congelado o refrigerado a otro restaurante, ¿qué hay que hacer?",
+        "correct": "Que lo apruebe el supervisor y seguridad alimentaria, con transporte adecuado",
+        "distractors": [
+          "Basta con avisar al otro encargado por teléfono",
+          "Se cede cuando haya un hueco y se registra al final de la semana"
+        ],
+        "explanation": "Toda cesión de producto congelado y refrigerado debe ser aprobada por el supervisor y seguridad alimentaria, con transporte que cumpla la normativa local.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "1.6.4 Transferencias",
+          "page": 45
+        }
+      },
+      {
+        "id": "F4",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.2 RAM|116",
+        "question": "Los registros de temperatura de Zenput se abren en función de…",
+        "correct": "Los horarios del restaurante registrados en RAM",
+        "distractors": [
+          "La hora a la que el encargado abre el móvil",
+          "El número de pedidos del turno"
+        ],
+        "explanation": "El horario debe estar siempre actualizado en RAM porque los registros de temperatura de Zenput se abren según ese horario.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.2 RAM",
+          "page": 116
+        }
+      },
+      {
+        "id": "F5",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.3.2 RAM|116",
+        "question": "La toma de temperatura de la carne se abre ______ antes del inicio de almuerzo y cena y permanece abierta ______.",
+        "correct": "Media hora; dos horas",
+        "distractors": [
+          "Dos horas; media hora",
+          "Cinco minutos; todo el turno"
+        ],
+        "explanation": "El registro de temperatura de la carne se abre media hora antes del inicio de almuerzo y cena y permanece abierto dos horas.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.3.2 RAM",
+          "page": 116
+        }
+      },
+      {
+        "id": "F6",
+        "zones": [
+          "KITCHEN"
+        ],
+        "topics": [
+          "FOOD_SAFETY"
+        ],
+        "taskTypes": [
+          "OPENING",
+          "CSL"
+        ],
+        "difficulty": "ANY",
+        "sourceId": "Manual de Gerentes RBE.pdf|3.5 REV · Problemas repetidos|148",
+        "question": "En la REV, un punto se considera problema repetido y puntúa el doble cuando…",
+        "correct": "Ocurre dos veces seguidas en visitas REV consecutivas",
+        "distractors": [
+          "Ocurre dos veces en el mismo día",
+          "Lo comenta un cliente en una reseña"
+        ],
+        "explanation": "Un problema repetido es el que ocurre dos veces seguidas en visitas REV consecutivas y se puntúa con el doble de puntos.",
+        "source": {
+          "doc": "Manual de Gerentes RBE.pdf",
+          "section": "3.5 REV · Problemas repetidos",
+          "page": 148
+        }
+      }
+    ]
+  }
+}

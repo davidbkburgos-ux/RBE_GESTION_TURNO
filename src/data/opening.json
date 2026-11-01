@@ -1,0 +1,37 @@
+{
+  "checklistDeadline": "11:15",
+  "cslTasks": [
+  { "id": "csl-kitchen", "zone": "kitchen", "label": "CSL · Cocina", "required": true, "questionPool": "csl", "point": "checkKitchen", "action": "inspect", "prompt": "Recorrido CSL · Cocina" },
+  { "id": "csl-counter", "zone": "counter", "label": "CSL · Mostrador y kioscos", "required": true, "questionPool": "csl", "point": "pickup", "action": "inspect", "prompt": "Recorrido CSL · Mostrador y kioscos" },
+  { "id": "csl-hall", "zone": "hall", "label": "CSL · Sala", "required": true, "questionPool": "csl", "point": "checkHall", "action": "inspect", "prompt": "Recorrido CSL · Sala" },
+  { "id": "csl-restrooms", "zone": "restrooms", "label": "CSL · Baños", "required": true, "questionPool": "csl", "point": "checkRestroom", "action": "inspect", "prompt": "Recorrido CSL · Baños" },
+  { "id": "csl-autoking", "zone": "autoking", "label": "CSL · AutoKing", "required": true, "questionPool": "csl", "point": "windowPay", "action": "inspect", "prompt": "Recorrido CSL · AutoKing" },
+  { "id": "csl-exterior", "zone": "exterior", "label": "CSL · Exteriores", "required": true, "questionPool": "csl", "point": "exteriorReview", "action": "inspect", "prompt": "Recorrido CSL · Exteriores" }
+  ],
+  "openingTasks": [
+    { "id": "opening-product", "zone": "coldRooms", "label": "Preparación de producto", "required": true, "questionPool": "kitchen-opening", "point": "productPrep", "action": "inspect", "prompt": "Preparación de producto", "checklist": true },
+    { "id": "opening-critical", "zone": "kitchen", "label": "Revisión de factores críticos", "required": true, "questionPool": "food-safety", "onlyTopics": ["FOOD_SAFETY"], "point": "criticalFactors", "action": "inspect", "prompt": "Revisión de factores críticos", "checklist": true },
+    { "id": "opening-clean-equipment", "zone": "hotProduction", "label": "Limpieza de equipos", "required": true, "questionPool": "restroom-opening", "point": "cleanEquipment", "action": "clean", "prompt": "Limpieza de equipos", "checklist": true },
+    { "id": "opening-dining", "zone": "hall", "label": "Limpieza de sala", "required": true, "questionPool": "hall-opening", "point": "cleanDining", "action": "clean", "prompt": "Limpieza de sala", "checklist": true },
+    { "id": "opening-exterior", "zone": "exterior", "label": "Revisión de exteriores", "required": true, "questionPool": "exterior-opening", "point": "exteriorReview", "action": "inspect", "prompt": "Revisión de exteriores", "checklist": true },
+    { "id": "opening-equipment", "zone": "hotProduction", "label": "Encendido de maquinaria", "required": true, "questionPool": "kitchen-opening", "point": "startEquipment", "action": "inspect", "prompt": "Encendido de maquinaria", "checklist": true },
+    { "id": "open-door", "zone": "entrance", "label": "Abrir puerta principal · 12:00", "required": true, "questionPool": null, "point": "mainDoor", "action": "door", "prompt": "Puerta principal" }
+  ],
+  "texts": {
+    "doorLocked": "Aún faltan revisiones antes de abrir la puerta.",
+    "doorOpenedOnTime": "¡Restaurante abierto a tiempo!",
+    "doorOpenedLate": "Restaurante abierto con {m} min de retraso.",
+    "lateWarning": "Retraso en la apertura: {pts} puntos",
+    "allReviewed": "Revisiones completas. Ya puedes abrir la puerta principal.",
+    "saturation": "¿Qué canal quieres priorizar?",
+    "saturationHint": "Hay saturación. El equipo apoyará el canal elegido durante un tiempo.",
+    "coolingDown": "Cambio de prioridad en enfriamiento.",
+    "gameEnd": "Fin del servicio",
+    "repeat": "Ya revisado: sin puntos adicionales."
+  },
+  "legend": [
+    "Clic o toque en el suelo: el encargado camina hasta ese punto.",
+    "Clic en una exclamación: ir y atender el evento.",
+    "Teclado: Tab saca o guarda el móvil de gestión del encargado, E atiende el evento más urgente, P pausa, M silencio, 1-3 elige respuestas o canal."
+  ]
+}

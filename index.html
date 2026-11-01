@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2a1c14">
+  <title>Turno de Encargado · Mock jugable</title>
+  <link rel="stylesheet" href="src/ui/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header id="hud" role="banner">
+      <div class="pill" id="pClock" role="group" aria-label="Hora y fase">
+        <span class="ico" aria-hidden="true">🕙</span><b id="hClock">10:00</b><small id="hPhase">Preparación</small>
+      </div>
+      <div class="pill" id="pScore" role="group" aria-label="Puntuación">
+        <span class="ico" aria-hidden="true">⭐</span><b id="hScore">0</b><span id="hCombo" class="combo" hidden>x1.0</span>
+      </div>
+      <div class="pill" id="pEvents" role="group" aria-label="Eventos activos">
+        <span class="ico" aria-hidden="true">❗</span><b id="hEvents">0</b><small>eventos</small>
+      </div>
+      <button class="pill" id="pPrio" type="button" aria-label="Prioridad de canal">
+        <span class="ico" aria-hidden="true">🎯</span><small id="hPrio">Sin prioridad</small>
+      </button>
+      <div class="spacer"></div>
+      <button id="bTasks" type="button" class="ib" aria-label="Tareas de apertura" aria-expanded="true">📋<span id="hTasks">0/4</span></button>
+      <button id="bOps" type="button" class="ib" aria-label="Abrir panel de operación">📊<span>Operación</span></button>
+      <div class="sec" id="secBtns">
+        <button id="bZoomOut" type="button" class="ib" aria-label="Alejar">−</button>
+        <button id="bZoomIn" type="button" class="ib" aria-label="Acercar">+</button>
+        <button id="bFollow" type="button" class="ib" aria-label="Cámara sigue al avatar" aria-pressed="false">🎥</button>
+        <button id="bTeam" type="button" class="ib" aria-label="Equipo">👥</button>
+        <button id="bHelp" type="button" class="ib" aria-label="Ayuda de controles">?</button>
+        <button id="bSettings" type="button" class="ib" aria-label="Ajustes">⚙</button>
+      </div>
+      <button id="bSound" type="button" class="ib" aria-label="Silenciar o activar sonido" aria-pressed="false">🔊</button>
+      <button id="bPause" type="button" class="ib" aria-label="Pausar">⏸</button>
+      <button id="bMore" type="button" class="ib more" aria-label="Más opciones" aria-expanded="false">⋯</button>
+    </header>
+
+    <main id="stage">
+      <canvas id="game" tabindex="0" role="application" aria-label="Plano del restaurante. Pulsa en el suelo para mover al encargado o pulsa una exclamación para atender un evento."></canvas>
+      <aside id="tasksPanel" aria-label="Tareas de apertura" hidden></aside>
+      <aside id="operationsPanel" aria-label="Estado operativo" hidden></aside>
+      <aside id="debugPanel" aria-label="Diagnóstico de simulación" hidden>
+        <div class="debug-head"><b>DEBUG SIMULATION</b><button id="bDebugTest" type="button" class="btn small">SIMULATION TEST</button></div>
+        <pre id="debugStats" aria-live="polite"></pre>
+        <div id="debugTestSummary" aria-live="polite"></div>
+        <div class="debug-controls" aria-label="Spawns de depuración">
+          <button type="button" data-debug-spawn="counter">Mostrador</button>
+          <button type="button" data-debug-spawn="kiosk">Kiosco</button>
+          <button type="button" data-debug-spawn="vehicle">AutoKing</button>
+          <button type="button" data-debug-spawn="delivery">Delivery</button>
+          <button type="button" data-debug-spawn="dirtyTable">Mesa sucia</button>
+          <button type="button" data-debug-spawn="complaint">Queja</button>
+          <button type="button" data-debug-spawn="productShortage">Falta de producto</button>
+        </div>
+        <ol id="debugLog" aria-label="Registro estructurado"></ol>
+      </aside>
+      <aside id="timelinePanel" aria-label="Registro de incidencias" hidden></aside>
+      <ul id="chips" aria-label="Eventos activos"></ul>
+      <div id="bubbles"></div>
+      <div id="toasts" role="status" aria-live="polite"></div>
+      <div id="caption" role="status" aria-live="polite"></div>
+      <div id="reviewCard" aria-live="polite" hidden></div>
+      <section id="tutorial" hidden aria-label="Tutorial"></section>
+    </main>
+  </div>
+
+  <div id="modalRoot"></div>
+
+  <div id="rotate" role="alert">
+    <div>
+      <p class="big">📱↔️</p>
+      <p>Gira el dispositivo a horizontal para ver todo el restaurante.</p>
+      <button id="rotateOk" type="button" class="btn">Continuar de todos modos</button>
+    </div>
+  </div>
+
+  <noscript>Esta aplicación necesita JavaScript.</noscript>
+
+  <script src="src/data/bundle.js"></script>
+  <script src="src/game/core.js"></script>
+  <script src="src/systems/GameClock.js"></script>
+  <script src="src/systems/SaveSystem.js"></script>
+  <script src="src/systems/NavigationSystem.js"></script>
+  <script src="src/systems/CharacterAnimationSystem.js"></script>
+  <script src="src/entities/Character.js"></script>
+  <script src="src/systems/ScoringSystem.js"></script>
+  <script src="src/systems/EventSystem.js"></script>
+  <script src="src/systems/KnowledgeQuestionLoader.js"></script>
+  <script src="src/systems/OpeningRoutineSystem.js"></script>
+  <script src="src/systems/ChannelPrioritySystem.js"></script>
+  <script src="src/systems/EmployeeSystem.js"></script>
+  <script src="src/systems/StaffingSystem.js"></script>
+  <script src="src/systems/ProductionSystem.js"></script>
+  <script src="src/systems/PreparationSystem.js"></script>
+  <script src="src/systems/ServiceKpiSystem.js"></script>
+  <script src="src/systems/VehicleSystem.js"></script>
+  <script src="src/systems/CustomerSystem.js"></script>
+  <script src="src/systems/AutonomySystem.js"></script>
+  <script src="src/systems/ArrivalDirector.js"></script>
+  <script src="src/systems/BottleneckDetector.js"></script>
+  <script src="src/systems/OperationalIncidentSystem.js"></script>
+  <script src="src/systems/EventDirector.js"></script>
+  <script src="src/systems/PlayerController.js"></script>
+  <script src="src/systems/InteractionSystem.js"></script>
+  <script src="src/systems/LightingSystem.js"></script>
+  <script src="src/systems/AudioSystem.js"></script>
+  <script src="src/systems/AudioManager.js"></script>
+  <script src="src/game/Renderer.js"></script>
+  <script src="src/ui/PhonePanel.js"></script>
+  <script src="src/ui/RosterPlanner.js"></script>
+  <script src="src/ui/ReassignMenu.js"></script>
+  <script src="src/ui/UIManager.js"></script>
+  <script src="src/game/main.js"></script>
+</body>
+</html>
