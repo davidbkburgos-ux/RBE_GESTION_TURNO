@@ -1,5 +1,5 @@
 {
-  "meta": { "title": "Turno de Encargado", "version": "0.9.0", "saveKey": "bk-turno-v1" },
+  "meta": { "title": "Turno de Encargado", "version": "0.9.1", "saveKey": "bk-turno-v1" },
   "debugSimulation": false,
   "day": { "start": "09:00", "open": "12:00", "close": "01:00", "timeScale": 1.2, "timeScaleOptions": [1, 1.2, 2, 4] },
   "phases": [
@@ -244,17 +244,14 @@
   },
   "tutorial": [
     { "text": "Pulsa sobre el suelo para mover al encargado (o usa las flechas / WASD).", "wait": "move" },
-    { "text": "Cuando aparezca una exclamación sobre un cliente o una mesa, púlsala (o tecla E) y el encargado irá a resolverla." },
-    { "text": "Las mesas sucias también se limpian pulsándolas, sin esperar a un evento." },
-    { "text": "Abre «Operación» (el móvil) con el botón de arriba o con TAB. Ahí ves a tu equipo, los puestos, los tiempos y el stock.", "wait": "phoneOpen" },
-    { "text": "A veces un empleado no se presenta y salta un aviso. En Vacantes puedes cubrirlo con un refuerzo (1000 pts) o con un experto ⭐ (2000 pts): trabaja un 50 % más rápido y cubre una segunda posición cuando la suya está libre." },
-    { "text": "Contratar sin que haya una baja que cubrir también es posible, pero genera más clientes. Decide si te compensa el riesgo." },
+    { "text": "Pulsa las exclamaciones (o tecla E) para atender eventos; las mesas sucias también se limpian pulsándolas." },
+    { "text": "Abre «Operación» (el móvil) con el botón de arriba o con TAB: equipo, puestos, tiempos, stock y vacantes.", "wait": "phoneOpen" },
+    { "text": "Con el móvil fuera ves las etiquetas de posicionamiento y los cuellos de botella 🚧: pulsa uno para ir y apoyar, aunque el puesto ya esté cubierto." },
     { "text": "Ciérralo con la X, con TAB o volviendo a pulsar Operación.", "wait": "phoneClose" },
     { "text": "Ahora pulsa sobre un empleado para reasignarlo de puesto.", "wait": "reassign" },
-    { "text": "Los puestos libres aparecen como círculos oscuros: pulsa uno para ocuparlo tú y atender a esos clientes mientras te quedes quieto." },
-    { "text": "En la cámara de congelado puedes preparar producto en cualquier momento. Prepara lo justo: lo que sobra penaliza al final." },
-    { "text": "Completa las revisiones (incluida la de factores críticos) y abre la puerta antes de las 12:00." },
-    { "text": "Tu puntuación subirá o bajará según tus decisiones. Con ella puedes contratar refuerzos y entrar en la clasificación." },
-    { "text": "Cuando haya saturación, prioriza un canal." }
+    { "text": "Pulsa un puesto libre (círculo oscuro) para ocuparlo. Si apoyas un canal, su equipo trabaja un 20 % más rápido. Si un empleado no se presenta, cubre la baja desde Vacantes con un refuerzo o un experto ⭐ (más rápido y cubre dos puestos)." },
+    { "text": "Antes de abrir: 🗣️ Briefing voluntario (3 preguntas, barra de habilidad y ruleta de +5/10/15 % de velocidad; fallar endurece la barra), 🌡️ Toma de Temperatura Carne (pincha entre dos rayas y elige el ángulo correcto; hay que llegar a 68 ºC) y las demás revisiones." },
+    { "text": "Entre las 09:00 y las 10:00 puede llegar el camión de Conway (50 %): reparte las cajas, compáralas con el albarán y firma solo si coinciden; si no, pide abono. Acertar suma 50 pts, fallar resta 50." },
+    { "text": "Abre la puerta antes de las 12:00. Tu puntuación sube o baja con tus decisiones; con ella contratas refuerzos y entras en la clasificación. Si hay saturación, prioriza un canal." }
   ]
 }

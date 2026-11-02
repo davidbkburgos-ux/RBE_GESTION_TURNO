@@ -563,7 +563,7 @@
           shapePath(ctx, 'square', p.x, y + bob, 15);
           ctx.fill(); ctx.stroke();
           ctx.font = '17px system-ui, "Segoe UI Emoji", sans-serif'; ctx.fillStyle = '#fff';
-          ctx.fillText(it.kind === 'briefing' ? '🗣️' : it.task.action === 'door' ? '🚪' : '📋', p.x, y + bob + 1);
+          ctx.fillText(it.kind === 'briefing' ? '🗣️' : it.task.action === 'door' ? '🚪' : it.task.icon || '📋', p.x, y + bob + 1);
           if (it.kind === 'briefing') {
             ctx.fillStyle = 'rgba(20,75,43,0.94)';
             ctx.fillRect(p.x - 29, y + bob - 27, 58, 12);

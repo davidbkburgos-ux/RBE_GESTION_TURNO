@@ -316,7 +316,7 @@
           const mark = t.skipped ? '⌛' : t.done ? (t.correct === false ? '⚠' : '✔') : failed ? '⚠' : locked ? '🔒' : '○';
           const status = t.skipped ? 'omitida' : t.done ? (t.correct === false ? 'fallida' : 'completada') : failed ? 'fallida, se puede repetir' : locked ? 'bloqueada' : 'pendiente';
           const available = !t.done && (csl ? !op.cslClosed : (!t.checklist || !op.checklistClosed));
-          const b = h('button', { class: 'task' + (t.done && !t.skipped && t.correct !== false ? ' done' : '') + (t.skipped || t.correct === false ? ' wrong' : ''), 'aria-label': t.label + ', ' + status, disabled: !available, onclick: () => { if (available && G.state === 'playing') { G.audio.unlock(); G.player.goTask(t); } } }, h('span', { class: 'mk', 'aria-hidden': 'true' }, mark), ' ', t.label, failed ? h('small', { class: 'retry', text: ' · REPETIR' }) : '');
+          const b = h('button', { class: 'task' + (t.done && !t.skipped && t.correct !== false ? ' done' : '') + (t.skipped || t.correct === false ? ' wrong' : ''), 'aria-label': t.label + ', ' + status, disabled: !available, onclick: () => { if (available && G.state === 'playing') { G.audio.unlock(); G.player.goTask(t); } } }, h('span', { class: 'mk', 'aria-hidden': 'true' }, mark), ' ', t.icon ? t.icon + ' ' : '', t.label, failed ? h('small', { class: 'retry', text: ' · REPETIR' }) : '');
           ul.appendChild(h('li', {}, b));
         });
         P.appendChild(ul);
