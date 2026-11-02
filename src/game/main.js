@@ -8,6 +8,8 @@
     const d = BK.data;
     G.cfg = d.config; G.map = d.map; G.ev = d.events; G.openingData = d.opening; G.audioManifest = d.audioManifest;
     G.save = new BK.SaveSystem(G.cfg.meta.saveKey);
+    G.brand = G.save.settings.brand === 'popeyes' ? 'popeyes' : 'bk';
+    BK.applyBrand(d, G.brand);
     if (G.save.settings.difficulty === 'easy' || G.save.settings.difficulty === 'normal') G.save.setSetting('difficulty', 'weekday');
     if (G.save.settings.difficulty === 'hard') G.save.setSetting('difficulty', 'weekend');
     BK.settings = G.save.settings;
@@ -16,7 +18,7 @@
 
     G.clock = new BK.GameClock(G.cfg);
     G.clock.setScale(S.timeScale || G.cfg.day.timeScale);
-    G.nav = new BK.NavigationSystem(G.map);
+    G.nav = new BK.NavigationSystem(G.map, 1.5, G.brand);
     G.scoring = new BK.ScoringSystem(G);
     G.priority = new BK.ChannelPrioritySystem(G);
     G.employees = new BK.EmployeeSystem(G);
@@ -112,10 +114,12 @@
     G.director.reset(); G.opening.reset(); G.employees.configure(G.roster); G.staffing.reset(); G.production.reset(); G.prep.reset(); G.kpi.reset();
     G.arrivals.reset(G.seed); G.bottlenecks.reset(); G.incidents.reset(); G.autonomy.reset(); G.manager.coveringPosition = null; G.manager.status = 'SUPERVISING'; G.audio.apply();
     G.briefing.reset(); G.truckDelivery.reset();
-    G.player.reset(330, 520);
+    const sp = G.map.player || { x: 330, y: 520 };
+    G.player.reset(sp.x, sp.y);
     G.ui.clearTransient(); G.ui.closeModal();
-    G.time = 0; G.paused = false; G.uiPause = false; G.saveT = 0;
-    G.renderer.cam.x = 768; G.renderer.cam.y = 512;
+    G.time = 0; G.paused = false; G.uiPause = false; G.minigamePause = false; G.saveT = 0;
+    const cs = G.map.camStart || { x: 768, y: 512 };
+    G.renderer.cam.x = cs.x; G.renderer.cam.y = cs.y;
   };
   G.newGame = function (roster, seed) {
     if (roster) G.roster = roster.map((r) => ({ shift: r.shift, position: r.position }));
@@ -161,7 +165,7 @@
   G.endCurrentDay = function (opts) {
     const o = Object.assign({ reason: 'MANUAL_STORE_CLOSURE', saveResult: false }, opts || {});
     if (o.saveResult) { G.endGame(); return; }
-    G.state = 'menu'; G.paused = false; G.uiPause = false;          // detiene reloj y todos los directores (step solo avanza en 'playing')
+    G.state = 'menu'; G.paused = false; G.uiPause = false; G.minigamePause = false;          // detiene reloj y todos los directores (step solo avanza en 'playing')
     G.ui.tutorialStep = 0;
     G.audio.silenceContextual();
     G.save.clearRun();                                              // sin guardar resultado ni reanudación
@@ -200,6 +204,13 @@
   G.toggleMute = function () { G.audio.unlock(); G.audio.setMuted(!G.audio.muted); G.ui.caption(G.audio.muted ? 'Sonido silenciado (los avisos se muestran en pantalla)' : 'Sonido activado'); };
   G.setReduceMotion = function (v) { G.save.setSetting('reduceMotion', v); document.body.classList.toggle('reduce-motion', v); if (v) G.renderer.cam.zoom = G.renderer.zoomTarget; };
   G.setFollow = function (v) { G.renderer.setFollow(v); G.save.setSetting('follow', v); };
+  G.setBrand = function (b) {
+    b = BK.BRAND_MAPS[b] ? b : 'bk';
+    const changed = b !== G.brand;
+    G.save.setSetting('brand', b);
+    if (changed) { location.reload(); return; }
+    if (G.renderer) G.renderer.setBrand(b);
+  };
   G.setManagerGender = function (g) {
     g = g === 'f' ? 'f' : 'm';
     G.save.setSetting('managerGender', g);
@@ -216,6 +227,21 @@
     if (G.state !== 'playing' || G.paused || (G.uiPause && !G.ui.tutorialStep)) return;
     G.audio.unlock();
     const R = G.renderer;
+    if (G.ui.tutorialStep) {
+      // Durante el tutorial solo se puede mover al encargado y, en los pasos de reasignación, usar ese menú.
+      const st = G.cfg.tutorial[G.ui.tutorialStep - 1] || {};
+      const reassigning = st.wait === 'reassign' || G.ui.reassign.isOpen;
+      if (reassigning) {
+        const station = R.stationAt(sx, sy);
+        if (station) { G.ui.reassign.close(); G.player.coverPosition(station.id); return; }
+        const tag = R.tagAt(sx, sy);
+        if (tag) { G.ui.reassign.open(tag.emp); return; }
+        if (G.ui.reassign.isOpen) { G.ui.reassign.close(); return; }
+      }
+      const w = R.toWorld(sx, sy);
+      G.player.moveTo(w.x, w.y);
+      return;
+    }
     const station = R.stationAt(sx, sy);
     if (station) { G.ui.reassign.close(); G.player.coverPosition(station.id); return; }
     for (const h of R.hits.slice().reverse()) {
@@ -269,7 +295,7 @@
         else if (G.ui.prioEl) { const ch = Object.keys(G.ev.channels)[i]; G.priority.choose(ch); e.preventDefault(); }
         return;
       }
-      if (k === 'e' || k === 'E') { G.audio.unlock(); if (!G.interaction.attendMostUrgent()) G.ui.toast('No hay eventos pendientes.', 'info', 1400); return; }
+      if (k === 'e' || k === 'E') { if (G.ui.tutorialStep) return; G.audio.unlock(); if (!G.interaction.attendMostUrgent()) G.ui.toast('No hay eventos pendientes.', 'info', 1400); return; }
       if (k === '+' || k === '=') { G.renderer.zoomBy(1.25); return; }
       if (k === '-' || k === '_') { G.renderer.zoomBy(0.8); return; }
       if (k === 'g' || k === 'G') { if (new URLSearchParams(location.search).has('debug')) G.renderer.debug = !G.renderer.debug; return; }
@@ -287,7 +313,7 @@
   // ---------- bucle ----------
   let last = 0;
   function step(dt) {
-    if (G.state === 'playing' && !G.paused && !G.uiPause) {
+    if (G.state === 'playing' && !G.paused && !G.uiPause && !G.minigamePause) {
       G.time += dt;
       G.clock.update(dt);
       if (G.state !== 'playing') return;
@@ -310,7 +336,7 @@
       G.saveT += dt;
       if (G.saveT > 5) {
         G.saveT = 0;
-        G.save.saveRun({ t: G.clock.t, time: G.time, scoring: G.scoring.snapshot(), opening: G.opening.snapshot(), briefing: G.briefing.snapshot(), truckDelivery: G.truckDelivery.snapshot(), spawned: G.director.spawned, pos: { x: G.player.char.x, y: G.player.char.y }, production: G.production.snapshot(), prep: G.prep.snapshot(), kpi: G.kpi.snapshot(), incidents: G.incidents.snapshot(), staffing: G.staffing.snapshot(), roster: G.roster, seed: G.seed });
+        G.save.saveRun({ t: G.clock.t, time: G.time, scoring: G.scoring.snapshot(), opening: G.opening.snapshot(), briefing: G.briefing.snapshot(), truckDelivery: G.truckDelivery.snapshot(), spawned: G.director.spawned, pos: { x: G.player.char.x, y: G.player.char.y }, production: G.production.snapshot(), prep: G.prep.snapshot(), kpi: G.kpi.snapshot(), incidents: G.incidents.snapshot(), staffing: G.staffing.snapshot(), roster: G.roster, seed: G.seed, brand: G.brand });
       }
     } else if (G.state === 'playing' && G.ui.tutorialStep && !G.paused && !G.ui.modalOpen) {
       G.player.update(dt);

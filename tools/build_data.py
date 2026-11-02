@@ -8,7 +8,7 @@ import json, pathlib
 
 root = pathlib.Path(__file__).resolve().parent.parent
 data = root / "src" / "data"
-names = ["config", "map", "events", "questions", "opening", "audioManifest"]
+names = ["config", "map", "events", "questions", "opening", "audioManifest", "brands"]
 bundle = {}
 for n in names:
     bundle[n] = json.loads((data / f"{n}.json").read_text(encoding="utf-8"))

@@ -13,7 +13,7 @@
   }
 
   class NavigationSystem {
-    constructor(map, clearanceCells = 1.5) {
+    constructor(map, clearanceCells = 1.5, brand = 'bk') {
       this.cell = map.nav.cell;
       this.W = Math.ceil(map.meta.width / this.cell);
       this.H = Math.ceil(map.meta.height / this.cell);
@@ -28,7 +28,8 @@
         const y1 = Math.max(0, Math.floor(r[1] / this.cell)), y2 = Math.min(this.H - 1, Math.floor(r[3] / this.cell));
         for (let y = y1; y <= y2; y++) for (let x = x1; x <= x2; x++) arr[y * this.W + x] = v;
       };
-      map.walkable.forEach((w) => {
+      const extra = ((map.brandNav || {})[brand] || {}).walkable || [];
+      map.walkable.concat(extra).forEach((w) => {
         fill(raw.staff, w.rect, 1);
         if (['front', 'ext', 'door'].includes(w.area)) fill(raw.guest, w.rect, 1);
         if (w.id === 'entrance') fill(this.doorCells, w.rect, 1);

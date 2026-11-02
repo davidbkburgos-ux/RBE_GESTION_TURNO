@@ -20,7 +20,7 @@
   class BriefingSystem {
     constructor(G) {
       this.G = G;
-      this.meetingPoint = { x: 836, y: 644 };
+      this.meetingPoint = (G.map.spots && G.map.spots.meeting) || { x: 836, y: 644 };
       this.reset();
       BK.bus.on('opening:opened', () => this.cancel(true));
     }
@@ -78,12 +78,20 @@
     }
 
     formation(count) {
+      const rows = this.G.map.spots && this.G.map.spots.formationRows;
+      if (rows) {
+        const mp = this.meetingPoint, list = [];
+        rows.ys.forEach((y) => { for (let x = rows.x0; x <= rows.x1; x += rows.step) if (Math.hypot(x - mp.x, y - mp.y) > 26) list.push({ x, y }); });
+        list.sort((a, b) => Math.abs(a.x - mp.x) - Math.abs(b.x - mp.x) || a.y - b.y);
+        return Array.from({ length: count }, (_, i) => list[i % list.length]);
+      }
       if (count === 1) return [{ x: this.meetingPoint.x - 90, y: this.meetingPoint.y }];
+      const arc = (this.G.map.spots && this.G.map.spots.formationArc) || { rx: 96, ry: 64 };
       return Array.from({ length: count }, (_, i) => {
         const angle = -Math.PI / 2 + Math.PI * i / (count - 1);
         return {
-          x: this.meetingPoint.x - 96 * Math.cos(angle),
-          y: this.meetingPoint.y + 64 * Math.sin(angle)
+          x: this.meetingPoint.x - arc.rx * Math.cos(angle),
+          y: this.meetingPoint.y + arc.ry * Math.sin(angle)
         };
       });
     }

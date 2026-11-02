@@ -59,7 +59,7 @@
       const ev = this.G.events.schedule('vehicle');
       ev.targetEntity = car;
       car.ev = ev;
-      this.G.events.activate(ev, { location: { x: p.x, y: p.y }, interact: { x: 650, y: 762 }, face: BK.DIR.S, target: car, lift: 34 });
+      this.G.events.activate(ev, { location: { x: p.x, y: p.y }, interact: (this.G.map.spots && this.G.map.spots.vehicle) || { x: 650, y: 762 }, face: BK.DIR.S, target: car, lift: 34 });
       car.state = 'waitingService';
       car.eventCreated = true;
       car.phaseTimes.pickupStart = this.G.time;
@@ -80,7 +80,7 @@
       if (car.patience < 1) return;
       car.abandoned = true; car.released = true; car.hazard = true;
       G.production.cancel(G.production.orders.find((o) => o.channel === 'autoking' && o.sourceId === car.id));
-      G.scoring.add(P.autokingAbandonPenalty, 'Un coche abandona el AutoKing sin ser atendido', { x: car.x, y: car.y }, 'customer');
+      G.scoring.add(P.autokingAbandonPenalty, 'Un coche abandona el ' + BK.autoName + ' sin ser atendido', { x: car.x, y: car.y }, 'customer');
       G.scoring.m.abandoned = (G.scoring.m.abandoned || 0) + 1;
       G.scoring.breakCombo();
       car.state = 'leaving'; car.dwellLeft = 0.4;

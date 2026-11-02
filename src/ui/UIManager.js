@@ -104,7 +104,7 @@
         this.toast('OPENING SCORE ' + e.openingScore + ' · aplicado ahora ' + e.penalty + ' · ' + (reasons.join(', ') || 'preparación correcta'), e.penalty < 0 ? 'warn' : 'good', 5200);
       });
       bus.on('opening:allReviewed', () => this.toast(G.openingData.texts.allReviewed, 'good', 4200));
-      bus.on('csl:start', () => { G.audio.play('bell', false); this.toast('📋 Recorrido CSL: revisa cocina, mostrador, sala, baños, AutoKing y exteriores.', 'info', 5200); });
+      bus.on('csl:start', () => { G.audio.play('bell', false); this.toast('📋 Recorrido CSL: revisa cocina, mostrador, sala, baños, ' + BK.autoName + ' y exteriores.', 'info', 5200); });
       bus.on('csl:complete', () => this.toast('Recorrido CSL completado.', 'good', 3600));
       bus.on('csl:end', (e) => { if (e.omitted.length) this.toast('Recorrido CSL cerrado: ' + e.omitted.length + ' revisión(es) omitida(s). ' + e.penalty + ' pts cada una.', 'warn', 5200); });
       bus.on('opening:opened', (e) => {
@@ -139,7 +139,7 @@
       bus.on('vehicle:stop', (e) => { if (e.stop === 'order') G.audio.play('autokingOrder'); });
       bus.on('customer:abandon', (e) => {
         G.audio.play('error', false);
-        this.toast(e.channel === 'autoking' ? '🚗 Un coche se marcha del AutoKing sin ser atendido.' : '😠 Un cliente se marcha sin ser atendido.', 'bad', 2200);
+        this.toast(e.channel === 'autoking' ? '🚗 Un coche se marcha del ' + BK.autoName + ' sin ser atendido.' : '😠 Un cliente se marcha sin ser atendido.', 'bad', 2200);
       });
       bus.on('event:resolved', (r) => {
         const T = G.ev.types[r.ev.type];
@@ -166,7 +166,7 @@
       bus.on('employees:critical', (e) => this.toast('⚠ Posición crítica sin cobertura: ' + e.label + '.', 'warn', G.cfg.operations.messageTtl.important * 1000));
       bus.on('manager:positioned', ({ position }) => {
         const channel = G.employees.managerSupportChannel();
-        const label = channel === 'autoking' ? 'AutoKing' : channel === 'delivery' ? 'Delivery' : channel === 'dining' ? 'Sala' : 'Mostrador / kiosco';
+        const label = channel === 'autoking' ? BK.autoName : channel === 'delivery' ? 'Delivery' : channel === 'dining' ? 'Sala' : 'Mostrador / kiosco';
         this.toast('ENCARGADO APOYANDO · ' + G.cfg.operations.stations[position].label + ' · +20 % velocidad en ' + label, 'info', 3000);
       });
       bus.on('manager:left-position', () => this.toast('El encargado deja el puesto para atender el restaurante.', 'warn', 2200));
@@ -266,7 +266,7 @@
           (difficultyNames[result.difficulty] || result.difficulty.toUpperCase()) + ' · ' + result.from + '–' + result.to,
           'Mostrador: clientes generados ' + (a.counter || 0) + ' · eventos ' + (e.counter || 0),
           'Kiosco: clientes generados ' + (a.kiosk || 0) + ' · incidencias ' + (e.kiosk || 0),
-          'AutoKing: vehículos generados ' + (a.autoking || 0) + ' · recogidas ' + (e.vehicle || 0),
+          BK.autoName + ': vehículos generados ' + (a.autoking || 0) + ' · recogidas ' + (e.vehicle || 0),
           'Delivery: repartidores generados ' + (a.delivery || 0) + ' · eventos ' + (e.delivery || 0),
           'Sala: ocupaciones ' + (a.dining || 0) + ' · mesas sucias ' + (e.dirtyTable || 0),
           'Llegadas totales ' + result.totalArrivals + ' · director ' + result.playerEvents + ' eventos'
@@ -523,6 +523,8 @@
       G.player.locked = true;
       G.audio.unlock();
       if (e.minigame === 'temperature') return this.showTempGame(e);
+      if (e.minigame === 'chickenTemp') return this.showChickenTempGame(e);
+      if (e.minigame === 'viscosity') return this.showViscosityGame(e);
       const done = (idx) => {
         const ok = G.opening.answer(idx);
         G.player.locked = false;
@@ -681,6 +683,384 @@
       render();
       requestAnimationFrame(tick);
     }
+    // ---------- minijuego (Popeyes): toma de temperatura del pollo ----------
+    showChickenTempGame(e) {
+      const G = this.G, task = e.task, q = e.q;
+      const W = 280, H = 190, CX = 130, CY = 100;
+      const cv = h('canvas', { class: 'temp-cv', width: String(W), height: String(H) });
+      const ctx = cv.getContext('2d');
+      const hint = h('p', { class: 'qtext temp-hint', text: 'Pieza 1 de 2 · Paso 1: pincha la zona con más carne y evita el hueso.' });
+      const lcd = h('div', { class: 'temp-lcd' }, h('span', { class: 'temp-val', text: '68.0' }), h('span', { class: 'temp-unit', text: '°C' }));
+      const optsBox = h('div', { class: 'temp-opts' });
+      const box = h('div', { class: 'qbox temp-game', role: 'dialog', 'aria-label': task.prompt },
+        h('div', { class: 'qhead' }, h('span', { class: 'qtitle', text: '🌡️ ' + task.prompt }),
+          h('button', { class: 'xbtn', 'aria-label': 'Cerrar minijuego', onclick: () => this.closeQuestion() }, '✕')),
+        hint, cv, lcd, optsBox);
+      lcd.style.display = 'none';
+      // Coordenadas locales de cada pieza: la carne gruesa y el hueso cambian de sitio en la segunda.
+      const PIECES = [
+        { rot: -0.1, flip: false, meat: [46, 6], bone: [[-62, 16], [-34, -6], [-6, -22], [18, -26]], tone: '#d9922b' },
+        { rot: 0.28, flip: true, meat: [40, -12], bone: [[-58, 22], [-30, 28], [0, 36], [28, 40]], tone: '#cf8420' }
+      ];
+      const FORCE_OK = [48, 78];
+      let tipColor = '#e53935', pi = 0, step = 'point', mouse = { x: CX, y: CY }, tip = null, force = 0, onBone = false, onMeat = false, temp = 68, target = 0, finished = false, boneTouched = false;
+      const toLocal = (x, y) => {
+        const p = PIECES[pi], dx = x - CX, dy = y - CY, c = Math.cos(-p.rot), s = Math.sin(-p.rot);
+        let lx = dx * c - dy * s; const ly = dx * s + dy * c;
+        if (p.flip) lx = -lx;
+        return { x: lx, y: ly };
+      };
+      const distSeg = (p, a, b) => {
+        const vx = b[0] - a[0], vy = b[1] - a[1], t = Math.max(0, Math.min(1, ((p.x - a[0]) * vx + (p.y - a[1]) * vy) / (vx * vx + vy * vy)));
+        return Math.hypot(p.x - (a[0] + vx * t), p.y - (a[1] + vy * t));
+      };
+      const boneDist = (l) => { const b = PIECES[pi].bone; let d = 1e9; for (let i = 0; i < b.length - 1; i++) d = Math.min(d, distSeg(l, b[i], b[i + 1])); return d; };
+      const withPiece = (fn) => {
+        const p = PIECES[pi];
+        ctx.save(); ctx.translate(CX, CY); ctx.rotate(p.rot); ctx.scale(p.flip ? -1 : 1, 1); fn(p); ctx.restore();
+      };
+      const shape = () => {
+        // Pechuga frita: contorno ancho y abombado con borde irregular de rebozado.
+        ctx.beginPath();
+        for (let i = 0; i <= 72; i++) {
+          const a = i / 72 * Math.PI * 2, c = Math.cos(a), s = Math.sin(a);
+          const n = 1 + 0.02 * Math.sin(a * 7 + 1) + 0.014 * Math.sin(a * 13 + 2) + 0.01 * Math.sin(a * 23);
+          const x = (c < 0 ? 76 : 86) * c * n - 4, y = (s < 0 ? 58 : 52) * s * n * (1 - 0.3 * Math.max(0, -c));
+          if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+        }
+        ctx.closePath();
+      };
+      const inPiece = (x, y) => { let r = false; withPiece(() => { shape(); r = ctx.isPointInPath(x, y); }); return r; };
+      const drawPiece = () => {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(CX + 6, CY + 12, 90, 64, 0, 0, 7); ctx.fill();
+        withPiece((p) => {
+          shape(); ctx.fillStyle = p.tone; ctx.fill();
+          ctx.save(); shape(); ctx.clip();
+          const g = ctx.createRadialGradient(p.meat[0] - 10, p.meat[1] - 14, 4, p.meat[0], p.meat[1], 80);
+          g.addColorStop(0, '#f4c15a'); g.addColorStop(1, 'rgba(160,88,20,0)'); ctx.fillStyle = g; ctx.fillRect(-100, -90, 210, 180);
+          // quilla apenas insinuada bajo el rebozado
+          ctx.lineJoin = 'round';
+          ctx.strokeStyle = 'rgba(255,244,214,.32)'; ctx.lineWidth = 9; ctx.beginPath(); p.bone.forEach((b, i) => (i ? ctx.lineTo(b[0], b[1]) : ctx.moveTo(b[0], b[1]))); ctx.stroke();
+          // rebozado crujiente: grumos claros con sombra
+          const bumps = [[-44, 4, 6], [-24, -22, 7], [-2, -42, 8], [26, -40, 8], [52, -34, 8], [18, -14, 9], [44, -8, 9], [72, 8, 8], [60, 34, 8], [34, 44, 9], [4, 40, 7], [-22, 30, 7], [-2, 14, 8], [20, 22, 7], [-30, -2, 6], [74, -16, 6]];
+          bumps.forEach(([bx, by, br]) => { ctx.fillStyle = 'rgba(250,208,100,.6)'; ctx.beginPath(); ctx.arc(bx, by, br, 0, 7); ctx.fill(); ctx.fillStyle = 'rgba(122,60,10,.38)'; ctx.beginPath(); ctx.arc(bx + 2, by + 3, br * 0.55, 0, 7); ctx.fill(); });
+          // extremo del hueso de la quilla visible en la punta de la pechuga
+          ctx.fillStyle = '#f1e4c4'; ctx.strokeStyle = '#7a5a2c'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.ellipse(-70, 14, 12, 8, -0.5, 0, 7); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#d8c59a'; ctx.beginPath(); ctx.ellipse(-70, 14, 4.5, 3, -0.5, 0, 7); ctx.fill();
+          // volumen: sombra inferior
+          const sh = ctx.createLinearGradient(0, -20, 0, 58); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(90,40,5,.38)');
+          ctx.fillStyle = sh; ctx.fillRect(-100, -20, 210, 90);
+          ctx.restore();
+          shape(); ctx.strokeStyle = '#8a4a12'; ctx.lineWidth = 3.5; ctx.stroke();
+        });
+      };
+      const drawProbe = (x, y, depth, tipColor) => {
+        const a = 60 * Math.PI / 180, ux = Math.cos(a), uy = -Math.sin(a), len = 92, inside = depth * 0.45;
+        ctx.lineCap = 'round';
+        if (inside > 0) { ctx.strokeStyle = 'rgba(217,221,226,.45)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - ux * inside, y - uy * inside); ctx.lineTo(x, y); ctx.stroke(); }
+        ctx.strokeStyle = '#d9dde2'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + ux * len, y + uy * len); ctx.stroke();
+        ctx.strokeStyle = '#23272d'; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(x + ux * len, y + uy * len); ctx.lineTo(x + ux * (len + 22), y + uy * (len + 22)); ctx.stroke();
+        ctx.fillStyle = tipColor || '#e53935'; ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 1; ctx.stroke();
+      };
+      // Pista del paso 1: rojo lejos, amarillo cerca, verde sobre la zona de carne correcta.
+      const tipHint = (x, y) => {
+        if (!inPiece(x, y)) return '#e53935';
+        const l = toLocal(x, y), m = PIECES[pi].meat, d = Math.hypot(l.x - m[0], l.y - m[1]);
+        if (boneDist(l) <= 11) return d <= 44 ? '#f5c518' : '#e53935';
+        return d <= 24 ? '#2ecc5a' : d <= 46 ? '#f5c518' : '#e53935';
+      };
+      const GX = W - 30, GY = 16, GH = H - 32;
+      const drawGauge = () => {
+        ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(GX - 6, GY - 6, 28, GH + 12);
+        const yOf = (f) => GY + GH - GH * f / 100;
+        const gr = ctx.createLinearGradient(0, yOf(0), 0, yOf(100));
+        [[0, '#5b7ea8'], [0.3, '#5b9bb8'], [0.48, '#35a860'], [0.63, '#2e9e4f'], [0.78, '#d8b82a'], [0.9, '#d9622b'], [1, '#c4382c']].forEach(([o, c]) => gr.addColorStop(o, c));
+        ctx.fillStyle = gr; ctx.fillRect(GX, yOf(100), 16, yOf(0) - yOf(100));
+        ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 1.5; ctx.strokeRect(GX, yOf(100), 16, yOf(0) - yOf(100));
+        ctx.beginPath(); [FORCE_OK[0], FORCE_OK[1]].forEach((f) => { ctx.moveTo(GX - 3, yOf(f)); ctx.lineTo(GX + 19, yOf(f)); }); ctx.stroke();
+        ctx.fillStyle = '#fff'; ctx.fillRect(GX - 5, yOf(force) - 2, 26, 4);
+        ctx.font = '700 9px system-ui, sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#fff';
+        ctx.fillText('HUESO', GX - 8, yOf(90) + 3); ctx.fillText('IDEAL', GX - 8, yOf(63) + 3); ctx.fillText('POCA', GX - 8, yOf(24) + 3);
+        ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(8, H - 30, 62, 22);
+        ctx.fillStyle = '#fff'; ctx.font = '800 13px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Fuerza ' + Math.round(force), 39, H - 19);
+      };
+      const render = () => {
+        drawPiece();
+        if (step === 'point') drawProbe(mouse.x, mouse.y, 0, tipHint(mouse.x, mouse.y));
+        else { if (step === 'force') drawGauge(); drawProbe(tip.x, tip.y, force, tipColor); }
+      };
+      const finish = (idx, extra) => {
+        if (finished) return; finished = true;
+        const ok = G.opening.answer(idx);
+        const first = task.attempts === 1;
+        const pts = ok ? G.cfg.score.openingCheckCorrect : G.cfg.score.openingCheckWrong;
+        G.audio.play(ok ? 'ok' : 'error');
+        G.player.reaction(ok);
+        this.closeQuestion();
+        if (ok) this.toast(extra || ('✔ ¡Correcto! ' + (first ? '+' + pts + ' puntos' : 'Revisión superada.')), 'good', 4200);
+        else {
+          if (G.metrics) G.metrics.fcFound = (G.metrics.fcFound || 0) + 1;
+          this.toast('🚨 1FC encontrado' + (first ? ' · ' + pts + ' puntos' : '') + '. ' + q.explanation + ' Puedes repetir la toma.', 'bad', 8000);
+        }
+      };
+      const showQuestion = () => {
+        step = 'question'; lcd.style.display = 'none';
+        hint.textContent = '❌ Ninguna pieza alcanza los 74 ºC. ¿Qué proceso debes ejecutar?';
+        optsBox.replaceChildren(...q.options.map((o, i) => h('button', { class: 'opt', onclick: () => finish(i, '✔ Procedimiento correcto: L.A.H.A y ajuste de freidora. Revisión superada.') }, h('span', { class: 'num', 'aria-hidden': 'true' }, String(i + 1)), h('span', { text: o.text }))));
+        const b = optsBox.querySelector('button'); if (b) b.focus({ preventScroll: true });
+      };
+      const startReading = () => {
+        step = 'reading'; cv.style.cursor = 'default';
+        lcd.style.display = ''; lcd.className = 'temp-lcd';
+        hint.textContent = 'Midiendo temperatura…';
+        const good = onMeat && !onBone && force >= FORCE_OK[0] && force <= FORCE_OK[1];
+        boneTouched = onBone || force > FORCE_OK[1];
+        target = good ? 75.6 + Math.random() * 0.8 : 69 + Math.random() * 4.5;
+        temp = 68;
+      };
+      const forceAt = (p) => Math.max(0, Math.min(100, Math.hypot(p.x - tip.x, p.y - tip.y) / 85 * 100));
+      const pos = (ev) => { const r = cv.getBoundingClientRect(); return { x: (ev.clientX - r.left) * W / r.width, y: (ev.clientY - r.top) * H / r.height }; };
+      cv.style.cursor = 'none';
+      cv.addEventListener('pointermove', (ev) => { const p = pos(ev); mouse = p; if (step === 'force') force = forceAt(p); });
+      cv.addEventListener('pointerdown', (ev) => {
+        const p = pos(ev); mouse = p;
+        if (step === 'point') {
+          if (!inPiece(p.x, p.y)) return;
+          tip = { x: p.x, y: p.y }; tipColor = tipHint(p.x, p.y);
+          const l = toLocal(p.x, p.y);
+          onBone = boneDist(l) <= 11;
+          onMeat = Math.hypot(l.x - PIECES[pi].meat[0], l.y - PIECES[pi].meat[1]) <= 24;
+          step = 'force'; force = 0;
+          hint.textContent = 'Pieza ' + (pi + 1) + ' de 2 · Paso 2: arrastra para elegir la fuerza de inserción y haz clic. Si te pasas, tocarás hueso.';
+        } else if (step === 'force') {
+          force = forceAt(p);
+          startReading();
+        }
+      });
+      this.q = this.addBubble({ el: box, anchor: () => ({ x: G.player.char.x, y: G.player.char.y - 70 }), dock: true, gap: 8, gapBelow: 40, kind: 'question', options: 0, answer: () => {} });
+      let last = performance.now();
+      const tick = (now) => {
+        if (!box.isConnected) return;
+        const dt = Math.min(0.1, (now - last) / 1000); last = now;
+        if (step === 'reading') {
+          temp = Math.min(target, temp + (5 + (target - temp) * 0.9) * dt * 2);
+          lcd.querySelector('.temp-val').textContent = temp.toFixed(1);
+          if (temp >= target - 0.05) {
+            const good = target >= 74;
+            lcd.classList.add(good ? 'ok' : 'bad');
+            step = 'result';
+            hint.textContent = good ? '✔ Temperatura correcta: ' + temp.toFixed(1) + ' ºC (≥ 74 ºC).'
+              : boneTouched ? '🦴 Has tocado hueso: lectura no válida (' + temp.toFixed(1) + ' ºC).'
+                : '❌ Temperatura insuficiente: ' + temp.toFixed(1) + ' ºC. Zona con poca carne o sonda poco insertada.';
+            setTimeout(() => {
+              if (!box.isConnected) return;
+              if (good) return finish(q.correctIndex, '✔ Pollo en ' + temp.toFixed(1) + ' ºC (≥ 74 ºC). Revisión superada.');
+              if (pi === 0) {
+                pi = 1; step = 'point'; tip = null; force = 0; lcd.style.display = 'none'; cv.style.cursor = 'none';
+                hint.textContent = 'No llega a 74 ºC. Toma una segunda pieza · Paso 1: pincha la zona con más carne.';
+              } else showQuestion();
+            }, 1500);
+          }
+        }
+        render();
+        requestAnimationFrame(tick);
+      };
+      render();
+      requestAnimationFrame(tick);
+    }
+    // ---------- minijuego (Popeyes): medir la viscosidad del mix ----------
+    showViscosityGame(e) {
+      const G = this.G, task = e.task, q = e.q;
+      G.minigamePause = true; // el reloj del turno se detiene mientras dura la medición
+      const W = 280, H = 200, CX = 104, TOP = 16, NOZ = 148, TRAY = 188, RB = 44, RN = 5, HB = 78;
+      const LO = 7.5, HI = 11.5;
+      const fmt = (v) => v.toFixed(2).replace('.', ',');
+      const cv = h('canvas', { class: 'temp-cv', width: String(W), height: String(H) });
+      const ctx = cv.getContext('2d');
+      const call = h('div', { class: 'visc-call ready', text: 'PREPÁRATE' });
+      const hint = h('p', { class: 'qtext temp-hint', text: 'Prepárate: el mix empezará a caer en unos segundos.' });
+      const lcd = h('div', { class: 'temp-lcd' }, h('span', { class: 'temp-unit', text: '⏱️' }), h('span', { class: 'temp-val', text: '00,00' }), h('span', { class: 'temp-unit', text: 's' }));
+      const btn = h('button', { class: 'opt visc-btn', type: 'button' }, h('span', { text: '⏱️ Iniciar cronómetro' }));
+      const optsBox = h('div', { class: 'temp-opts' });
+      const box = h('div', { class: 'qbox temp-game', role: 'dialog', 'aria-label': task.prompt },
+        h('div', { class: 'qhead' }, h('span', { class: 'qtitle', text: '⏱️ ' + task.prompt }),
+          h('button', { class: 'xbtn', 'aria-label': 'Cerrar minijuego', onclick: () => this.closeQuestion() }, '✕')),
+        call, hint, cv, lcd, btn, optsBox);
+      // Tabla de volumen del cacito (cuerpo cilíndrico + cono inferior) para que el nivel baje con forma realista.
+      const rAt = (y) => (y <= TOP + HB ? RB : RB + (RN - RB) * (y - (TOP + HB)) / (NOZ - TOP - HB));
+      const N = 140, cum = [0];
+      for (let i = 1; i <= N; i++) { const y = NOZ - (i - 0.5) * (NOZ - TOP) / N; cum.push(cum[i - 1] + rAt(y) * rAt(y)); }
+      const levelY = (frac) => {
+        const target = frac * cum[N];
+        let i = 1; while (i < N && cum[i] < target) i++;
+        const k = (target - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]);
+        return NOZ - (i - 1 + k) * (NOZ - TOP) / N;
+      };
+      let D = 0, scale = 1, readyDelay = 0, tm = 0, started = false, stopped = false, tStart = 0, tStop = 0, step = 'run', finished = false, shake = 0, doneAt = 0;
+      const newRun = () => {
+        D = 3.2 + Math.random() * 1.2;
+        const r = Math.random();
+        const T = r < 0.88 ? 8.3 + Math.random() * 2.4 : r < 0.95 ? 5.4 + Math.random() * 1.6 : 12.2 + Math.random() * 2.3;
+        scale = T / D; // el cronómetro va acelerado respecto al tiempo real
+        readyDelay = 1.2 + Math.random() * 1.8;
+        tm = 0; started = false; stopped = false; step = 'run';
+        btn.firstChild.textContent = '⏱️ Iniciar cronómetro';
+      };
+      const flowT = () => tm - readyDelay;
+      const remaining = () => { const f = flowT(); if (f <= 0) return 1; if (f >= D) return 0; const k = 1 - f / D; return k * k; };
+      const watch = () => (started ? ((stopped ? tStop : tm) - tStart) * scale : 0);
+      const drawDial = (v) => {
+        const cx = 234, cy = 76, r = 34;
+        ctx.fillStyle = '#6a7078'; ctx.fillRect(cx - 5, cy - r - 10, 10, 8);
+        ctx.fillStyle = '#f4f1ea'; ctx.strokeStyle = '#25282d'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); ctx.stroke();
+        ctx.strokeStyle = '#25282d'; ctx.lineWidth = 1.5;
+        for (let i = 0; i < 15; i++) { const a = i / 15 * Math.PI * 2 - Math.PI / 2, l = i % 5 === 0 ? 8 : 4; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (r - 3), cy + Math.sin(a) * (r - 3)); ctx.lineTo(cx + Math.cos(a) * (r - 3 - l), cy + Math.sin(a) * (r - 3 - l)); ctx.stroke(); }
+        ctx.fillStyle = '#25282d'; ctx.font = '700 9px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        [[0, 0], [5, 5], [10, 10]].forEach(([s, n]) => { const a = s / 15 * Math.PI * 2 - Math.PI / 2; ctx.fillText(String(n), cx + Math.cos(a) * (r - 16), cy + Math.sin(a) * (r - 16)); });
+        const a = (v % 15) / 15 * Math.PI * 2 - Math.PI / 2;
+        ctx.strokeStyle = '#d6322a'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * (r - 7), cy + Math.sin(a) * (r - 7)); ctx.stroke();
+        ctx.fillStyle = '#25282d'; ctx.beginPath(); ctx.arc(cx, cy, 3, 0, 7); ctx.fill();
+      };
+      const render = (now) => {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H);
+        const sx = shake > 0 ? Math.sin(now * 0.08) * 3 * shake : 0;
+        ctx.save(); ctx.translate(sx, 0);
+        const u = remaining(), f = flowT(), flowing = f > 0 && u > 0;
+        const drained = 1 - u;
+        // bandeja y charco que va creciendo
+        ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(CX, TRAY + 6, 66, 7, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#4a4f57'; ctx.fillRect(CX - 62, TRAY, 124, 7);
+        const prx = 9 + 40 * drained, pry = 2 + 5 * drained;
+        if (drained > 0.003) {
+          const pg = ctx.createRadialGradient(CX - 6, TRAY - pry, 2, CX, TRAY - pry * 0.4, prx);
+          pg.addColorStop(0, '#ffe680'); pg.addColorStop(1, '#e0a400');
+          ctx.fillStyle = pg; ctx.beginPath(); ctx.ellipse(CX, TRAY - pry * 0.5, prx, pry, 0, 0, 7); ctx.fill();
+          ctx.strokeStyle = 'rgba(120,80,0,.45)'; ctx.lineWidth = 1; ctx.stroke();
+        }
+        // hilo de mix denso: el frente baja despacio, se ensancha arriba y oscila poco
+        if (flowing || (f > 0 && f < D + 0.4)) {
+          const front = Math.min(TRAY - pry * 0.6, NOZ + 4 + Math.max(0, f) * 95);
+          const w = flowing ? 1.4 + 5.6 * Math.sqrt(u) : 1.2;
+          const y0 = NOZ + 3, len = Math.max(1, front - y0), L = [], R = [];
+          for (let y = y0; y <= front; y += 3) {
+            const k = (y - y0) / len, cx = CX + Math.sin(now * 0.0022 + y * 0.05) * 1.4 * k, hw = (w / 2) * (1 - 0.4 * k);
+            L.push([cx - hw, y]); R.push([cx + hw, y]);
+          }
+          if (flowing || f < D) {
+            const sg = ctx.createLinearGradient(CX - 4, 0, CX + 4, 0);
+            sg.addColorStop(0, '#d89a00'); sg.addColorStop(0.4, '#ffe36b'); sg.addColorStop(1, '#d89a00');
+            ctx.fillStyle = sg; ctx.beginPath(); L.forEach((p, i) => (i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]))); R.reverse().forEach((p) => ctx.lineTo(p[0], p[1])); ctx.closePath(); ctx.fill();
+            if (front < TRAY - pry) { ctx.fillStyle = '#f0b800'; ctx.beginPath(); ctx.arc(CX, front, w * 0.62 + 0.6, 0, 7); ctx.fill(); }
+          } else {
+            ctx.fillStyle = '#f0b800'; ctx.beginPath(); ctx.ellipse(CX, NOZ + 8, 2.6, 3.6, 0, 0, 7); ctx.fill();
+          }
+        }
+        // cacito: vidrio, mix y cono
+        const cupPath = () => { ctx.beginPath(); ctx.moveTo(CX - RB, TOP); ctx.lineTo(CX - RB, TOP + HB); ctx.lineTo(CX - RN, NOZ); ctx.lineTo(CX + RN, NOZ); ctx.lineTo(CX + RB, TOP + HB); ctx.lineTo(CX + RB, TOP); };
+        ctx.strokeStyle = '#2b2f36'; ctx.lineWidth = 6; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.arc(CX + RB + 6, TOP + 24, 15, -Math.PI / 2, Math.PI / 2); ctx.stroke();
+        ctx.strokeStyle = '#b9c2cc'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(CX + RB + 6, TOP + 24, 15, -Math.PI / 2, Math.PI / 2); ctx.stroke();
+        ctx.save(); cupPath(); ctx.closePath(); ctx.fillStyle = 'rgba(235,245,255,.16)'; ctx.fill(); ctx.clip();
+        if (u > 0) {
+          const ly = levelY(u);
+          const lg = ctx.createLinearGradient(CX - RB, 0, CX + RB, 0);
+          lg.addColorStop(0, '#d69a00'); lg.addColorStop(0.35, '#ffd83c'); lg.addColorStop(0.7, '#f4bd10'); lg.addColorStop(1, '#c98c00');
+          ctx.fillStyle = lg; ctx.fillRect(CX - RB, ly, RB * 2, NOZ - ly + 2);
+          const rs = rAt(ly);
+          ctx.fillStyle = '#ffec99'; ctx.beginPath(); ctx.ellipse(CX, ly, rs, 3.6, 0, 0, 7); ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(CX - rs * 0.3, ly - 0.5, rs * 0.35, 1.2, 0, 0, 7); ctx.fill();
+        }
+        ctx.fillStyle = 'rgba(255,255,255,.32)'; ctx.fillRect(CX - RB + 7, TOP + 4, 5, HB - 10);
+        ctx.restore();
+        ctx.strokeStyle = 'rgba(245,250,255,.95)'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; cupPath(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(CX, TOP, RB, 5, 0, 0, 7); ctx.stroke();
+        ctx.fillStyle = '#2b2f36'; ctx.fillRect(CX - RN - 1.5, NOZ, 2 * RN + 3, 4);
+        // tapón que se aparta cuando empieza a caer
+        const capX = f > 0 ? CX + f * 220 : CX;
+        if (capX < CX + 110) { ctx.fillStyle = '#9aa2ad'; ctx.strokeStyle = '#4b525c'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(capX, NOZ + 8, 6, 0, 7); ctx.fill(); ctx.stroke(); }
+        ctx.restore();
+        drawDial(watch());
+      };
+      const showDecision = () => {
+        step = 'decide'; btn.style.display = 'none';
+        call.className = 'visc-call stop'; call.textContent = 'RESULTADO';
+        const v = watch(), ok = v >= LO && v <= HI;
+        const opts = [
+          { text: 'Viscosidad correcta: seguir con este mix', ok },
+          { text: 'Preparar un nuevo mix', ok: !ok },
+          { text: 'Repetir la medición con el mismo mix', ok: false }
+        ].map((o) => ({ ...o, r: Math.random() })).sort((a, b) => a.r - b.r);
+        q.options = opts.map((o) => ({ text: o.text }));
+        q.correctIndex = opts.findIndex((o) => o.ok);
+        q.explanation = ok ? 'El mix tardó ' + fmt(v) + ' s, dentro de 7,5 – 11,5 s: era correcto.' : 'El mix tardó ' + fmt(v) + ' s, fuera de 7,5 – 11,5 s: había que preparar un nuevo mix.';
+        hint.textContent = 'Has medido ' + fmt(v) + ' s. ¿Qué haces?';
+        optsBox.replaceChildren(...opts.map((o, i) => h('button', { class: 'opt', onclick: () => finish(i, ok ? '✔ Viscosidad correcta (' + fmt(v) + ' s). Revisión superada.' : '✔ Fuera de rango (' + fmt(v) + ' s): nuevo mix preparado. Revisión superada.') }, h('span', { class: 'num', 'aria-hidden': 'true' }, String(i + 1)), h('span', { text: o.text }))));
+        const b = optsBox.querySelector('button'); if (b) b.focus({ preventScroll: true });
+      };
+      const finish = (idx, extra) => {
+        if (finished) return; finished = true;
+        const ok = G.opening.answer(idx);
+        const first = task.attempts === 1;
+        const pts = ok ? G.cfg.score.openingCheckCorrect : G.cfg.score.openingCheckWrong;
+        G.audio.play(ok ? 'ok' : 'error');
+        G.player.reaction(ok);
+        this.closeQuestion();
+        if (ok) this.toast(extra || ('✔ ¡Correcto! ' + (first ? '+' + pts + ' puntos' : 'Revisión superada.')), 'good', 4200);
+        else {
+          if (G.metrics) G.metrics.fcFound = (G.metrics.fcFound || 0) + 1;
+          this.toast('🚨 1FC encontrado' + (first ? ' · ' + pts + ' puntos' : '') + '. ' + q.explanation + ' Puedes repetir la medición.', 'bad', 8000);
+        }
+      };
+      const press = () => {
+        if (step !== 'run' || stopped) return;
+        if (!started) {
+          if (flowT() <= 0) { shake = 1; hint.textContent = 'Todavía no cae el mix: espera a «¡MIDE!» para iniciar el cronómetro.'; return; }
+          if (remaining() <= 0) return;
+          started = true; tStart = tm;
+          btn.firstChild.textContent = '■ Parar cronómetro';
+          hint.textContent = 'Cuando el cacito se vacíe del todo, pulsa «Parar».';
+        } else {
+          stopped = true; tStop = tm; step = 'stopped'; doneAt = tm + 0.7;
+          btn.disabled = true;
+        }
+      };
+      btn.addEventListener('click', press);
+      cv.addEventListener('pointerdown', press);
+      newRun();
+      this.q = this.addBubble({ el: box, anchor: () => ({ x: G.player.char.x, y: G.player.char.y - 70 }), dock: true, gap: 8, gapBelow: 40, kind: 'question', options: 0, answer: () => {} });
+      btn.focus({ preventScroll: true });
+      let last = performance.now();
+      const tick = (now) => {
+        if (!box.isConnected) return;
+        const dt = G.paused ? 0 : Math.min(0.1, (now - last) / 1000); last = now;
+        if (shake > 0) shake = Math.max(0, shake - dt * 3);
+        if (step === 'run' || step === 'stopped') {
+          tm += dt;
+          const f = flowT();
+          if (step === 'run') {
+            if (f <= 0) { call.className = 'visc-call ready'; call.textContent = 'PREPÁRATE'; }
+            else if (f < D) {
+              call.className = 'visc-call go'; call.textContent = '¡MIDE!';
+              if (!started) hint.textContent = 'Cuando veas caer el mix, pulsa «Iniciar cronómetro».';
+            } else {
+              call.className = 'visc-call halt'; call.textContent = '¡PARA!';
+              if (!started && f > D + 0.4) { hint.textContent = 'Se vació sin que iniciaras el cronómetro. Nueva toma: prepárate.'; newRun(); }
+              else if (started && !stopped && f > D + 3) { stopped = true; tStop = tm; step = 'stopped'; doneAt = tm + 0.7; btn.disabled = true; }
+            }
+          } else if (tm >= doneAt) showDecision();
+          lcd.querySelector('.temp-val').textContent = fmt(watch()).padStart(5, '0');
+        }
+        render(now);
+        requestAnimationFrame(tick);
+      };
+      render(performance.now());
+      requestAnimationFrame(tick);
+    }
     closeQuestion(silent) {
       if (!this.q) return;
       if (this.q.kind === 'briefing-roulette' && !silent) return;
@@ -693,6 +1073,7 @@
         return;
       }
       const wasOpen = this.G.opening.current;
+      this.G.minigamePause = false;
       this.removeBubble(this.q); this.q = null;
       if (wasOpen) this.G.opening.cancelQuestion();
       this.G.player.locked = false;
@@ -730,7 +1111,7 @@
       const options = employees.map((employee) => h('option', { value: employee.id, text: employee.displayId + ' · ' + employee.role }));
       const select = h('select', { id: 'truckEmployeeSelect', 'aria-label': 'Empleado asignado a la descarga' }, options);
       const body = h('div', {},
-        h('p', { class: 'lead', text: 'Hay cajas de Conway en el AutoKing. Asigna a un empleado para llevarlas a la cámara de congelado; también puedes hacer clic en una caja para llevarla tú.' }),
+        h('p', { class: 'lead', text: 'Hay cajas de Conway en ' + (BK.autoName === 'AutoKing' ? 'el AutoKing' : 'la zona ' + BK.autoName) + '. Asigna a un empleado para llevarlas a la cámara de congelado; también puedes hacer clic en una caja para llevarla tú.' }),
         employees.length ? h('label', {}, 'Empleado asignado ', select) : h('p', { class: 'sub', text: 'No hay empleados disponibles: tendrás que realizar la descarga.' }));
       const buttons = [];
       if (employees.length) buttons.push({
@@ -803,10 +1184,11 @@
         h('p', { class: 'lead', text: 'Planifica el equipo antes de iniciar el reloj. Después gestiona preparación, producto, producción, colas y atención al cliente hasta la 01:00.' }),
         h('ul', { class: 'legend' }, G.openingData.legend.map((l) => h('li', { text: l }))),
         h('div', { class: 'row' }, h('label', {}, 'Dificultad ', diffSel), h('label', {}, 'Reloj ', spdSel)),
+        this.brandPicker(),
         this.genderPicker(),
         best !== null ? h('p', { class: 'best', text: '🏆 Mejor puntuación: ' + best }) : '');
       const buttons = [{ label: 'Organizar posicionamiento', primary: true, close: false, onClick: () => { this.applyStartSelects(); this.closeModal(); this.showRosterPlan(); } }];
-      if (run) buttons.push({ label: 'Continuar turno (' + BK.util.fmtClock(run.t) + ', ' + run.scoring.score + ' pts)', close: false, onClick: () => { this.applyStartSelects(); this.closeModal(); G.resumeGame(run); } });
+      if (run && (run.brand || 'bk') === G.brand) buttons.push({ label: 'Continuar turno (' + BK.util.fmtClock(run.t) + ', ' + run.scoring.score + ' pts)', close: false, onClick: () => { this.applyStartSelects(); this.closeModal(); G.resumeGame(run); } });
       buttons.push({ label: '🏆 Clasificación', close: false, onClick: () => { this.hideTitleLogo(); this.showLeaderboard(() => this.showStart()); } });
       buttons.push({ label: 'Ayuda', close: false, onClick: () => this.showHelp(true) });
       this.modal({ title: '🍔 Turno de Encargado', body, buttons, closable: false, cls: 'wide' });
@@ -833,7 +1215,7 @@
       const G = this.G;
       const body = h('div', {},
         h('ul', { class: 'legend' }, G.openingData.legend.map((l) => h('li', { text: l }))),
-        h('p', { class: 'sub', text: 'Formas: círculo = Mostrador / sala, rombo = AutoKing, cuadrado = Delivery. Caras: 😀 excelente, 😐 aceptable, 😠 fallido (con forma de círculo, cuadrado y triángulo).' }),
+        h('p', { class: 'sub', text: 'Formas: círculo = Mostrador / sala, rombo = ' + BK.autoName + ', cuadrado = Delivery. Caras: 😀 excelente, 😐 aceptable, 😠 fallido (con forma de círculo, cuadrado y triángulo).' }),
         h('p', { class: 'sub', text: 'Pulsa el botón "Prioridad" de la barra superior para elegir canal cuando quieras (tiene enfriamiento).' }));
       const prev = this.modalOpts;
       this.modal({ title: 'Ayuda de controles', body, buttons: [{ label: 'Cerrar', primary: true, onClick: () => { if (fromStart) this.showStart(); else if (G.paused) this.showPause(); } }], onClose: null });
@@ -975,7 +1357,7 @@
       const open = G.opening.openedAtT === null ? 'No se abrió' : m.lateMin > 0 ? 'Con ' + m.lateMin + ' min de retraso' : 'A tiempo';
       const kpi = G.kpi.endOfDayScore();
       const bandTxt = { GREEN: 'Verde', YELLOW: 'Ámbar', RED: 'Rojo' };
-      const labelOf = { counter: 'Mostrador', autoking: 'AutoKing', delivery: 'DELIVERY · TIEMPO DE ENTREGA' };
+      const labelOf = { counter: 'Mostrador', autoking: BK.autoName, delivery: 'DELIVERY · TIEMPO DE ENTREGA' };
       const channelKpis = Object.keys(kpi.lines).map((b) => {
         const l = kpi.lines[b];
         return li('Media ' + (labelOf[b] || l.label), l.mean === null ? '—' : this.formatDuration(l.mean) + ' · ' + bandTxt[l.meanBand] + ' (' + (l.points > 0 ? '+' : '') + l.points + ')');
@@ -1037,6 +1419,24 @@
       const ch = new BK.Character({ id: 'LB', kind: 'manager', pal: pal || (this.G.save.settings.managerGender === 'f' ? 'managerF' : 'manager'), x: w / 2, y: h2 * 0.84, dir: 0 });
       BK.CharacterAnimationSystem.draw(c.getContext('2d'), ch, k, 1);
       return c;
+    }
+    brandPicker() {
+      const G = this.G;
+      const wrap = h('div', { class: 'row brand-pick', role: 'radiogroup', 'aria-label': 'Marca' });
+      const brands = [['bk', 'Burger King', 'assets/brand/bk_logo.webp'], ['popeyes', 'Popeyes', 'assets/brand/popeyes_logo.png']];
+      const render = () => {
+        wrap.textContent = '';
+        wrap.appendChild(h('span', { text: 'Marca ' }));
+        brands.forEach(([k, label, logo]) => {
+          const on = (G.save.settings.brand || 'bk') === k;
+          wrap.appendChild(h('button', {
+            type: 'button', class: 'brand-btn' + (on ? ' on' : ''), role: 'radio', 'aria-checked': on ? 'true' : 'false', 'aria-label': label,
+            onclick: () => { G.setBrand(k); render(); }
+          }, h('img', { src: logo, alt: '', draggable: 'false' })));
+        });
+      };
+      render();
+      return wrap;
     }
     genderPicker() {
       const G = this.G;

@@ -89,10 +89,10 @@
       }
       if (task.action === 'door') return this.tryOpenDoor();
       if (task.done) { BK.bus.emit('opening:repeat', task); return; }
-      if (task.minigame === 'temperature') {
-        const q = this.temperatureQuestion();
+      if (task.minigame) {
+        const q = task.minigame === 'chickenTemp' ? this.chickenQuestion() : task.minigame === 'viscosity' ? this.viscosityQuestion() : this.temperatureQuestion();
         this.current = { task, q }; task.status = 'IN_PROGRESS';
-        BK.bus.emit('opening:question', { task, q, anchor: this.pointOf(task), minigame: 'temperature' });
+        BK.bus.emit('opening:question', { task, q, anchor: this.pointOf(task), minigame: task.minigame });
         return;
       }
       const q = G.questions.forTask(task);
@@ -112,6 +112,31 @@
         options: opts.map((o) => ({ text: o.text })),
         correctIndex: opts.findIndex((o) => o.ok),
         explanation: 'Con el producto por debajo de 68 ºC hay que hacer L.A.H.A y ajustar el broiler.'
+      };
+    }
+    // Pregunta de respaldo del minijuego de pollo (Popeyes): tras fallar las dos piezas.
+    chickenQuestion() {
+      const opts = [
+        'Hacer L.A.H.A y ajustar freidora',
+        'Ajustar freidora y repetir la toma sin hacer L.A.H.A',
+        'Hacer L.A.H.A y servir el pollo si el rebozado está dorado'
+      ].map((text, i) => ({ text, ok: i === 0, r: Math.random() })).sort((a, b) => a.r - b.r);
+      return {
+        id: 'chicken-temp-1fc',
+        question: 'Ninguna pieza alcanza los 74 ºC en la zona más gruesa. ¿Qué proceso debes ejecutar?',
+        options: opts.map((o) => ({ text: o.text })),
+        correctIndex: opts.findIndex((o) => o.ok),
+        explanation: 'Con el pollo por debajo de 74 ºC hay que hacer L.A.H.A y ajustar la freidora.'
+      };
+    }
+    // Pregunta de la medición de viscosidad: el minijuego rellena opciones y respuesta correcta según el tiempo medido.
+    viscosityQuestion() {
+      return {
+        id: 'viscosity-1fc',
+        question: '¿Es correcta la viscosidad del mix?',
+        options: [{ text: 'Viscosidad correcta' }, { text: 'Preparar un nuevo mix' }],
+        correctIndex: 0,
+        explanation: 'Hay que valorar el tiempo medido del cronómetro y decidir si el mix es válido.'
       };
     }
     answer(idx) {

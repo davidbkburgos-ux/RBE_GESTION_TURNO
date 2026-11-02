@@ -30,7 +30,12 @@
         { id: 'kiosk2', x: M.points.kiosk2[0], y: M.points.kiosk2[1], busy: false }
       ];
       this.pickup = { x: M.points.pickup[0], y: M.points.pickup[1], busy: false };
-      this.pickSpots = [[814, 484], [814, 520], [814, 556], [814, 592], [814, 628]].map((p) => ({ x: p[0], y: p[1], busy: false }));
+      this.pickSpots = (M.spots && M.spots.pickSpots || [[814, 484], [814, 520], [814, 556], [814, 592], [814, 628]]).map((p) => ({ x: p[0], y: p[1], busy: false }));
+      this.S = M.spots || {};
+      this.counterX = this.S.counterX || 668;
+      this.deliveryAt = this.S.delivery || { x: 1316, y: 560 };
+      this.deliveryFace = this.S.deliveryFace !== undefined ? BK.DIR[this.S.deliveryFace] : BK.DIR.E;
+      this.riderFace = this.S.riderFace !== undefined ? BK.DIR[this.S.riderFace] : BK.DIR.W;
       this.riderSpots = [
         { x: M.points.riderWait[0], y: M.points.riderWait[1], busy: false },
         { x: M.points.riderWait2[0], y: M.points.riderWait2[1], busy: false }
@@ -241,7 +246,7 @@
     spawnComplaint() {
       if (this.G.events.active().some((e) => e.type === 'complaint')) return null;
       const g = this.newGuest('complaint');
-      const spot = { x: 790, y: 520 };
+      const spot = this.S.complaint || { x: 790, y: 520 };
       g.x = this.spawn.x; g.y = this.spawn.y;
       g.idleAnim = 'talk';
       const ev = this.G.events.schedule('complaint');
@@ -261,7 +266,7 @@
       ev.eta = 8;
       const ok = this.walk(g, slot, () => {
         g.dir = BK.DIR.W; g.idleAnim = 'idle';
-        this.G.events.activate(ev, { location: { x: slot.x, y: slot.y }, interact: { x: 668, y: slot.y }, face: BK.DIR.E, target: g, lift: 62 });
+        this.G.events.activate(ev, { location: { x: slot.x, y: slot.y }, interact: { x: this.counterX, y: slot.y }, face: BK.DIR.E, target: g, lift: 62 });
       });
       if (!ok) this.abort(g, ev);
       return ev;
@@ -284,7 +289,7 @@
       const ev = this.G.events.schedule('pendingOrder'); g.ev = ev; ev.targetEntity = g; ev.eta = 8;
       const ok = this.walk(g, this.pickup, () => {
         g.dir = BK.DIR.W;
-        this.G.events.activate(ev, { location: { x: this.pickup.x, y: this.pickup.y }, interact: { x: 668, y: 664 }, face: BK.DIR.E, target: g, lift: 62 });
+        this.G.events.activate(ev, { location: { x: this.pickup.x, y: this.pickup.y }, interact: { x: this.counterX, y: this.S.pendingOrder ? this.S.pendingOrder.y : 664 }, face: BK.DIR.E, target: g, lift: 62 });
       });
       if (!ok) this.abort(g, ev);
       return ev;
@@ -306,8 +311,8 @@
       g.spot = spot; g.x = this.G.map.points.riderSpawn[0]; g.y = this.G.map.points.riderSpawn[1];
       const ev = this.G.events.schedule('delivery'); g.ev = ev; ev.targetEntity = g; ev.eta = 6;
       const ok = this.walk(g, spot, () => {
-        g.dir = BK.DIR.W;
-        this.G.events.activate(ev, { location: { x: g.x, y: g.y }, interact: { x: 1316, y: 560 }, face: BK.DIR.E, target: g, lift: 62 });
+        g.dir = this.riderFace;
+        this.G.events.activate(ev, { location: { x: g.x, y: g.y }, interact: this.deliveryAt, face: this.deliveryFace, target: g, lift: 62 });
       });
       if (!ok) this.abort(g, ev);
       return ev;
@@ -461,7 +466,7 @@
           // Pedido de rider listo pero sin nadie en delivery: el encargado puede entregarlo él.
           if (g.role === 'rider' && !g.ev && !g.collecting && g.order && g.order.status === 'awaiting-channel' && !g.moving) {
             const ev = G.events.schedule('delivery'); g.ev = ev; ev.targetEntity = g; ev.eta = 0;
-            G.events.activate(ev, { location: { x: g.x, y: g.y }, interact: { x: 1316, y: 560 }, face: BK.DIR.E, target: g, lift: 62 });
+            G.events.activate(ev, { location: { x: g.x, y: g.y },             interact: this.deliveryAt, face: this.deliveryFace, target: g, lift: 62 });
           }
           if (g.ambientStage === 'ordering') {
             g.orderWait -= dt;

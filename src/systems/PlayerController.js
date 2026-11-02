@@ -91,6 +91,7 @@
 
     attend(ev) {
       const G = this.G;
+      if (G.ui && G.ui.tutorialStep) return false;
       if (!G.events.isWaiting(ev)) return false;
       if (this.busy) { BK.bus.emit('player:busy', {}); return false; }
       this.leaveCover();
@@ -124,6 +125,7 @@
 
     goTask(task) {
       const G = this.G;
+      if (G.ui && G.ui.tutorialStep) return false;
       if (this.busy) { BK.bus.emit('player:busy', {}); return false; }
       this.leaveCover();
       this.clearPending();
@@ -151,6 +153,7 @@
     }
 
     goBriefing(onArrive) {
+      if (this.G.ui && this.G.ui.tutorialStep) return false;
       if (this.busy) { BK.bus.emit('player:busy', {}); return false; }
       this.leaveCover();
       this.clearPending();
@@ -176,6 +179,7 @@
     // Preparación de producto del tramo en la cámara de congelado; se puede repetir cuando se quiera.
     goPrep() {
       const G = this.G;
+      if (G.ui && G.ui.tutorialStep) return false;
       if (G.state !== 'playing') return false;
       if (this.busy) { BK.bus.emit('player:busy', {}); return false; }
       this.leaveCover();

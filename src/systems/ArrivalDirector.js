@@ -97,7 +97,7 @@
       const G = this.G, raining = this.rainLevel() > 0.05;
       if (raining === this.raining) return;
       this.raining = raining;
-      if (G.state === 'playing') G.ui.toast(raining ? '🌧️ Empieza a llover: menos gente en mostrador y kiosco, más AutoKing y delivery.' : '🌤️ Deja de llover: la afluencia vuelve a la normalidad.', 'info', 5000);
+      if (G.state === 'playing') G.ui.toast(raining ? '🌧️ Empieza a llover: menos gente en mostrador y kiosco, más ' + BK.autoName + ' y delivery.' : '🌤️ Deja de llover: la afluencia vuelve a la normalidad.', 'info', 5000);
     }
     update(dt) {
       const G = this.G;

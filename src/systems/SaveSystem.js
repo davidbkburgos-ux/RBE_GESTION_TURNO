@@ -9,7 +9,7 @@
         settings: {
           volume: 0.6, muted: false, ambienceEnabled: true, effectsEnabled: true,
           ambienceVolume: 0.55, effectsVolume: 0.75, musicEnabled: false,
-          reduceMotion: false, difficulty: 'weekday', timeScale: null, follow: null, managerGender: 'm'
+          reduceMotion: false, difficulty: 'weekday', timeScale: null, follow: null, managerGender: 'm', brand: 'bk'
         }
       };
       this.board = []; this.boardError = false;

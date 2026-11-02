@@ -1,7 +1,7 @@
 (function () {
   const BK = window.BK;
   // Estaciones cuyo vacío se considera crítico para pedir confirmación al mover.
-  const CRITICAL = ['grill', 'fries', 'assembly', 'counter', 'autoPay', 'delivery'];
+  const CRITICAL = ['grill', 'chef', 'fries', 'assembly', 'counter', 'autoPay', 'delivery'];
   const SHORT_LIST = 4;
 
   // Selector de puesto sobre el empleado: sin cubrir primero, [VER TODOS], confirmación solo si deja un puesto crítico vacío.

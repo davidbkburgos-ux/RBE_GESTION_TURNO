@@ -252,7 +252,8 @@
       set('rainHeavy', 0.13 * rain * rain * (ins ? 0.3 : 1));
 
       // Cocina: la densidad real de pedidos mueve la saturación, no el volumen global.
-      const kPoint = { x: 470, y: 650 };
+      const AU = G.map.audio || {};
+      const kPoint = AU.kitchen || { x: 470, y: 650 };
       const near = U.clamp(1 - U.dist(P, kPoint) / 600, 0, 1);
       const orders = G.production && G.production.orders ? G.production.orders.filter((o) => o.status !== 'delivered').length : 0;
       const density = U.clamp(orders / 8, 0, 1);
@@ -261,7 +262,7 @@
       set('sizzle', kitchenLive ? (0.006 + 0.034 * near * (0.35 + 0.65 * density)) * reduce : 0, 0.5);
       if (kitchenLive && now > this.nextKitchenSound) {
         this.nextKitchenSound = now + (this.reduce ? 6 : 3.2 - 2.2 * density) + Math.random() * 3;
-        const at = { x: 430 + Math.random() * 160, y: 620 + Math.random() * 60 };
+        const at = { x: kPoint.x - 40 + Math.random() * 160, y: kPoint.y - 30 + Math.random() * 60 };
         this.emit({ event: Math.random() < 0.55 ? 'metal' : 'sizzleHit', ...at, caption: false });
       }
 
@@ -275,7 +276,7 @@
       L.delivery.base = 0;
       set('restaurant', L.restaurant.base, 1.2);
       const prox = (pt) => U.clamp(1 - U.dist(P, pt) / 420, 0, 1);
-      const pts = { kitchen: kPoint, dining: { x: 1010, y: 560 }, driveThru: { x: 100, y: 650 }, delivery: { x: 1360, y: 560 } };
+      const pts = { kitchen: kPoint, dining: AU.dining || { x: 1010, y: 560 }, driveThru: AU.driveThru || { x: 100, y: 650 }, delivery: AU.delivery || { x: 1360, y: 560 } };
       Object.entries(pts).forEach(([id, pt]) => {
         const k = id === 'kitchen' ? 0.025 : id === 'delivery' ? 0.012 : 0.018;
         set(id, L[id].base + (playing && (id === 'dining' ? L.dining.base > 0 : id === 'kitchen' ? kitchenLive : G.opening.isOpen) ? k * prox(pt) * reduce : 0), 0.35);

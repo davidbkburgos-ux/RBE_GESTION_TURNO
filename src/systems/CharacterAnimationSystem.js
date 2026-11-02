@@ -68,6 +68,17 @@
     if (key.startsWith('employee') && key.length > 8) return 'employee' + ((parseInt(key.slice(8), 10) || 0) % EMP_VARIANTS);
     return key;
   }
+  // Uniformes de Popeyes (solo si la marca activa lo es): encargado polo azul y caqui, equipo camiseta naranja.
+  function brandize(key, p) {
+    if (!BK.game || BK.game.brand !== 'popeyes') return p;
+    if (key === 'manager' || key === 'managerF') {
+      return Object.assign({}, p, { shirt: '#7ec6f3', shade: '#5a9fd0', pants: '#c3ae8a', pantsShade: '#a08c6c', cap: '#4a3b2f', capShade: '#33281f', belt: '#6a4a34', shoe: '#e9e6df', tie: null, collar: '#a6d8f7', chestCol: '#ff7a00', chestLogo: true });
+    }
+    if (key.startsWith('employee')) {
+      return Object.assign({}, p, { shirt: '#f27a12', shade: '#bf5a08', pants: '#2d2a26', pantsShade: '#1c1a17', cap: '#4a3b2f', capShade: '#33281f', chestCol: '#ffffff' });
+    }
+    return p;
+  }
   const palCache = {};
   function getPal(key) {
     key = palKeyOf(key);
@@ -77,6 +88,7 @@
     else if (key.startsWith('guest')) p = guestPal(parseInt(key.slice(5), 10) || 0);
     else if (key.startsWith('employee')) p = employeePal(parseInt(key.slice(8), 10) || 0);
     else p = PAL.employee;
+    p = brandize(key, p);
     palCache[key] = p; return p;
   }
 
@@ -208,7 +220,7 @@
         if (pal.tie) { ctx.fillStyle = pal.tie; ctx.beginPath(); ctx.moveTo(x0 - 1.4 + f.x * 3, yt + 3); ctx.lineTo(x0 + 1.4 + f.x * 3, yt + 3); ctx.lineTo(x0 + 1.8 + f.x * 3, yb - 3); ctx.lineTo(x0 + f.x * 3, yb - 1); ctx.lineTo(x0 - 1.8 + f.x * 3, yb - 3); ctx.closePath(); ctx.fill(); }
         if (pal.badge) { ctx.fillStyle = '#f2d27a'; ctx.fillRect(x0 - wT / 2 + 2 + f.x * 2, yt + 5, 3.6, 1.8); }
         if (pal.logo && pal.tie) { ctx.fillStyle = '#f47a2c'; ctx.beginPath(); ctx.ellipse(x0 + wT / 2 - 3 + f.x * 2, yt + 6.5, 1.8, 1.5, 0, 0, Math.PI * 2); ctx.fill(); }
-        if (pal.chestLogo) { ctx.fillStyle = '#f47a2c'; ctx.beginPath(); ctx.ellipse(x0 + wT / 2 - 3.2 + f.x * 2, yt + 6.5, 2, 1.7, 0, 0, Math.PI * 2); ctx.fill(); }
+        if (pal.chestLogo) { ctx.fillStyle = pal.chestCol || '#f47a2c'; ctx.beginPath(); ctx.ellipse(x0 + wT / 2 - 3.2 + f.x * 2, yt + 6.5, 2, 1.7, 0, 0, Math.PI * 2); ctx.fill(); }
       }
       if (pal.backpack && front < -0.2) {
         ctx.fillStyle = '#e8661a'; ctx.strokeStyle = '#7a3208'; ctx.lineWidth = 0.8;

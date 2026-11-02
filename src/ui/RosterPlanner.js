@@ -1,7 +1,7 @@
 (function () {
   const BK = window.BK;
   const LOW_STAFF = 4;
-  const CRITICAL = ['grill', 'fries', 'assembly', 'counter'];
+  const CRITICAL = ['grill', 'chef', 'fries', 'assembly', 'counter'];
 
   // Posicionamiento en dos fases: 1) reparto comida / cena, 2) puestos del turno de comida.
   class RosterPlanner {
@@ -13,6 +13,8 @@
       this.applySeed(G.seedInput);
       this.step = 1; this.counts = {}; this.selected = null; this.moving = null; this.review = false;
       this.stationIds = Object.keys(G.cfg.operations.stationInfo).filter((id) => G.cfg.operations.stationInfo[id].recommended > 0);
+      const rosterOrder = G.cfg.operations.rosterOrder;
+      if (rosterOrder) this.stationIds.sort((a, b) => (rosterOrder.indexOf(a) + 1 || 99) - (rosterOrder.indexOf(b) + 1 || 99));
       this.stationIds.forEach((id) => (this.counts[id] = 0));
       this.body = this.ui.h('div', { class: 'roster-plan rp' });
       this.ui.modal({ title: '👥 Posicionamiento del día', body: this.body, buttons: [], closable: false, cls: 'wide rp-modal' });
@@ -102,7 +104,7 @@
       return h('div', { class: 'rp-rain' + (c >= 55 ? ' wet' : '') },
         h('div', { class: 'rp-rain-head' }, h('span', {}, c >= 25 ? '🌧️' : '⛅'), h('b', {}, 'Probabilidad de lluvia: ' + c + '% · ' + lvl)),
         bar,
-        h('small', {}, 'Si llueve: menos clientes en mostrador y kiosco, más en AutoKing y delivery.'));
+        h('small', {}, 'Si llueve: menos clientes en mostrador y kiosco, más en ' + BK.autoName + ' y delivery.'));
     }
     renderSplit() {
       const h = this.ui.h, dinner = this.total - this.meal, ok = this.meal + dinner === this.total;

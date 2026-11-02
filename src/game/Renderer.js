@@ -2,6 +2,8 @@
   const BK = window.BK;
   const U = BK.util;
   const MW = 1536, MH = 1024;
+  // Marcas disponibles: plano de fondo (el de Burger King sale de map.json).
+  BK.BRAND_MAPS = { bk: 'assets/map/plano_limpio.png', popeyes: 'assets/map/plano_popeyes.png' };
   // Huella del edificio (sin solapes, para la máscara even-odd de la lluvia).
   const INDOOR = [[168, 296, 1348, 792], [1148, 204, 1338, 296]];
 
@@ -20,8 +22,8 @@
     constructor(G, canvas) {
       this.G = G; this.cv = canvas; this.ctx = canvas.getContext('2d');
       this.img = new Image(); this.imgReady = false;
-      this.img.onload = () => { this.imgReady = true; };
-      this.img.src = G.map.meta.image;
+      this.imgs = {};
+      this.setBrand(G.save && G.save.settings ? G.save.settings.brand : 'bk');
       this.cam = { x: MW / 2, y: MH / 2, zoom: 1 };
       this.zoomTarget = 1;
       this.W = 800; this.H = 600; this.dpr = 1;
@@ -37,6 +39,18 @@
         this.floaters.push({ x: p.x, y: p.y - 70, text: (e.delta > 0 ? '+' : '') + e.delta, good: e.delta > 0, t: 0 });
       });
       this.resize();
+    }
+    // Cambia el plano de fondo según la marca; las imágenes se cargan una sola vez y se reutilizan.
+    setBrand(brand) {
+      const maps = BK.BRAND_MAPS, key = maps[brand] ? brand : 'bk';
+      let im = this.imgs[key];
+      if (!im) {
+        im = this.imgs[key] = new Image();
+        im.ready = false;
+        im.onload = () => { im.ready = true; if (this.img === im) this.imgReady = true; };
+        im.src = key === 'bk' ? this.G.map.meta.image : maps[key];
+      }
+      this.img = im; this.imgReady = im.ready;
     }
     resize() {
       const r = this.cv.parentElement.getBoundingClientRect();
@@ -266,7 +280,7 @@
       ctx.save();
       ctx.beginPath();
       ctx.rect(0, 0, MW, MH);
-      INDOOR.forEach((r) => ctx.rect(r[0], r[1], r[2] - r[0], r[3] - r[1]));
+      (G.map.indoor || INDOOR).forEach((r) => ctx.rect(r[0], r[1], r[2] - r[0], r[3] - r[1]));
       ctx.clip('evenodd');
       ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = 'rgba(150,165,195,' + (0.62 * level).toFixed(3) + ')';

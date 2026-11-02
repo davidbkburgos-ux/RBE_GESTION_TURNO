@@ -195,6 +195,11 @@ button.pill { text-align: left; }
 .temp-lcd .temp-unit { font-size: 16px; }
 .temp-lcd.ok { background: #1c7a36; color: #eaffea; }
 .temp-lcd.bad { background: #a8281f; color: #ffecea; }
+.visc-call { text-align: center; font: 900 20px/1 system-ui, sans-serif; letter-spacing: 1px; padding: 6px 0; border-radius: 8px; color: #fff; }
+.visc-call.ready { background: #6a7078; }
+.visc-call.go { background: #1c7a36; }
+.visc-call.stop, .visc-call.halt { background: #a8281f; }
+.visc-btn { justify-content: center; font-weight: 800; }
 .temp-opts { display: grid; gap: 6px; margin-top: 6px; }
 .briefing-wheel-legend { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; }
 .briefing-wheel-box { width: min(330px, 92vw); }
@@ -231,6 +236,10 @@ button.pill { text-align: left; }
 .tl-sub { font-size: clamp(22px, 3.6vw, 46px); color: #fff3df; letter-spacing: .08em; -webkit-text-stroke: 1.5px #3b1d0d; }
 .tl-main { font-size: clamp(36px, 6.6vw, 90px); color: #e8412a; letter-spacing: .04em; -webkit-text-stroke: 3px #3b1d0d; text-shadow: 0 5px 0 #7a1d10; }
 .tl-tag { font: 600 clamp(12px, 1.4vw, 18px) system-ui, sans-serif; color: #fff3df; background: rgba(40,22,12,.75); padding: 4px 10px; border-radius: 12px; margin-top: 10px; text-transform: none; }
+.brand-pick { align-items: center; gap: 10px; }
+.brand-btn { background: #1b1b1b; border: 2px solid #555; border-radius: 8px; padding: 4px 8px; cursor: pointer; opacity: .6; }
+.brand-btn img { display: block; height: 34px; width: auto; }
+.brand-btn.on { border-color: #f2b72b; opacity: 1; }
 .tl-tag.tl-ver { margin-top: 6px; font-weight: 600; opacity: .9; align-self: flex-start; } 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @media (prefers-reduced-motion: reduce) { .title-logo .tl-ch { animation: none; } }
 @media (max-width: 760px) { .title-logo { left: 8%; top: auto; bottom: 8%; } }

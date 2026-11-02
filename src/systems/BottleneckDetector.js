@@ -10,6 +10,8 @@
     reset() { this.items = []; this.signature = ''; this.shortageEvents.clear(); }
     stationForProduct(id) {
       if (id === 'MAIN_PRODUCT') return 'grill';
+      const over = this.G.cfg.operations.stageCategory;
+      if (over && over[id] === 'chef') return 'chef';
       if (id === 'FRIES') return 'fries';
       return 'assembly';
     }
@@ -25,10 +27,11 @@
       if (['OPEN', 'CLOSING'].includes(G.restaurantState)) this.updateShortageEvents();
       const cap = (key) => G.employees.capacity(key);
       if (!cap('kitchen')) reasons.push({ id: 'NO_KITCHEN_CAPACITY', label: 'Sin cobertura de cocina', severity: 'critical', station: 'grill' });
+      if (G.cfg.operations.stations.chef && !cap('chef')) reasons.push({ id: 'NO_CHEF_CAPACITY', label: 'Sin chef (pollo)', severity: 'critical', station: 'chef' });
       if (!cap('fries')) reasons.push({ id: 'NO_FRIES_CAPACITY', label: 'Sin producción de patatas', severity: 'critical', station: 'fries' });
       if (!cap('assembly')) reasons.push({ id: 'NO_ASSEMBLY_CAPACITY', label: 'Sin montaje / expedición', severity: 'critical', station: 'assembly' });
       if (!cap('counter')) reasons.push({ id: 'COUNTER_OVERLOAD', label: 'Mostrador sin cobertura', severity: 'critical', station: 'counter' });
-      if (!cap('autoking')) reasons.push({ id: 'DRIVE_THRU_OVERLOAD', label: 'AutoKing sin cobertura', severity: 'critical', station: 'autoPay' });
+      if (!cap('autoking')) reasons.push({ id: 'DRIVE_THRU_OVERLOAD', label: BK.autoName + ' sin cobertura', severity: 'critical', station: 'autoPay' });
       if (!cap('delivery')) reasons.push({ id: 'DELIVERY_OVERLOAD', label: 'Delivery sin cobertura', severity: 'critical', station: 'delivery' });
       const counterWaiting = G.events.active().filter((e) => ['counter', 'kiosk', 'pendingOrder'].includes(e.type) && G.events.isWaiting(e));
       const counterWait = counterWaiting.reduce((max, e) => Math.max(max, e.elapsed / e.timer), 0);
@@ -45,10 +48,10 @@
       const blockedAutoOrders = G.production.orders.filter((o) => o.channel === 'autoking' && o.status === 'blocked').length;
       if (G.vehicles.count >= 2 || vehicleWait >= 0.4 || blockedAutoOrders) {
         const waitingCars = Math.max(G.vehicles.count, vehicleWaiting.length);
-        const queueLabel = waitingCars === 1 ? '1 coche esperando en AutoKing' : waitingCars + ' coches esperando en AutoKing';
+        const queueLabel = waitingCars === 1 ? '1 coche esperando en ' + BK.autoName : waitingCars + ' coches esperando en ' + BK.autoName;
         reasons.push({
           id: 'DRIVE_THRU_QUEUE',
-          label: blockedAutoOrders ? 'AutoKing detenido por falta de producto' : queueLabel,
+          label: blockedAutoOrders ? BK.autoName + ' detenido por falta de producto' : queueLabel,
           severity: G.vehicles.count >= 4 || vehicleWait >= 0.75 || blockedAutoOrders ? 'critical' : 'warning',
           station: 'autoPay', count: waitingCars
         });
@@ -114,6 +117,7 @@
       const blocked = G.production.orders.filter((o) => o.channel === channel && o.status === 'blocked').length;
       if (blocked) list.push(blocked + ' pedido(s) bloqueados por falta de producto');
       if (!G.employees.capacity('kitchen')) list.push('sin personal en cocina');
+      if (G.cfg.operations.stations.chef && !G.employees.capacity('chef')) list.push('sin chef para el pollo');
       if (!G.employees.capacity('fries')) list.push('sin personal de patatas');
       if (!G.employees.capacity('assembly')) list.push('sin personal de montaje');
       if (!G.employees.capacity(channel === 'autoking' ? 'autoking' : channel)) list.push('canal sin cobertura');

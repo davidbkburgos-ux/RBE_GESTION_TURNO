@@ -1,7 +1,7 @@
 (function () {
   const BK = window.BK;
   const U = BK.util;
-  const BOX_POSITIONS = [
+  const BK_BOX_POSITIONS = [
     { x: 118, y: 506 }, { x: 142, y: 506 },
     { x: 118, y: 530 }, { x: 142, y: 530 },
     { x: 118, y: 554 }, { x: 142, y: 554 }
@@ -10,6 +10,9 @@
   class TruckDeliverySystem {
     constructor(G) {
       this.G = G;
+      const S = G.map.spots || {};
+      this.boxPositions = S.boxes || BK_BOX_POSITIONS;
+      this.cam = S.truckCam || { x: 300, y: 560 };
       this.lane = new BK.Lane(G.map.vehicleLane.path);
       this.stopS = this.lane.project(G.map.vehicleLane.stops.order.x, G.map.vehicleLane.stops.order.y);
       this.dropPoint = { x: G.map.points.productPrep[0], y: G.map.points.productPrep[1] };
@@ -49,8 +52,9 @@
       if (G.state !== 'playing') return;
       if (this.state === 'scheduled') {
         const end = Math.min(G.clock.start + 60, G.clock.open);
-        const briefing = G.briefing && G.briefing.active;
-        // El camión espera a que termine el briefing en curso para no solapar ambos avisos
+        const cur = G.opening && G.opening.current;
+        const briefing = (G.briefing && G.briefing.active) || !!(cur && cur.task && cur.task.minigame);
+        // El camión espera a que termine el briefing o el minijuego en curso para no solapar avisos
         if (briefing && (this.deferred || G.clock.t >= this.triggerAt)) { this.deferred = true; return; }
         if (this.deferred) { this.deferred = false; this.startArrival(); return; }
         if (G.clock.t >= this.triggerAt && G.clock.t < end) this.startArrival();
@@ -105,7 +109,7 @@
       this.expectedCount = Math.random() < 0.25
         ? actual + U.pick([-1, 1])
         : actual;
-      this.boxes = BOX_POSITIONS.slice(0, actual).map((position, index) => ({
+      this.boxes = this.boxPositions.slice(0, actual).map((position, index) => ({
         id: 'CONWAY-' + (index + 1), x: position.x, y: position.y, status: 'waiting', holder: null
       }));
       this.focusCamera();
@@ -120,7 +124,7 @@
       };
       renderer.follow = false;
       renderer.zoomTarget = 2.5; renderer.cam.zoom = 2.5;
-      renderer.cam.x = 300; renderer.cam.y = 560;
+      renderer.cam.x = this.cam.x; renderer.cam.y = this.cam.y;
       renderer.clampCam();
       this.G.ui.el.tasksPanel.classList.add('collapsed');
       this.G.ui.el.bTasks.setAttribute('aria-expanded', 'false');
@@ -317,7 +321,7 @@
       this.outcome = saved.outcome || null;
       if (this.active) this.positionTruck();
       if (saved.boxes && saved.boxes.length) {
-        this.boxes = BOX_POSITIONS.slice(0, saved.boxes.length).map((position, index) => ({
+        this.boxes = this.boxPositions.slice(0, saved.boxes.length).map((position, index) => ({
           id: 'CONWAY-' + (index + 1), x: position.x, y: position.y,
           status: saved.boxes[index] === 'delivered' ? 'delivered' : 'waiting', holder: null
         }));

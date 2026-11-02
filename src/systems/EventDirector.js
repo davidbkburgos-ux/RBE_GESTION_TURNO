@@ -28,19 +28,19 @@
       return 1;
     }
     spot(type) {
-      const P = this.G.map.points;
+      const P = this.G.map.points, S = this.G.map.spots || {};
       switch (type) {
-        case 'counter': return { x: 668, y: 574 };
-        case 'kiosk': return { x: 950, y: 402 };
-        case 'pendingOrder': return { x: 668, y: 664 };
-        case 'delivery': return { x: 1316, y: 560 };
-        case 'vehicle': return { x: 650, y: 762 };
+        case 'counter': return S.counter || { x: 668, y: 574 };
+        case 'kiosk': return S.kiosk || { x: 950, y: 402 };
+        case 'pendingOrder': return S.pendingOrder || { x: 668, y: 664 };
+        case 'delivery': return S.delivery || { x: 1316, y: 560 };
+        case 'vehicle': return S.vehicle || { x: 650, y: 762 };
         case 'dirtyTable': {
           const ts = this.G.customers.dirtyTables();
           const from = this.G.player.char;
           let best = null, bd = 1e9;
           ts.forEach((t) => { const d = U.dist(from, { x: t.cx, y: t.cy }); if (d < bd) { bd = d; best = t; } });
-          return best ? { x: best.cx, y: best.cy } : { x: 1000, y: 600 };
+          return best ? { x: best.cx, y: best.cy } : (S.dirtyTable || { x: 1000, y: 600 });
         }
       }
       return { x: P.mainDoor[0], y: P.mainDoor[1] };

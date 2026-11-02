@@ -23,10 +23,10 @@
       this.warned = new Set();
       this.friesLevel = null;
       this.openingExtraStockUseChance = 0;
-      this.stageSec = { MAIN_PRODUCT: 8, FRIES: 6, DRINKS: 3, SIDES: 4, DESSERTS: 4, ASSEMBLY: 5 };
+      this.stageSec = Object.assign({ MAIN_PRODUCT: 8, FRIES: 6, DRINKS: 3, SIDES: 4, DESSERTS: 4, ASSEMBLY: 5 }, this.G.cfg.operations.stageSec || {});
     }
     enqueue(channel, source) {
-      const needs = ['MAIN_PRODUCT', 'FRIES', 'DRINKS'];
+      const needs = (this.G.cfg.operations.orderComponents || ['MAIN_PRODUCT', 'FRIES', 'DRINKS']).slice();
       if (channel === 'delivery') needs.push('SIDES');
       const order = {
         id: 'ORD-' + (++this.nextId), channel, sourceId: source && typeof source === 'object' ? source.id : source, components: needs,
@@ -52,6 +52,8 @@
       return o.channel === 'counter' || o.channel === 'kiosk' ? 'assembly' : o.channel === 'dining' ? 'hall' : o.channel;
     }
     stageCategory(component) {
+      const over = this.G.cfg.operations.stageCategory;
+      if (over && over[component]) return over[component];
       if (component === 'MAIN_PRODUCT') return 'kitchen';
       if (component === 'FRIES') return 'fries';
       if (component === 'ASSEMBLY') return 'assembly';
@@ -94,7 +96,7 @@
       const inProcess = this.orders.filter((o) => o.status !== 'delivered' && o.stage < o.components.length)
         .sort((a, b) => Number(b.channel === this.G.priority.channel) - Number(a.channel === this.G.priority.channel) || a.serviceStartAt - b.serviceStartAt);
       const assigned = new Set();
-      for (const category of ['kitchen', 'fries', 'assembly']) {
+      for (const category of ['kitchen', 'chef', 'fries', 'assembly']) {
         const cap = this.capacity(category);
         if (!cap) continue;
         const eligible = inProcess.filter((o) => !assigned.has(o.id) && this.stageCategory(o.components[o.stage] || 'ASSEMBLY') === category);

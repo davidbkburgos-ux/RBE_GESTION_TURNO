@@ -284,3 +284,50 @@ No validado: móvil físico, contraste medido con herramienta específica, vista
 - Paso 1: pinchar entre dos rayas, en el centro. Paso 2: ángulo de 45º (±7º). Después el visor sube a 69–75 ºC en verde; si falla el punto o el ángulo se queda por debajo de 68 ºC en rojo.
 - Si no llega a 68 ºC: pregunta de 3 opciones (correcta «Hacer L.A.H.A y ajustar broiler» + 2 engañosas, barajadas). Acertar pasa la tarea; fallar resta 50 puntos y avisa «1FC encontrado» (`metrics.fcFound`).
 - Verificado en Chromium: camino perfecto (+100, tarea completada), mal punto + pregunta errónea (−50, toast 1FC, tarea repetible), sin errores JS. `bundle.js` editado a mano (no hay Python disponible para `tools/build_data.py`).
+
+## V5.31 · Selector de marcas (Burger King / Popeyes)
+
+- Pantalla de inicio: selector solo con logos (`brandPicker`, `assets/brand/bk_logo.svg` y `popeyes_logo.png`). Ajuste `settings.brand` (por defecto `bk`), persistente; `G.setBrand` cambia el plano de fondo (`Renderer.setBrand`, `BK.BRAND_MAPS`).
+- `assets/map/plano_popeyes.png`: plano de Popeyes con un hueco de descarga para Conway sobre el seto izquierdo.
+- Pendiente: puntos, colisiones y sprites siguen siendo los de BK (mismo tamaño de plano 1536×1024).
+- Verificado en Chromium: el selector cambia el plano del menú, `settings.brand` = popeyes, sin errores JS.
+- Logos oficiales aportados: `assets/brand/bk_logo.webp` y `popeyes_logo.png`.
+- Bahía de descarga de Popeyes transitable: `map.json` → `brandNav.popeyes.walkable` (`bayPopeyes`), aplicado en `NavigationSystem` según la marca (`G.setBrand` reconstruye `G.nav`). Entra por la `westDoor` de la parte trasera de la cocina, como en BK. En BK la zona sigue bloqueada. Verificado: ruta cocina→bahía alcanzable y descarga de Conway sin errores.
+## V5.32 · Entorno Popeyes independiente
+
+- src/data/brands.json (y clave rands en undle.js, editada a mano): override de Popeyes sobre map/config (navegación, obstáculos, mesas, zonas, puntos, estaciones, carril de coches, luces, `spots`, audio). BK.applyBrand no hace nada con k: Burger King queda idéntico.
+- Cambiar de marca recarga la página para reconstruir todos los sistemas con los datos de la marca. «Continuar turno» solo aparece si el turno guardado es de la marca activa (rand en el snapshot).
+- Nueva posición **Chef** (cocina, +1 empleado): plantilla 11/13/15 y mealShift 7/8/9. Sándwiches/Freidora/Complementos renombran grill/fries/fryer.
+- Uniformes Popeyes: encargado/a polo azul, pantalón caqui, gorra marrón; empleados camiseta naranja (randize en CharacterAnimationSystem).
+- Verificado en Chromium: todos los puntos, estaciones, asientos y filas de espera alcanzables, Conway se descarga, turno completo sin errores JS en Popeyes y en BK (BK: plantilla 10, jugador en 668,556).
+- Pendiente: afinar coordenadas con ?debug sobre el plano real, Chef en profundidad.
+- V5.33: carril de coches de Popeyes retrazado sobre la carretera del plano (esquina NO, lado oeste, calle sur y salida este; parada de pedido en x=62). En Popeyes AutoKing pasa a llamarse **popAuto** (BK.autoName; pplyBrand renombra los textos de datos y el código usa BK.autoName). BK conserva AutoKing.
+
+## V5.34 · Pollo y Chef en Popeyes
+- Popeyes: stock con CHICKEN (lo gestiona el Chef), pedidos MAIN_PRODUCT > CHICKEN > FRIES > DRINKS; «Complementos» eliminado y «Freidora» pasa a «Patatas».
+- Burger King sin cambios (stock sin CHICKEN, puesto Complementos intacto). Turno completo sin errores JS en ambas marcas.
+
+## V5.39 · Chef primero en el posicionamiento y tutorial restringido
+- Popeyes: la lista del posicionamiento (paso 2) arranca por Chef. Nuevo `operations.rosterOrder` opcional (RosterPlanner ordena `stationIds` con él; BK no lo define y no cambia). Antes Chef salía el último porque se añade al final de `stationInfo`.
+- Tutorial: mientras está abierto solo se puede mover al encargado (clic en suelo/teclas); eventos, badges, mesas, checklist, chips, tecla E y botones de apoyo del móvil quedan bloqueados. En los pasos de reasignación se permite el menú de reasignar. Afecta a ambas marcas.
+- Texto del tutorial de Popeyes: añade «Medir la viscosidad» (sin rango).
+
+## V5.38 · Versión 1.0.0 y arco del briefing con plantilla completa
+- Versión 1.0.0 (`config.json` meta.version y bundle).
+- Arco del briefing de Popeyes ajustado a rx 64, ry 56 con 7 empleados: todos alcanzables, separación mínima 29 px.
+
+## V5.37 · Briefing de Popeyes y viscosidad sin rango visible
+- Briefing Popeyes: punto de reunión (985,487) entre mostrador y kioscos; el encargado mira a la cocina y el equipo forma un arco al oeste (`spots.formationArc` rx 72, ry 48, nuevo y opcional; BK mantiene 96/64). Comprobado: encargado (985,487) y empleados en arco x 922–985.
+- Viscosidad: ya no se muestra el rango 7,5–11,5 s durante la prueba; ~88 % de las tomas caen dentro de rango (5 % por debajo larga/7 % por encima).
+
+## V5.36 · Minijuego «Medir la viscosidad» (Popeyes)
+- Nueva tarea de checklist (⏱️) solo en Popeyes, añadida con `openingTasksAdd` en brands.json (soportado en `BK.applyBrand`). Punto 'viscosity' (530,500) junto al Chef.
+- Flujo: PREPÁRATE (retardo aleatorio) → ¡MIDE! (cae el mix, el jugador inicia el cronómetro) → ¡PARA! (cacito vacío, el jugador lo detiene) → decisión. Rango válido 7,5–11,5 s; fuera de rango la respuesta correcta es «Preparar un nuevo mix».
+- El drenaje real dura 3–4,6 s y el cronómetro se escala para mostrar el tiempo objetivo (no es tiempo real). El reloj del turno se congela con `G.minigamePause` hasta cerrar el minijuego.
+- Pruebas: flujo completo y respuesta correcta OK; BK sin cambios ni errores JS.
+- Pendiente de anotar de V5.35: sprite de pechuga rehecho y ayudas visuales (punta rojo/amarillo/verde, medidor de fuerza en degradado).
+
+## V5.35 · Minijuego «Toma temperatura pollo» (Popeyes)
+- Popeyes sustituye la toma de carne por una pechuga frita (hueso insinuado al fondo): paso 1 pinchar la zona con más carne, paso 2 fuerza de inserción (arrastrar + clic; pasarse = hueso). Visor desde 68 ºC; correcto ≈ 76 ºC, fallo < 74 ºC.
+- Si falla aparece una segunda pieza distinta; si también falla, pregunta (L.A.H.A y ajustar freidora) y 1FC si se responde mal.
+- Punto 'chickenTemp' (742,400) junto al puesto de Patatas, fuera del recorrido del empleado. Datos: brands.json openingTaskOverrides/textReplacements. BK sin cambios.

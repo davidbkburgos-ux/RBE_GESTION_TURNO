@@ -6,13 +6,15 @@
   const WORK_ANIM = { grill: 'work', fryer: 'work', fries: 'work', assembly: 'work', expedition: 'deliver', counter: 'talk', autoPay: 'talk', delivery: 'deliver', hall: 'clean' };
   const TASK_TXT = {
     grill: 'Preparando hamburguesas', fryer: 'Atendiendo fritos', fries: 'Preparando patatas', assembly: 'Montando y embolsando',
-    expedition: 'Entregando pedidos', counter: 'Atendiendo mostrador', autoPay: 'Cobrando en AutoKing', delivery: 'Preparando delivery', hall: 'Limpiando sala'
+    expedition: 'Entregando pedidos', counter: 'Atendiendo mostrador', autoPay: 'Cobrando en ' + BK.autoName, delivery: 'Preparando delivery', hall: 'Limpiando sala'
   };
 
   // Empleados operativos (camiseta roja): comportamiento automático, reasignables por prioridad de canal.
   class EmployeeSystem {
     constructor(G) {
       this.G = G;
+      Object.assign(TASK_TXT, G.cfg.operations.taskText || {});
+      Object.assign(WORK_ANIM, G.cfg.operations.workAnim || {});
       this.init();
     }
     init(roster) {
@@ -114,9 +116,14 @@
         ? this.G.cfg.operations.managerCoverageCapacity || 1 : 0);
     }
     criticalCoverage() {
-      return ['kitchen', 'fries', 'assembly', 'counter', 'autoking', 'delivery'].map((category) => ({
+      return this.criticalCategories().map((category) => ({
         category, count: this.capacity(category)
       }));
+    }
+    criticalCategories() {
+      const list = ['kitchen', 'fries', 'assembly', 'counter', 'autoking', 'delivery'];
+      if (this.G.cfg.operations.stations.chef) list.splice(1, 0, 'chef');
+      return list;
     }
     assignPosition(id, position, immediate) {
       const c = this.list.find((e) => e.id === id);
@@ -233,7 +240,7 @@
       if (this.expertT > 0) return;
       this.expertT = 1;
       const G = this.G, info = G.cfg.operations.stationInfo, stations = G.cfg.operations.stations;
-      const CRIT = ['kitchen', 'fries', 'assembly', 'counter', 'autoking', 'delivery'];
+      const CRIT = this.criticalCategories();
       for (const c of this.list) {
         if (!c.expert) continue;
         if (!c.available || c.absent || c.status !== 'WORKING' || !c.position || G.state !== 'playing') { c.extraCategory = null; c.extraPosition = null; continue; }

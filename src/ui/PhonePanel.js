@@ -73,7 +73,7 @@
         .map((b) => {
           const cls = 'ph-row ' + (b.severity === 'critical' ? 'bad' : 'warn');
           return b.station
-            ? h('button', { type: 'button', class: cls + ' ph-alert', 'aria-label': 'Apoyar en ' + G.cfg.operations.stations[b.station].label + ': ' + b.label, onclick: () => G.player.coverPosition(b.station) },
+            ? h('button', { type: 'button', class: cls + ' ph-alert', 'aria-label': 'Apoyar en ' + G.cfg.operations.stations[b.station].label + ': ' + b.label, onclick: () => { if (!G.ui.tutorialStep) G.player.coverPosition(b.station); } },
               h('span', {}, '⚠ ' + b.label), h('b', {}, 'IR ›'))
             : h('div', { class: cls }, h('span', {}, '⚠ ' + b.label));
         });
@@ -82,7 +82,7 @@
         this.sec('Cuellos de botella', ...(bn.length ? bn : [h('div', { class: 'ph-row ok' }, h('span', {}, 'Sin cuellos detectados'))])),
         this.sec('Preparación', this.row('Preparación general', s.prep + ' %'), this.bar(s.prep, 'prep')),
         this.sec('Actividad', this.row('Pedidos activos', String(s.orders)), this.row('Eventos activos', String(s.events))),
-        this.sec('Velocidad', this.row('Mostrador', this.fmt(s.counter.last)), this.row('AutoKing', this.fmt(s.auto.last)), this.row('Delivery · entrega', this.fmt(s.delivery.last)))
+        this.sec('Velocidad', this.row('Mostrador', this.fmt(s.counter.last)), this.row(BK.autoName, this.fmt(s.auto.last)), this.row('Delivery · entrega', this.fmt(s.delivery.last)))
       ];
     }
     tab_team() {
@@ -140,7 +140,7 @@
       const line = (name, key, orders, extra) => this.row(name, (cap(key) ? 'Cubierto' : 'Sin cobertura') + ' · ' + orders + ' ped.' + (extra || ''), cap(key) ? 'ok' : 'bad');
       return [this.sec('Canales',
         line('Mostrador', 'counter', n('counter') + n('kiosk')),
-        line('AutoKing', 'autoking', n('autoking'), ' · ' + G.vehicles.count + ' coches'),
+        line(BK.autoName, 'autoking', n('autoking'), ' · ' + G.vehicles.count + ' coches'),
         line('Delivery', 'delivery', n('delivery')),
         line('Sala', 'hall', n('dining'), ' · ' + G.customers.tables.filter((t) => t.state === 'dirty').length + ' sucias'))];
     }

@@ -41,8 +41,41 @@
     inRect(x, y, r) { return x >= r[0] && x <= r[2] && y >= r[1] && y <= r[3]; }
   };
 
+  // Fusión profunda: los objetos se combinan, el resto (arrays y valores) se sustituye.
+  BK.mergeDeep = function (base, over) {
+    Object.keys(over).forEach((k) => {
+      const v = over[k];
+      if (v === null) delete base[k];
+      else if (v && typeof v === 'object' && !Array.isArray(v) && base[k] && typeof base[k] === 'object' && !Array.isArray(base[k])) BK.mergeDeep(base[k], v);
+      else base[k] = JSON.parse(JSON.stringify(v));
+    });
+    return base;
+  };
+  // Aplica el entorno de otra marca sobre los datos base. Con 'bk' no toca nada.
+  BK.autoName = 'AutoKing';
+  const renameStrings = (node, from, to) => {
+    if (Array.isArray(node)) { node.forEach((v, i) => { node[i] = typeof v === 'string' ? v.replace(from, to) : (renameStrings(v, from, to), v); }); return; }
+    if (node && typeof node === 'object') Object.keys(node).forEach((k) => { const v = node[k]; if (typeof v === 'string') node[k] = v.replace(from, to); else renameStrings(v, from, to); });
+  };
+  BK.applyBrand = function (data, brand) {
+    const b = brand && brand !== 'bk' && data.brands && data.brands[brand];
+    if (!b) return false;
+    if (brand === 'popeyes') BK.autoName = 'popAuto';
+    if (b.map) Object.keys(b.map).forEach((k) => { data.map[k] = JSON.parse(JSON.stringify(b.map[k])); });
+    if (b.config) BK.mergeDeep(data.config, b.config);
+    if (b.opening) BK.mergeDeep(data.opening, b.opening);
+    if (b.openingTaskOverrides) data.opening.openingTasks.forEach((t) => { if (b.openingTaskOverrides[t.id]) Object.assign(t, b.openingTaskOverrides[t.id]); });
+    if (b.openingTasksAdd) b.openingTasksAdd.forEach((a) => {
+      const i = data.opening.openingTasks.findIndex((t) => t.id === a.after);
+      data.opening.openingTasks.splice(i < 0 ? data.opening.openingTasks.length - 1 : i + 1, 0, JSON.parse(JSON.stringify(a.task)));
+    });
+    if (b.textReplacements) b.textReplacements.forEach((r) => renameStrings(data.config, new RegExp(r[0], 'g'), r[1]));
+    if (brand === 'popeyes') ['config', 'map', 'events', 'questions', 'opening', 'audioManifest'].forEach((n) => renameStrings(data[n], /Auto[Kk]ing/g, 'popAuto'));
+    return true;
+  };
+
   BK.loadData = async function () {
-    const names = ['config', 'map', 'events', 'questions', 'opening', 'audioManifest'];
+    const names = ['config', 'map', 'events', 'questions', 'opening', 'audioManifest', 'brands'];
     const out = {};
     const http = location.protocol.startsWith('http');
     for (const n of names) {

@@ -122,7 +122,7 @@
       for (const o of blocked) {
         const id = o.blockedBy, product = G.cfg.operations.products[id];
         if (!product || G.production.restocking[id]) continue;
-        const category = id === 'MAIN_PRODUCT' ? 'kitchen' : id === 'FRIES' ? 'fries' : 'assembly';
+        const category = G.production.stageCategory(id);
         if (this.staffCapacity(category) < 1) continue;
         if (G.production.beginRestock(id)) BK.bus.emit('autonomy:restock', { id });
       }
