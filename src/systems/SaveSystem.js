@@ -12,6 +12,7 @@
           reduceMotion: false, difficulty: 'weekday', timeScale: null, follow: null
         }
       };
+      this.board = []; this.boardError = false;
       this.load();
     }
     load() {
@@ -32,33 +33,49 @@
     clearAll() {
       try { localStorage.removeItem(this.key); } catch (e) { /* ignorar */ }
       this.state.tutorialDone = false; this.state.best = null; this.state.lastMetrics = null; this.state.run = null;
-            this.state.leaderboard = [];
-          }
-          finish(metrics) {
+      delete this.state.playerName;
+    }
+    finish(metrics) {
       this.state.lastMetrics = metrics;
       if (this.state.best === null || metrics.score > this.state.best) this.state.best = metrics.score;
       this.state.run = null;
       this.save();
     }
-    get leaderboard() { return Array.isArray(this.state.leaderboard) ? this.state.leaderboard : []; }
-    // ¿Entraría esta puntuación en el TOP 10?
-    qualifies(score) {
-      const lb = this.leaderboard;
-      return lb.length < 10 || score > lb[lb.length - 1].score;
+
+    // ---------- clasificación global (Supabase); localStorage no guarda ranking ----------
+    get leaderboard() { return this.board; }
+    // Descarga el TOP 10 global. Si falla, registra el error y deja el último ranking conocido.
+    async refreshLeaderboard() {
+      try {
+        this.board = await BK.LeaderboardService.top(10);
+        this.boardError = false;
+      } catch (e) {
+        console.error('[Leaderboard] No se pudo consultar la clasificación:', e);
+        this.boardError = true;
+      }
+      return this.board;
     }
-    // Inserta la puntuación y devuelve su posición (1-10) o 0 si no entra.
-    addScore(name, score) {
-      const clean = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 14) || 'Encargado';
-      const lb = this.leaderboard.slice();
-      const entry = { name: clean, score: Math.round(score), date: Date.now() };
-      let i = lb.findIndex((e) => entry.score > e.score);
-      if (i < 0) i = lb.length;
-      lb.splice(i, 0, entry);
-      this.state.leaderboard = lb.slice(0, 10);
+    // ¿Entraría esta puntuación en el TOP 10 global? Falso si la clasificación no está disponible.
+    async qualifies(score) {
+      const lb = await this.refreshLeaderboard();
+      if (this.boardError) return false;
+      return lb.length < 10 || Math.round(score) > lb[lb.length - 1].score;
+    }
+    // Inserta la puntuación y devuelve su posición (1-10), 0 si no entra o null si no se pudo guardar.
+    async addScore(name, score) {
+      const clean = BK.LeaderboardService.cleanName(name), value = Math.round(score);
       this.state.playerName = clean;
       this.save();
-      return i < 10 ? i + 1 : 0;
+      try {
+        await BK.LeaderboardService.insert(clean, value);
+      } catch (e) {
+        console.error('[Leaderboard] No se pudo guardar la puntuación:', e);
+        return null;
+      }
+      const lb = await this.refreshLeaderboard();
+      let rank = -1;
+      lb.forEach((e, i) => { if (e.name === clean && e.score === value && (rank < 0 || e.date >= lb[rank].date)) rank = i; });
+      return rank >= 0 ? rank + 1 : 0;
     }
-  }
-  BK.SaveSystem = SaveSystem;
+  }  BK.SaveSystem = SaveSystem;
 })();

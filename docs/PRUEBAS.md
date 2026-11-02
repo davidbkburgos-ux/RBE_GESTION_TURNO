@@ -241,3 +241,8 @@ No validado: móvil físico, contraste medido con herramienta específica, vista
 - Mientras dura, el reloj y la simulación están congelados; solo se mueve el encargado.
 - Pasos interactivos que avanzan solos al hacer la acción: mover, abrir Operación, cerrarla y pulsar un empleado.
 - Los tests de consola usan `G.noTutorial = true`.
+
+## V5.24 · Clasificación global en Supabase
+- Nuevo `src\systems\LeaderboardService.js` (REST de Supabase con la publishable key, tabla `leaderboard`). `SaveSystem` usa ese servicio para `refreshLeaderboard`, `qualifies` y `addScore` (ahora async); el resto sigue en localStorage.
+- Si Supabase falla: error en consola, el juego continúa y la clasificación se muestra como no disponible.
+- Verificado: lectura real, inserción y errores con fetch simulado.

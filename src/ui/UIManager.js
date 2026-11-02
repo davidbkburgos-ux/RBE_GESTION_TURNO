@@ -696,15 +696,32 @@
       });
       const total = s.score + kpi.total;
       const board = h('div', { class: 'lb-save' });
-      const renderSave = () => {
+      const renderSave = async () => {
         board.innerHTML = '';
         if (saved) { board.appendChild(h('p', { class: 'best', text: saved > 0 ? '🏅 Guardado en el puesto ' + saved + ' de la clasificación.' : 'Tu puntuación no entra en el TOP 10.' })); return; }
-        if (!G.save.qualifies(total)) { board.appendChild(h('p', { class: 'sub', text: 'Tu puntuación (' + total + ') no alcanza el TOP 10 actual.' })); return; }
+        board.appendChild(h('p', { class: 'sub', text: 'Comprobando la clasificación…' }));
+        const ok = await G.save.qualifies(total);
+        if (!board.isConnected) return;
+        board.innerHTML = '';
+        if (G.save.boardError) { board.appendChild(h('p', { class: 'sub', text: 'Clasificación no disponible ahora mismo. Tu partida se ha jugado con normalidad.' })); return; }
+        if (!ok) { board.appendChild(h('p', { class: 'sub', text: 'Tu puntuación (' + total + ') no alcanza el TOP 10 actual.' })); return; }
         const input = h('input', { type: 'text', maxlength: '14', placeholder: 'Tu nombre', 'aria-label': 'Nombre para la clasificación', value: G.save.state.playerName || '' });
-        const save = () => { saved = G.save.addScore(input.value, total) || -1; s.savedRank = saved; renderSave(); };
+        const btn = h('button', { class: 'btn primary', type: 'button', text: 'Guardar' });
+        const msg = h('p', { class: 'sub' });
+        let busy = false;
+        const save = async () => {
+          if (busy) return;
+          busy = true; btn.disabled = true;
+          const rank = await G.save.addScore(input.value, total);
+          busy = false; btn.disabled = false;
+          if (rank === null) { msg.textContent = 'No se pudo guardar la puntuación. Inténtalo de nuevo.'; return; }
+          saved = rank || -1; s.savedRank = saved; renderSave();
+        };
+        btn.onclick = save;
         input.addEventListener('keydown', (e) => { if (e.key !== 'Tab') e.stopPropagation(); if (e.key === 'Enter') save(); });
         board.appendChild(h('p', { class: 'lead', text: '🏆 ¡Entras en el TOP 10! Escribe tu nombre:' }));
-        board.appendChild(h('div', { class: 'lb-form' }, input, h('button', { class: 'btn primary', type: 'button', text: 'Guardar', onclick: save })));
+        board.appendChild(h('div', { class: 'lb-form' }, input, btn));
+        board.appendChild(msg);
         setTimeout(() => input.focus(), 60);
       };
       let saved = s.savedRank || 0;
@@ -736,27 +753,36 @@
       return c;
     }
     showLeaderboard(back) {
-      const G = this.G, lb = G.save.leaderboard;
+      const G = this.G;
       const fmt = (d) => { try { return new Date(d).toLocaleDateString('es-ES'); } catch (e) { return ''; } };
-      const slot = (i, cls) => {
-        const e = lb[i];
-        return h('div', { class: 'lb-pod ' + cls + (e ? '' : ' empty') },
-          h('div', { class: 'lb-medal', text: ['🥇', '🥈', '🥉'][i] }),
-          e ? this.avatarCanvas(64, 84, 1.25) : h('div', { class: 'lb-ghost', text: '?' }),
-          h('b', { class: 'lb-name', text: e ? e.name : '—' }),
-          h('span', { class: 'lb-score', text: e ? String(e.score) : '' }),
-          h('div', { class: 'lb-step', text: String(i + 1) }));
+      const render = (lb, status) => {
+        const slot = (i, cls) => {
+          const e = lb[i];
+          return h('div', { class: 'lb-pod ' + cls + (e ? '' : ' empty') },
+            h('div', { class: 'lb-medal', text: ['🥇', '🥈', '🥉'][i] }),
+            e ? this.avatarCanvas(64, 84, 1.25) : h('div', { class: 'lb-ghost', text: '?' }),
+            h('b', { class: 'lb-name', text: e ? e.name : '—' }),
+            h('span', { class: 'lb-score', text: e ? String(e.score) : '' }),
+            h('div', { class: 'lb-step', text: String(i + 1) }));
+        };
+        const rest = [];
+        for (let i = 3; i < 10; i++) {
+          const e = lb[i];
+          rest.push(h('li', { class: e ? '' : 'empty' }, h('span', { class: 'lb-pos', text: String(i + 1) }), h('span', { class: 'lb-n', text: e ? e.name : '—' }), h('span', { class: 'lb-d', text: e ? fmt(e.date) : '' }), h('b', { text: e ? String(e.score) : '' })));
+        }
+        const note = status === 'loading' ? 'Cargando la clasificación…' : status === 'error' ? 'Clasificación no disponible ahora mismo. Inténtalo más tarde.' : lb.length ? '' : 'Aún no hay puntuaciones. Termina un turno para entrar en la clasificación.';
+        const body = h('div', { class: 'lb' },
+          note ? h('p', { class: 'sub', text: note }) : '',
+          h('div', { class: 'lb-podium' }, slot(1, 'p2'), slot(0, 'p1'), slot(2, 'p3')),
+          h('ol', { class: 'lb-list', start: '4' }, ...rest));
+        this.modal({ title: '🏆 Clasificación · TOP 10', body, closable: false, cls: 'wide', buttons: [{ label: 'Cerrar', primary: true, onClick: () => { if (back) back(); } }], onClose: null });
+        return this.modalOpts;
       };
-      const rest = [];
-      for (let i = 3; i < 10; i++) {
-        const e = lb[i];
-        rest.push(h('li', { class: e ? '' : 'empty' }, h('span', { class: 'lb-pos', text: String(i + 1) }), h('span', { class: 'lb-n', text: e ? e.name : '—' }), h('span', { class: 'lb-d', text: e ? fmt(e.date) : '' }), h('b', { text: e ? String(e.score) : '' })));
-      }
-      const body = h('div', { class: 'lb' },
-        lb.length ? '' : h('p', { class: 'sub', text: 'Aún no hay puntuaciones. Termina un turno para entrar en la clasificación.' }),
-        h('div', { class: 'lb-podium' }, slot(1, 'p2'), slot(0, 'p1'), slot(2, 'p3')),
-        h('ol', { class: 'lb-list', start: '4' }, ...rest));
-      this.modal({ title: '🏆 Clasificación · TOP 10', body, closable: false, cls: 'wide', buttons: [{ label: 'Cerrar', primary: true, onClick: () => { if (back) back(); } }], onClose: null });
+      let current = render(G.save.leaderboard, 'loading');
+      G.save.refreshLeaderboard().then((lb) => {
+        // Solo redibuja si el jugador sigue viendo esta misma pantalla.
+        if (this.modalOpts === current) render(lb, G.save.boardError ? 'error' : 'ok');
+      });
     }
 
     // ---------- tutorial ----------
