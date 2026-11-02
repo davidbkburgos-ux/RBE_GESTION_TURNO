@@ -97,7 +97,7 @@
         if (ev && !G.events.beginAuto(ev)) { this.finish(job, true); return true; }
         return false;
       }
-      job.left -= dt * (job.worker.workSpeed || 1);
+      job.left -= dt * G.employees.workSpeedFor(job.worker, job.category);
       if (job.left > 0) return false;
       if (ev) G.events.completeAuto(ev);
       else if (job.table) { job.table.state = 'clean'; job.table.reserved = false; job.table.failedAt = 0; BK.bus.emit('autonomy:table', { table: job.table }); }

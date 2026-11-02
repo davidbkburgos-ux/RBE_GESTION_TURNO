@@ -16,7 +16,7 @@
       this.len = G.cfg.npc.vehicleLength;
       this.wid = Math.round(this.len * 0.5);
       this.gap = G.cfg.npc.vehicleGap;
-      this.colors = ['#8c2f2f', '#2f4f7a', '#d4d4d4', '#3a3a3a', '#4c6b43', '#c9a227', '#6a3f7a', '#a8571f'];
+      this.colors = ['#8c2f2f', '#2f4f7a', '#d4d4d4', '#3a3a3a', '#4c6b43', '#c9a227', '#6a3f7a', '#a8571f', '#e8e8e8', '#1f6f8b', '#b3262e', '#5b6770'];
       BK.bus.on('event:failed', (e) => this.onDone(e.ev, false));
       BK.bus.on('event:resolved', (e) => this.onDone(e.ev, true));
       BK.bus.on('event:dismissed', (ev) => this.onDone(ev, null));
@@ -38,6 +38,10 @@
     spawn() {
       if (!this.canSpawn()) return null;
       const car = new BK.Vehicle('V' + (++this.seq), U.pick(this.colors), this.len, this.wid);
+      // Aspecto cosmético derivado del id (no consume el RNG de la simulación)
+      const hv = Math.imul(this.seq * 2654435761 >>> 0, 2246822519) >>> 0;
+      car.body = BK.CAR_BODIES[(hv >>> 8) % BK.CAR_BODIES.length];
+      car.acc = BK.CAR_ACCS[(hv >>> 16) % BK.CAR_ACCS.length];
       car.stop = 'order'; car.state = 'driving'; car.s = 0;
       car.arrival = this.G.time;
       car.phaseTimes = { arrival: car.arrival, orderStart: null, orderEnd: null, pickupStart: null, exit: null };

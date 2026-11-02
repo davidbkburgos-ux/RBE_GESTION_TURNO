@@ -14,7 +14,7 @@
     { "id": "opening-clean-equipment", "zone": "hotProduction", "label": "Limpieza de equipos", "required": true, "questionPool": "restroom-opening", "point": "cleanEquipment", "action": "clean", "prompt": "Limpieza de equipos", "checklist": true },
     { "id": "opening-dining", "zone": "hall", "label": "Limpieza de sala", "required": true, "questionPool": "hall-opening", "point": "cleanDining", "action": "clean", "prompt": "Limpieza de sala", "checklist": true },
     { "id": "opening-exterior", "zone": "exterior", "label": "Revisión de exteriores", "required": true, "questionPool": "exterior-opening", "point": "exteriorReview", "action": "inspect", "prompt": "Revisión de exteriores", "checklist": true },
-    { "id": "opening-equipment", "zone": "hotProduction", "label": "Encendido de maquinaria", "required": true, "questionPool": "kitchen-opening", "point": "startEquipment", "action": "inspect", "prompt": "Encendido de maquinaria", "checklist": true },
+    { "id": "opening-equipment", "zone": "hotProduction", "label": "Toma de Temperatura Carne", "required": true, "questionPool": "kitchen-opening", "minigame": "temperature", "point": "startEquipment", "action": "inspect", "prompt": "Toma de Temperatura Carne", "checklist": true },
     { "id": "open-door", "zone": "entrance", "label": "Abrir puerta principal · 12:00", "required": true, "questionPool": null, "point": "mainDoor", "action": "door", "prompt": "Puerta principal" }
   ],
   "texts": {

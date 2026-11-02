@@ -13,6 +13,9 @@
         const locked = t.action === 'door' && !G.opening.checksDone;
         out.push({ kind: 'task', id: t.id, task: t, x: p[0], y: p[1], done: t.done, locked, label: t.label });
       });
+      if (G.briefing && G.briefing.available) {
+        out.push({ kind: 'briefing', id: 'opening-briefing', task: { action: 'briefing' }, x: G.briefing.point.x, y: G.briefing.point.y, label: 'Briefing de apertura' });
+      }
       return out;
     }
     // Devuelve el interactuable más cercano a un punto del mundo
@@ -27,6 +30,7 @@
       return best;
     }
     activate(it) {
+      if (it.kind === 'briefing') return this.G.briefing.start();
       if (it.kind === 'task') return this.G.player.goTask(it.task);
       return false;
     }

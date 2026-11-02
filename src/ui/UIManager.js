@@ -67,6 +67,7 @@
         button.addEventListener('click', () => {
           if (!G.debugSimulation) return;
           const type = button.dataset.debugSpawn;
+          if (type === 'truckDelivery') { G.truckDelivery.forceStart(); return; }
           if (G.restaurantState !== 'OPEN') { this.toast('Abre el restaurante antes de probar eventos.', 'warn'); return; }
           if (type === 'complaint') G.customers.spawnComplaint();
           else if (type === 'dirtyTable') {
@@ -116,6 +117,15 @@
         this.toast('Checklist cerrado: ' + e.tasks.length + ' tarea(s) omitida(s). El turno continúa.', 'warn', G.cfg.operations.messageTtl.important * 1000);
       });
       bus.on('opening:checklistClosed', () => this.toast('El checklist de preparación terminó a las 11:15.', 'warn', G.cfg.operations.messageTtl.minor * 1000));
+      bus.on('truck:ready', () => {
+        this.toast('🚚 Conway está listo para su descarga.', 'info', 5200);
+        this.showTruckDeliveryAssignment(G.truckDelivery.availableEmployees);
+      });
+      bus.on('truck:manifest', (e) => this.showTruckManifest(e));
+      bus.on('truck:resolved', (e) => this.toast(
+        e.correct ? 'Albarán revisado correctamente: +50 puntos. El camión Conway se retira.' : 'Revisión incorrecta del albarán: -50 puntos. El camión Conway se retira.',
+        e.correct ? 'good' : 'bad', 5200
+      ));
       bus.on('event:appearing', (e) => {
         const T = G.ev.types[e.type];
         G.audio.play(e.type === 'complaint' ? 'complaint' : e.type === 'pendingOrder' ? 'bell' : e.type === 'kiosk' ? 'kiosk' : e.type === 'vehicle' ? 'car' : 'alert');
@@ -154,7 +164,11 @@
       bus.on('production:prep-needed', (e) => this.toast('📦 Tramo de ' + e.tramo.label + ': prepara producto en la cámara de congelado.', 'warn', 6000));
       bus.on('production:prepared', (e) => this.toast('📦 Producto preparado para ' + e.tramo.label + ': +' + e.batch.MAIN_PRODUCT + ' uds. disponibles para reponer.', 'good', 3500));
       bus.on('employees:critical', (e) => this.toast('⚠ Posición crítica sin cobertura: ' + e.label + '.', 'warn', G.cfg.operations.messageTtl.important * 1000));
-      bus.on('manager:positioned', ({ position }) => this.toast('ENCARGADO APOYANDO · ' + G.cfg.operations.stations[position].label, 'info', 2200));
+      bus.on('manager:positioned', ({ position }) => {
+        const channel = G.employees.managerSupportChannel();
+        const label = channel === 'autoking' ? 'AutoKing' : channel === 'delivery' ? 'Delivery' : channel === 'dining' ? 'Sala' : 'Mostrador / kiosco';
+        this.toast('ENCARGADO APOYANDO · ' + G.cfg.operations.stations[position].label + ' · +20 % velocidad en ' + label, 'info', 3000);
+      });
       bus.on('manager:left-position', () => this.toast('El encargado deja el puesto para atender el restaurante.', 'warn', 2200));
       bus.on('employees:shift-warning', (e) => this.toast('Cambio de turno: entra el equipo de cena (' + e.active + ' activos).', 'info', G.cfg.operations.messageTtl.important * 1000));
       bus.on('bottleneck:change', () => { if (!this.el.operationsPanel.hidden) this.renderOperations(); });
@@ -193,6 +207,7 @@
       E.hTasks.textContent = (csl ? 'CSL ' : '') + tdone + '/' + checklist.length;
       this.updateTasks();
       this.updateBubbles(dt);
+      this.updateBriefingBubble();
       this.chipT -= dt;
       if (this.chipT <= 0) { this.chipT = 0.2; this.updateChips(); }
       if (this.capT > 0) { this.capT -= dt; if (this.capT <= 0) E.caption.classList.remove('show'); }
@@ -401,12 +416,113 @@
       }
     }
 
+    updateBriefingBubble() {
+      if (!this.q || !this.G.briefing) return;
+      if (this.q.kind === 'briefing-minigame') {
+        const marker = this.q.el.querySelector('.briefing-marker');
+        if (marker) marker.style.left = (this.G.briefing.indicatorPosition * 100) + '%';
+      } else if (this.q.kind === 'briefing-roulette') {
+        const needle = this.q.el.querySelector('.briefing-needle');
+        if (needle) needle.style.transform = 'rotate(' + this.G.briefing.needleAngle + 'deg)';
+      }
+    }
+
+    showBriefingQuestion(question, index, total) {
+      this.closeQuestion(true);
+      const G = this.G;
+      const box = h('div', { class: 'qbox briefing-q', role: 'dialog', 'aria-label': 'Pregunta de briefing' },
+        h('div', { class: 'qhead' },
+          h('span', { class: 'qtitle', text: '🗣️ Briefing · Pregunta ' + (index + 1) + '/' + total }),
+          h('button', { class: 'xbtn', 'aria-label': 'Cancelar briefing', onclick: () => this.closeQuestion() }, '✕')),
+        h('p', { class: 'qtext', text: question.question }),
+        question.options.map((option, i) => h('button', { class: 'opt', onclick: () => G.briefing.answer(i) },
+          h('span', { class: 'num', 'aria-hidden': 'true' }, String(i + 1)),
+          h('span', { text: option }))));
+      this.q = this.addBubble({
+        el: box,
+        anchor: () => ({ x: G.player.char.x, y: G.player.char.y - 70 }),
+        dock: true, gap: 8, gapBelow: 40, kind: 'briefing-question', options: question.options.length,
+        answer: (choice) => G.briefing.answer(choice)
+      });
+      const first = box.querySelector('.opt');
+      if (first) first.focus({ preventScroll: true });
+    }
+
+    showBriefingMinigame() {
+      this.closeQuestion(true);
+      const G = this.G;
+      const gh = G.briefing.greenHalf, w = (v) => 'flex:0 0 ' + (v * 100).toFixed(2) + '%';
+      const bar = h('div', { class: 'briefing-zonebar', role: 'img', 'aria-label': 'Rojo en los extremos, amarillo a los lados y verde en el centro' },
+        h('span', { class: 'briefing-red', style: w(0.2) }), h('span', { class: 'briefing-yellow', style: w(0.3 - gh) }),
+        h('span', { class: 'briefing-green', style: w(gh * 2) }), h('span', { class: 'briefing-yellow', style: w(0.3 - gh) }),
+        h('span', { class: 'briefing-red', style: w(0.2) }), h('i', { class: 'briefing-marker', 'aria-hidden': 'true' }));
+      const box = h('div', { class: 'qbox briefing-q briefing-game', role: 'dialog', 'aria-label': 'Precisión del briefing' },
+        h('div', { class: 'qhead' },
+          h('span', { class: 'qtitle', text: '🎯 Mide el ritmo del equipo' }),
+          h('button', { class: 'xbtn', 'aria-label': 'Cancelar briefing', onclick: () => this.closeQuestion() }, '✕')),
+        h('p', { class: 'qtext', text: 'Pulsa «Acabar briefing» cuando el indicador esté en verde para mejorar las opciones de conseguir un 15 %.' }),
+        bar,
+        h('div', { class: 'briefing-zone-legend', style: 'grid-template-columns:' + [0.2, 0.3 - gh, gh * 2, 0.3 - gh, 0.2].map((v) => 'minmax(0,' + v.toFixed(3) + 'fr)').join(' ') },
+          ['5 %', '10 %', '15 %', '10 %', '5 %'].map((label, index) =>
+            h('span', { class: 'zone-' + ['red', 'yellow', 'green', 'yellow', 'red'][index], text: label }))),
+        h('button', { class: 'btn primary', onclick: () => G.briefing.finishMinigame() }, 'Acabar briefing'));
+      this.q = this.addBubble({
+        el: box, anchor: () => ({ x: G.player.char.x, y: G.player.char.y - 70 }),
+        dock: true, gap: 8, gapBelow: 40, kind: 'briefing-minigame'
+      });
+    }
+
+    showBriefingRoulette() {
+      this.closeQuestion(true);
+      const G = this.G, odds = G.briefing.odds;
+      const colors = { 5: '#d83b2d', 10: '#f2b72b', 15: '#2fbf62' };
+      const stops = [];
+      G.briefing.rouletteSegments.forEach((segment) => {
+        const start = segment.start * 1.8, end = (segment.start + segment.weight) * 1.8;
+        stops.push(colors[segment.value] + ' ' + start + 'deg ' + end + 'deg');
+      });
+      stops.push('transparent 180deg 360deg');
+      const gradient = 'conic-gradient(from 270deg, ' + stops.join(', ') + ')';
+      const labels = G.briefing.rouletteSegments.map((segment) => {
+        const angle = (270 + (segment.start + segment.weight / 2) * 1.8) * Math.PI / 180;
+        const x = 110 + Math.sin(angle) * 68, y = 110 - Math.cos(angle) * 68;
+        return h('span', {
+          class: 'briefing-wheel-label value-' + segment.value,
+          style: 'left:' + x.toFixed(1) + 'px;top:' + y.toFixed(1) + 'px',
+          text: segment.value + '%'
+        });
+      });
+      const wheel = h('div', { class: 'briefing-wheel', 'aria-label': 'Ruleta de velocidad' },
+        h('div', { class: 'briefing-wheel-disc', style: 'background:' + gradient }),
+        ...labels,
+        h('i', { class: 'briefing-needle', 'aria-hidden': 'true' }),
+        h('i', { class: 'briefing-wheel-hub', 'aria-hidden': 'true' }));
+      const box = h('div', { class: 'qbox briefing-q briefing-wheel-box', role: 'dialog', 'aria-label': 'Ruleta de bonus' },
+        h('div', { class: 'qhead' }, h('span', { class: 'qtitle', text: '🎡 Bonus de velocidad' })),
+        h('p', { class: 'qtext', text: 'La ruleta decide el aumento permanente para el equipo durante este turno.' }),
+        wheel,
+        h('div', { class: 'briefing-wheel-legend' },
+          h('span', { text: '5 % · ' + odds[5] + ' %', style: 'color:#a52a20' }),
+          h('span', { text: '10 % · ' + odds[10] + ' %', style: 'color:#8a6100' }),
+          h('span', { text: '15 % · ' + odds[15] + ' %', style: 'color:#1b7136' })));
+      this.q = this.addBubble({
+        el: box, anchor: () => ({ x: G.player.char.x, y: G.player.char.y - 70 }),
+        dock: true, gap: 8, gapBelow: 40, kind: 'briefing-roulette'
+      });
+    }
+
+    showBriefingResult(bonus) {
+      this.closeQuestion(true);
+      this.toast('🗣️ Briefing completado · +' + bonus + ' % de velocidad para el equipo durante el turno. Se acumula con el apoyo del encargado.', 'good', 6500);
+    }
+
     // ---------- pregunta de revisión ----------
     showQuestion(e) {
       const G = this.G, task = e.task, q = e.q;
       this.closeQuestion(true);
       G.player.locked = true;
       G.audio.unlock();
+      if (e.minigame === 'temperature') return this.showTempGame(e);
       const done = (idx) => {
         const ok = G.opening.answer(idx);
         G.player.locked = false;
@@ -433,8 +549,145 @@
       this.q = this.addBubble({ el: box, anchor: () => ({ x: G.player.char.x, y: G.player.char.y - 70 }), dock: true, gap: 8, gapBelow: 40, kind: 'question', options: q.options.length, answer: done });
       const first = box.querySelector('.opt'); if (first) first.focus({ preventScroll: true });
     }
+    // ---------- minijuego: toma de temperatura de la carne ----------
+    showTempGame(e) {
+      const G = this.G, task = e.task, q = e.q;
+      const W = 280, H = 190, CX = 140, CY = 100, R = 76;
+      const cv = h('canvas', { class: 'temp-cv', width: String(W), height: String(H) });
+      const ctx = cv.getContext('2d');
+      const hint = h('p', { class: 'qtext temp-hint', text: 'Paso 1 · Pincha la patty en el punto correcto.' });
+      const lcd = h('div', { class: 'temp-lcd' }, h('span', { class: 'temp-val', text: '--.-' }), h('span', { class: 'temp-unit', text: '°C' }));
+      const optsBox = h('div', { class: 'temp-opts' });
+      const box = h('div', { class: 'qbox temp-game', role: 'dialog', 'aria-label': task.prompt },
+        h('div', { class: 'qhead' }, h('span', { class: 'qtitle', text: '🌡️ ' + task.prompt }),
+          h('button', { class: 'xbtn', 'aria-label': 'Cerrar minijuego', onclick: () => this.closeQuestion() }, '✕')),
+        hint, cv, lcd, optsBox);
+      lcd.style.display = 'none';
+      let step = 'point', mouse = { x: CX, y: CY }, tip = null, ang = 45, goodPoint = false, goodAngle = false, temp = 20, target = 0, tReading = 0, finished = false;
+      const inPatty = (x, y) => Math.hypot(x - CX, y - CY) <= R - 6;
+      // Rayas de parrilla diagonales: u = (x-CX)+(y-CY); marcas en ±20, ±60, ±100; el hueco central es u≈0.
+      const MARKS = [-100, -60, -20, 20, 60, 100];
+      const drawPatty = () => {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(CX + 4, CY + 8, R + 4, R - 2, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = '#6b3d1e'; ctx.beginPath(); ctx.arc(CX, CY, R, 0, 7); ctx.fill();
+        ctx.fillStyle = '#85502a'; ctx.beginPath(); ctx.arc(CX - 6, CY - 6, R - 12, 0, 7); ctx.fill();
+        ctx.save(); ctx.beginPath(); ctx.arc(CX, CY, R - 2, 0, 7); ctx.clip();
+        ctx.strokeStyle = '#1b1208'; ctx.lineWidth = 8; ctx.lineCap = 'butt';
+        MARKS.forEach((u) => { ctx.beginPath(); ctx.moveTo(CX + u + 200, CY - 200); ctx.lineTo(CX + u - 200, CY + 200); ctx.stroke(); });
+        ctx.restore();
+        ctx.strokeStyle = '#3a2008'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(CX, CY, R, 0, 7); ctx.stroke();
+      };
+      const drawProbe = (x, y, deg) => {
+        const a = deg * Math.PI / 180, len = 92, bx = x + Math.cos(a) * len, by = y - Math.sin(a) * len;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#d9dde2'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(bx, by); ctx.stroke();
+        ctx.strokeStyle = '#23272d'; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(a) * 22, by - Math.sin(a) * 22); ctx.stroke();
+        ctx.fillStyle = '#e53935'; ctx.beginPath(); ctx.arc(x, y, 3.2, 0, 7); ctx.fill();
+      };
+      const drawProtractor = () => {
+        ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(tip.x, tip.y, 44, -Math.PI / 2, 0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(tip.x, tip.y); ctx.lineTo(tip.x + 52, tip.y); ctx.moveTo(tip.x, tip.y); ctx.lineTo(tip.x, tip.y - 52); ctx.stroke();
+        for (let d = 15; d < 90; d += 15) { const a = d * Math.PI / 180; ctx.beginPath(); ctx.moveTo(tip.x + Math.cos(a) * 40, tip.y - Math.sin(a) * 40); ctx.lineTo(tip.x + Math.cos(a) * 48, tip.y - Math.sin(a) * 48); ctx.stroke(); }
+        ctx.font = '700 11px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(255,255,255,.9)';
+        [0, 30, 60, 90].forEach((d) => {
+          const a = d * Math.PI / 180, lx = tip.x + Math.cos(a) * 66, ly = tip.y - Math.sin(a) * 66;
+          ctx.fillText(d + '°', Math.min(W - 14, lx), Math.max(10, ly));
+        });
+        ctx.fillStyle = 'rgba(0,0,0,.65)';
+        ctx.fillRect(8, H - 30, 52, 22);
+        ctx.fillStyle = '#fff'; ctx.font = '800 14px system-ui, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(Math.round(ang) + '°', 34, H - 19);
+      };
+      const render = () => {
+        drawPatty();
+        if (step === 'point') drawProbe(mouse.x, mouse.y, 70);
+        else if (step === 'angle') { drawProtractor(); drawProbe(tip.x, tip.y, ang); }
+        else drawProbe(tip.x, tip.y, ang);
+      };
+      const finish = (idx, extra) => {
+        if (finished) return; finished = true;
+        const ok = G.opening.answer(idx);
+        const first = task.attempts === 1;
+        const pts = ok ? G.cfg.score.openingCheckCorrect : G.cfg.score.openingCheckWrong;
+        G.audio.play(ok ? 'ok' : 'error');
+        G.player.reaction(ok);
+        this.closeQuestion();
+        if (ok) this.toast(extra || ('✔ ¡Correcto! ' + (first ? '+' + pts + ' puntos' : 'Revisión superada.')), 'good', 4200);
+        else {
+          if (G.metrics) G.metrics.fcFound = (G.metrics.fcFound || 0) + 1;
+          this.toast('🚨 1FC encontrado' + (first ? ' · ' + pts + ' puntos' : '') + '. ' + q.explanation + ' Puedes repetir la toma.', 'bad', 8000);
+        }
+      };
+      const showQuestion = () => {
+        step = 'question';
+        hint.textContent = '❌ No se alcanzan los 68 ºC. ' + q.question;
+        optsBox.replaceChildren(...q.options.map((o, i) => h('button', { class: 'opt', onclick: () => finish(i, '✔ Procedimiento correcto: L.A.H.A y ajuste de broiler. Revisión superada.') }, h('span', { class: 'num', 'aria-hidden': 'true' }, String(i + 1)), h('span', { text: o.text }))));
+        const b = optsBox.querySelector('button'); if (b) b.focus({ preventScroll: true });
+      };
+      const startReading = () => {
+        step = 'reading';
+        cv.style.cursor = 'default';
+        lcd.style.display = ''; lcd.className = 'temp-lcd';
+        hint.textContent = 'Midiendo temperatura…';
+        target = goodPoint && goodAngle ? 69 + Math.random() * 6 : 52 + Math.random() * 12;
+        temp = 20; tReading = 0;
+      };
+      const pos = (ev) => { const r = cv.getBoundingClientRect(); return { x: (ev.clientX - r.left) * W / r.width, y: (ev.clientY - r.top) * H / r.height }; };
+      cv.style.cursor = 'none';
+      cv.addEventListener('pointermove', (ev) => {
+        const p = pos(ev); mouse = p;
+        if (step === 'angle') ang = Math.max(0, Math.min(90, Math.atan2(tip.y - p.y, Math.abs(p.x - tip.x)) * 180 / Math.PI));
+      });
+      cv.addEventListener('pointerdown', (ev) => {
+        const p = pos(ev); mouse = p;
+        if (step === 'point') {
+          if (!inPatty(p.x, p.y)) return;
+          tip = { x: p.x, y: p.y };
+          const u = (p.x - CX) + (p.y - CY);
+          goodPoint = Math.abs(u) <= 9 && Math.hypot(p.x - CX, p.y - CY) <= 32;
+          step = 'angle'; ang = 45;
+          hint.textContent = 'Paso 2 · Elige el ángulo de inserción y haz clic.';
+        } else if (step === 'angle') {
+          ang = Math.max(0, Math.min(90, Math.atan2(tip.y - p.y, Math.abs(p.x - tip.x)) * 180 / Math.PI));
+          goodAngle = Math.abs(ang - 45) <= 7;
+          startReading();
+        }
+      });
+      this.q = this.addBubble({ el: box, anchor: () => ({ x: G.player.char.x, y: G.player.char.y - 70 }), dock: true, gap: 8, gapBelow: 40, kind: 'question', options: 0, answer: () => {} });
+      let last = performance.now();
+      const tick = (now) => {
+        if (!box.isConnected) return;
+        const dt = Math.min(0.1, (now - last) / 1000); last = now;
+        if (step === 'reading') {
+          tReading += dt;
+          temp = Math.min(target, temp + (14 + (target - temp) * 0.6) * dt * 2);
+          const done = temp >= target - 0.05;
+          lcd.querySelector('.temp-val').textContent = temp.toFixed(1);
+          if (done) {
+            const good = goodPoint && goodAngle;
+            lcd.classList.add(good ? 'ok' : 'bad');
+            step = 'result';
+            hint.textContent = good ? '✔ Temperatura correcta: ' + temp.toFixed(1) + ' ºC (≥ 68 ºC).' : '❌ Temperatura insuficiente: ' + temp.toFixed(1) + ' ºC.';
+            setTimeout(() => { if (!box.isConnected) return; if (good) finish(q.correctIndex); else showQuestion(); }, 1300);
+          }
+        }
+        render();
+        requestAnimationFrame(tick);
+      };
+      render();
+      requestAnimationFrame(tick);
+    }
     closeQuestion(silent) {
       if (!this.q) return;
+      if (this.q.kind === 'briefing-roulette' && !silent) return;
+      if (!silent && this.q.kind && this.q.kind.startsWith('briefing-')) {
+        this.G.briefing.cancel();
+        return;
+      }
       if (!silent && this.q.kind === 'complaint' && !this.q.answered) {
         this.q.onCancel();
         return;
@@ -473,6 +726,36 @@
     get priorityOpen() { return !!this.prioEl; }
 
     // ---------- modales ----------
+    showTruckDeliveryAssignment(employees) {
+      const options = employees.map((employee) => h('option', { value: employee.id, text: employee.displayId + ' · ' + employee.role }));
+      const select = h('select', { id: 'truckEmployeeSelect', 'aria-label': 'Empleado asignado a la descarga' }, options);
+      const body = h('div', {},
+        h('p', { class: 'lead', text: 'Hay cajas de Conway en el AutoKing. Asigna a un empleado para llevarlas a la cámara de congelado; también puedes hacer clic en una caja para llevarla tú.' }),
+        employees.length ? h('label', {}, 'Empleado asignado ', select) : h('p', { class: 'sub', text: 'No hay empleados disponibles: tendrás que realizar la descarga.' }));
+      const buttons = [];
+      if (employees.length) buttons.push({
+        label: 'Asignar y descargar', primary: true,
+        onClick: () => this.G.truckDelivery.assignEmployee(select.value)
+      });
+      buttons.push({ label: 'Lo haré yo', primary: employees.length === 0, onClick: () => this.G.truckDelivery.assignManager() });
+      this.modal({ title: '🚚 Descarga de Conway', body, buttons, closable: false, pause: true });
+    }
+
+    showTruckManifest(e) {
+      const body = h('div', {},
+        h('p', { class: 'lead', text: 'Revisa la mercancía antes de cerrar la descarga.' }),
+        h('ul', { class: 'stats' },
+          h('li', {}, h('span', { text: 'Cajas según albarán' }), h('b', { text: String(e.expected) })),
+          h('li', {}, h('span', { text: 'Cajas transportadas a cámara' }), h('b', { text: String(e.delivered) }))));
+      this.modal({
+        title: '📋 Albarán de Conway', body, closable: false, pause: true,
+        buttons: [
+          { label: 'Firmar albarán', primary: true, onClick: () => this.G.truckDelivery.resolveManifest('sign') },
+          { label: 'Solicitar abono', onClick: () => this.G.truckDelivery.resolveManifest('credit') }
+        ]
+      });
+    }
+
     modal(o) {
       const root = this.el.modalRoot, G = this.G;
       const title = h('h2', { id: 'mTitle', text: o.title });
@@ -507,6 +790,7 @@
       if (this.tutorialStep) { this.endTutorial(); return true; }
       if (this.prioEl) { this.G.priority.dismissOffer(); return true; }
       if (this.q) { this.closeQuestion(); return true; }
+      if (this.G.briefing && this.G.briefing.active) { this.G.briefing.cancel(); return true; }
       return false;
     }
 
@@ -519,6 +803,7 @@
         h('p', { class: 'lead', text: 'Planifica el equipo antes de iniciar el reloj. Después gestiona preparación, producto, producción, colas y atención al cliente hasta la 01:00.' }),
         h('ul', { class: 'legend' }, G.openingData.legend.map((l) => h('li', { text: l }))),
         h('div', { class: 'row' }, h('label', {}, 'Dificultad ', diffSel), h('label', {}, 'Reloj ', spdSel)),
+        this.genderPicker(),
         best !== null ? h('p', { class: 'best', text: '🏆 Mejor puntuación: ' + best }) : '');
       const buttons = [{ label: 'Organizar posicionamiento', primary: true, close: false, onClick: () => { this.applyStartSelects(); this.closeModal(); this.showRosterPlan(); } }];
       if (run) buttons.push({ label: 'Continuar turno (' + BK.util.fmtClock(run.t) + ', ' + run.scoring.score + ' pts)', close: false, onClick: () => { this.applyStartSelects(); this.closeModal(); G.resumeGame(run); } });
@@ -532,7 +817,8 @@
       const word = (txt, cls) => h('span', { class: 'tl-word ' + cls }, ...[...txt].map((c, i) => h('span', { class: 'tl-ch', style: 'animation-delay:' + (i * 0.12).toFixed(2) + 's', text: c === ' ' ? '\u00A0' : c })));
       this.titleLogo = h('div', { class: 'title-logo', 'aria-hidden': 'true' },
         word('RBE', 'tl-rbe'), word('TURNO DE', 'tl-sub'), word('ENCARGADO', 'tl-main'),
-        h('span', { class: 'tl-tag', text: 'Gestiona el turno · prioriza · lidera al equipo' }));
+        h('span', { class: 'tl-tag', text: 'Gestiona el turno · prioriza · lidera al equipo' }),
+        h('span', { class: 'tl-tag tl-ver', text: 'Versión ' + (this.G.cfg.meta.version || '') }));
       document.body.appendChild(this.titleLogo);
     }
     hideTitleLogo() { if (this.titleLogo) { this.titleLogo.remove(); this.titleLogo = null; } }
@@ -745,12 +1031,31 @@
       this.modal({ title: '🌙 ' + G.openingData.texts.gameEnd, body, closable: false, cls: 'wide', buttons: [{ label: 'Jugar de nuevo', primary: true, onClick: () => G.newGame() }, { label: 'Clasificación', close: false, onClick: () => this.showLeaderboard(() => this.showSummary(s)) }, { label: 'Volver al menú', onClick: () => G.toMenu() }] });
     }
 
-    avatarCanvas(w = 64, h2 = 84, k = 1) {
+    avatarCanvas(w = 64, h2 = 84, k = 1, pal) {
       const c = document.createElement('canvas');
       c.width = w; c.height = h2; c.className = 'lb-avatar';
-      const ch = new BK.Character({ id: 'LB', kind: 'manager', pal: 'manager', x: w / 2, y: h2 * 0.84, dir: 0 });
+      const ch = new BK.Character({ id: 'LB', kind: 'manager', pal: pal || (this.G.save.settings.managerGender === 'f' ? 'managerF' : 'manager'), x: w / 2, y: h2 * 0.84, dir: 0 });
       BK.CharacterAnimationSystem.draw(c.getContext('2d'), ch, k, 1);
       return c;
+    }
+    genderPicker() {
+      const G = this.G;
+      const wrap = h('div', { class: 'row gender-pick', role: 'radiogroup', 'aria-label': 'Avatar del encargado' });
+      const render = () => {
+        wrap.textContent = '';
+        wrap.appendChild(h('span', { text: 'Tu encargado ' }));
+        [['m', 'Encargado', 'manager'], ['f', 'Encargada', 'managerF']].forEach(([g, label, pal]) => {
+          const on = (G.save.settings.managerGender === 'f' ? 'f' : 'm') === g;
+          const prev = this.avatarCanvas(64, 84, 1, pal); prev.style.cssText = 'width:48px;height:63px;display:block;margin:0 auto';
+          wrap.appendChild(h('button', {
+            type: 'button', role: 'radio', 'aria-checked': on ? 'true' : 'false', 'aria-label': label,
+            style: 'cursor:pointer;padding:4px 10px;border-radius:10px;border:2px solid ' + (on ? '#f2b72b' : 'rgba(255,255,255,0.25)') + ';background:' + (on ? 'rgba(242,183,43,0.18)' : 'transparent') + ';color:inherit',
+            onclick: () => { G.setManagerGender(g); render(); }
+          }, prev, h('small', { text: label })));
+        });
+      };
+      render();
+      return wrap;
     }
     showLeaderboard(back) {
       const G = this.G;

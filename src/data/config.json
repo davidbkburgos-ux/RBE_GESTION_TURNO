@@ -1,5 +1,5 @@
 {
-  "meta": { "title": "Turno de Encargado", "version": "0.1.0", "saveKey": "bk-turno-v1" },
+  "meta": { "title": "Turno de Encargado", "version": "0.9.0", "saveKey": "bk-turno-v1" },
   "debugSimulation": false,
   "day": { "start": "09:00", "open": "12:00", "close": "01:00", "timeScale": 1.2, "timeScaleOptions": [1, 1.2, 2, 4] },
   "phases": [

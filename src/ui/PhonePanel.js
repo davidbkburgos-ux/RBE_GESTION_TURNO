@@ -68,7 +68,15 @@
     row(a, b, cls) { return this.ui.h('div', { class: 'ph-row ' + (cls || '') }, this.ui.h('span', {}, a), this.ui.h('b', {}, b)); }
     tab_sum() {
       const h = this.ui.h, s = this.summary(), G = this.G;
-      const bn = G.bottlenecks.items.slice(0, 6).map((b) => h('div', { class: 'ph-row ' + (b.severity === 'critical' ? 'bad' : 'warn') }, h('span', {}, '⚠ ' + b.label)));
+      const bn = G.bottlenecks.items.slice()
+        .sort((a, b) => (b.count || 0) - (a.count || 0) || Number(b.severity === 'critical') - Number(a.severity === 'critical'))
+        .map((b) => {
+          const cls = 'ph-row ' + (b.severity === 'critical' ? 'bad' : 'warn');
+          return b.station
+            ? h('button', { type: 'button', class: cls + ' ph-alert', 'aria-label': 'Apoyar en ' + G.cfg.operations.stations[b.station].label + ': ' + b.label, onclick: () => G.player.coverPosition(b.station) },
+              h('span', {}, '⚠ ' + b.label), h('b', {}, 'IR ›'))
+            : h('div', { class: cls }, h('span', {}, '⚠ ' + b.label));
+        });
       return [
         this.sec('Cobertura', this.row('Posiciones cubiertas', s.covered + ' / ' + s.total), this.bar(s.total ? (100 * s.covered) / s.total : 0)),
         this.sec('Cuellos de botella', ...(bn.length ? bn : [h('div', { class: 'ph-row ok' }, h('span', {}, 'Sin cuellos detectados'))])),

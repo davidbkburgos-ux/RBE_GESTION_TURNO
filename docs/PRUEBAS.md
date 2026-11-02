@@ -246,3 +246,41 @@ No validado: móvil físico, contraste medido con herramienta específica, vista
 - Nuevo `src\systems\LeaderboardService.js` (REST de Supabase con la publishable key, tabla `leaderboard`). `SaveSystem` usa ese servicio para `refreshLeaderboard`, `qualifies` y `addScore` (ahora async); el resto sigue en localStorage.
 - Si Supabase falla: error en consola, el juego continúa y la clasificación se muestra como no disponible.
 - Verificado: lectura real, inserción y errores con fetch simulado.
+
+## V5.25 · Señales de apoyo en Mostrador y AutoKing
+- La pestaña Resumen muestra primero las colas de Mostrador y AutoKing y ofrece el botón «IR» para que el encargado apoye en ese puesto, aunque ya tenga personal asignado.
+- El halo de apoyo en el mapa solo aparece con el móvil de Operación abierto y no añade etiquetas que se mezclen con las de posicionamiento. Los marcadores discretos de puestos vacantes mantienen el comportamiento anterior.
+- Verificado en Chromium: arranque sin errores de consola; los avisos de mapa se ocultan al cerrar el móvil; colas simuladas de ambos canales muestran avisos accionables; «IR» envía al encargado a Mostrador (con un empleado ya asignado) y AutoKing.
+
+## V5.26 · Apoyo a todos los cuellos de botella
+- Todos los cuellos del Resumen tienen una posición de apoyo y un botón «IR»: cobertura, colas, falta de producto, pedidos acumulados y sala.
+- Al apoyar en un puesto, el personal operativo asociado al canal recibe un 20 % de velocidad adicional en producción, preparación y tareas autónomas. Se puede seleccionar otro puesto desde el móvil también mientras el encargado se desplaza; el aviso confirma el canal reforzado.
+- Verificado en Chromium: 10 avisos simultáneos, todos con destino válido y botón «IR» (sin límite de seis); navegación a los siete puestos distintos, también cambiando de destino mientras el encargado se desplaza; producción de Mostrador, AutoKing, Delivery y Sala avanza ×1,2 al apoyar su canal y ×1,0 al apoyar otro.
+
+## V5.27 · Briefing de apertura
+- Antes de las 12:00 aparece un marcador opcional frente al mostrador. Al acudir, el equipo activo se reúne en arco y responde tres preguntas sobre atención al cliente y tiempos de servicio.
+- El encargado queda orientado hacia el arco del equipo durante el briefing, y el marcador incluye el icono de conversación y la etiqueta «BRIEFING».
+- El indicador oscila entre rojo, amarillo y verde a distinta velocidad según la dificultad. Las etiquetas de la barra siguen sus cinco zonas (5 %, 10 %, 15 %, 10 % y 5 %) y sus colores. La ruleta semicircular contiene 12 sectores (cuatro de 5 %, 10 % y 15 %); acertar cada zona pondera ligeramente el resultado correspondiente. El bonus obtenido acelera a todo el equipo durante el turno y se combina con el apoyo del encargado.
+- El resultado aparece como aviso superior y el briefing se cierra sin requerir otro clic; el marcador desaparece al completarlo o abrir el restaurante.
+- Verificado en Chromium: encargado orientado hacia el equipo y etiqueta «BRIEFING» visible en el marcador; interacción con el marcador, llegada y formación del equipo, tres preguntas, las tres zonas/probabilidades y los tres resultados; bonus global de ×1,15 apilado con apoyo de ×1,2; aviso superior, retorno del equipo y desaparición del marcador al abrir.
+
+## V5.28 · Descarga de camión Conway
+- Evento con 50 % de probabilidad, entre 09:00 y 10:00. Un furgón blanco con mercancía visible llega por el carril AutoKing y se detiene en el punto de pedido, con el aviso «Conway está listo para su descarga».
+- Aparecen de 4 a 6 cajas marrones. Se asigna un empleado para llevarlas una a una a la cámara (desaparecen al colocarlas) y el encargado también puede coger cajas con un clic.
+- Al terminar, el albarán muestra las cajas esperadas y las transportadas. Firmar con cifras correctas o solicitar abono con cifras discordantes suma 50 puntos; el error resta 50. En el 25 % de las descargas el albarán difiere en ±1 caja.
+- La «Revisión de exteriores» se movió a [136,640] para no solaparse con las cajas, y las cajas tienen prioridad de clic sobre las insignias.
+- Verificado en Chromium: 2.000 sorteos dan 50,15 % de camiones (llegada entre 09:00 y 09:52); descarga mixta empleado + encargado con clic real sobre cajas; albarán 6 frente a 5 resuelto con «Solicitar abono» (+50) y camión saliendo.
+
+## V5.29 · Mejora visual de personajes y vehículos
+- Sprites 2D en caché (sin coste extra por frame). Personajes modulares: base + peinado (9 estilos) + prenda (camiseta, sudadera, chaqueta, etc.) + colores + accesorios (gafas, barba, mochila, bolso) con 48 variantes de cliente y 6 de empleado (uniforme común, pelo/tono/accesorios distintos). El encargado destaca con borde claro, hombreras, reloj y corbata.
+- Selector «Tu encargado» (Encargado/Encargada) con vista previa en la pantalla de inicio; se guarda en `settings.managerGender` y también se usa en la clasificación.
+- Coches con 5 carrocerías (sedán, compacto, SUV, pickup, furgoneta), accesorios (baca, cofre, franja, taxi), ruedas, pasos de rueda, parabrisas, retrovisores, faros y pilotos. Tamaño (`len`×`wid`), colisiones, rutas y velocidades sin cambios; el aspecto se deriva del id sin consumir el RNG de la simulación.
+- La caché de sprites de personaje pasa a estar acotada (antes crecía con cada cliente).
+- Verificado en Chromium: sin errores JS, hoja de contacto de personajes y coches, empleados `employee0..9` con aspecto propio, coches renderizados en el carril, género guardado y aplicado al jugador. No se comprobaron todas las animaciones (sentado, comer, entregar) de cada variante.
+
+## V5.30 · Minijuego «Toma de Temperatura Carne»
+
+- La tarea `opening-equipment` (mismo punto `startEquipment`) sustituye «Encendido de maquinaria» y lanza un minijuego (`minigame: "temperature"`): patty de Whopper con marcas de parrilla; la sonda es el puntero.
+- Paso 1: pinchar entre dos rayas, en el centro. Paso 2: ángulo de 45º (±7º). Después el visor sube a 69–75 ºC en verde; si falla el punto o el ángulo se queda por debajo de 68 ºC en rojo.
+- Si no llega a 68 ºC: pregunta de 3 opciones (correcta «Hacer L.A.H.A y ajustar broiler» + 2 engañosas, barajadas). Acertar pasa la tarea; fallar resta 50 puntos y avisa «1FC encontrado» (`metrics.fcFound`).
+- Verificado en Chromium: camino perfecto (+100, tarea completada), mal punto + pregunta errónea (−50, toast 1FC, tarea repetible), sin errores JS. `bundle.js` editado a mano (no hay Python disponible para `tools/build_data.py`).

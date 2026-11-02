@@ -89,9 +89,30 @@
       }
       if (task.action === 'door') return this.tryOpenDoor();
       if (task.done) { BK.bus.emit('opening:repeat', task); return; }
+      if (task.minigame === 'temperature') {
+        const q = this.temperatureQuestion();
+        this.current = { task, q }; task.status = 'IN_PROGRESS';
+        BK.bus.emit('opening:question', { task, q, anchor: this.pointOf(task), minigame: 'temperature' });
+        return;
+      }
       const q = G.questions.forTask(task);
       this.current = { task, q }; task.status = 'IN_PROGRESS';
-      BK.bus.emit('opening:question', { task, q, anchor: this.pointOf(task) });
+      BK.bus.emit('opening:question', { task, q, anchor: this.pointOf(task), });
+    }
+    // Pregunta de respaldo del minijuego de temperatura: una correcta y dos variaciones engañosas, barajadas.
+    temperatureQuestion() {
+      const opts = [
+        'Hacer L.A.H.A y ajustar broiler',
+        'Ajustar broiler y repetir la toma sin hacer L.A.H.A',
+        'Hacer L.A.H.A y servir el producto si está bien cocinado'
+      ].map((text, i) => ({ text, ok: i === 0, r: Math.random() })).sort((a, b) => a.r - b.r);
+      return {
+        id: 'temp-1fc',
+        question: 'El producto no alcanza los 68 ºC en el centro. ¿Qué proceso debes ejecutar?',
+        options: opts.map((o) => ({ text: o.text })),
+        correctIndex: opts.findIndex((o) => o.ok),
+        explanation: 'Con el producto por debajo de 68 ºC hay que hacer L.A.H.A y ajustar el broiler.'
+      };
     }
     answer(idx) {
       const cur = this.current;

@@ -103,10 +103,11 @@
       this.drawPoints(ctx, now, rm);
       this.drawCoverageHighlight(ctx, now, rm);
       if (this.debug) this.drawDebug(ctx);
+      this.drawBriefingFormation(ctx, now, rm);
 
       // vehículos (suelo) y luego personajes por profundidad
       G.vehicles.cars.forEach((c) => {
-        const sp = BK.carSprite(c.color, c.len, c.wid);
+        const sp = BK.carSprite(c.color, c.len, c.wid, c.body, c.acc);
         ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.ang);
         ctx.drawImage(sp.canvas, -(c.len / 2 + sp.pad), -(c.wid / 2 + sp.pad), c.len + sp.pad * 2, c.wid + sp.pad * 2);
         ctx.restore();
@@ -122,6 +123,7 @@
           ctx.restore();
         }
       });
+      this.drawTruckDelivery(ctx);
       const chars = [G.player.char].concat(G.employees.list, G.customers.guests);
       chars.sort((a, b) => a.y - b.y);
       const sc = (BK.CHAR_SCALE || 1);
@@ -139,6 +141,8 @@
           ctx.beginPath(); ctx.ellipse(c.x, c.y - 2, 18 * k, 8 * k, 0, 0, Math.PI * 2); ctx.stroke();
         }
         BK.CharacterAnimationSystem.draw(ctx, c, k, c.alpha);
+        const carriedBox = G.truckDelivery && G.truckDelivery.carriedBy(c);
+        if (carriedBox) this.drawCarton(ctx, c.x + 5, c.y - 22, 0.9);
       });
 
       this.drawPatience(ctx);
@@ -158,6 +162,7 @@
       const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); };
       ctx.save(); ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
       if (G.state === 'playing') {
+        this.drawStationGuidance(ctx, performance.now() / 1000, BK.settings && BK.settings.reduceMotion);
         const showTags = !G.ui.el.operationsPanel.hidden;
         G.employees.list.forEach((c) => {
           if (!c.expert || !c.available || c.absent || c.alpha < 0.5) return;
@@ -348,6 +353,57 @@
       ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 0.8; ctx.strokeRect(x - 7, y - 10, 14, 16);
       ctx.restore();
     }
+    drawCarton(ctx, x, y, scale = 1) {
+      ctx.save();
+      ctx.translate(x, y); ctx.scale(scale, scale);
+      ctx.fillStyle = '#8b5a32'; ctx.fillRect(-9, -7, 18, 14);
+      ctx.fillStyle = '#b9824b'; ctx.fillRect(-8, -6, 16, 4);
+      ctx.fillStyle = '#d4a36a'; ctx.fillRect(-1, -6, 2, 13);
+      ctx.strokeStyle = '#51351f'; ctx.lineWidth = 1; ctx.strokeRect(-9, -7, 18, 14);
+      ctx.restore();
+    }
+    drawTruckDelivery(ctx) {
+      const delivery = this.G.truckDelivery;
+      if (!delivery || !delivery.active || !delivery.truck) return;
+      const truck = delivery.truck;
+      ctx.save();
+      ctx.translate(truck.x, truck.y); ctx.rotate(truck.angle); ctx.scale(1.3, 1.3);
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath(); ctx.ellipse(0, 3, 43, 21, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#26211d';
+      [[-27, -17], [-27, 17], [29, -17], [29, 17]].forEach(([x, y]) => {
+        ctx.beginPath(); ctx.ellipse(x, y, 7, 4, 0, 0, Math.PI * 2); ctx.fill();
+      });
+      ctx.fillStyle = '#f5f5f2'; ctx.strokeStyle = '#4d4842'; ctx.lineWidth = 1.5;
+      ctx.fillRect(-40, -15, 49, 30); ctx.strokeRect(-40, -15, 49, 30);
+      ctx.fillRect(9, -16, 24, 32); ctx.strokeRect(9, -16, 24, 32);
+      ctx.fillStyle = '#a8d1dc'; ctx.fillRect(22, -11, 8, 22);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-2, -13); ctx.lineTo(-2, 13); ctx.stroke();
+      ctx.font = 'bold 7px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#37332e'; ctx.fillText('CONWAY', -21, 1);
+      ctx.fillStyle = '#f7f0db';
+      ctx.fillRect(31, -10, 4, 6); ctx.fillRect(31, 4, 4, 6);
+      if (delivery.boxes.some((b) => b.status !== 'delivered' && b.status !== 'carried')) {
+        ctx.fillStyle = '#c99158'; ctx.strokeStyle = '#51351f'; ctx.lineWidth = 1;
+        [[-38, -12], [-38, -2], [-38, 8], [-29, -7], [-29, 3]].forEach(([x, y]) => {
+          ctx.fillRect(x, y, 8, 8); ctx.strokeRect(x, y, 8, 8);
+        });
+      }
+      ctx.restore();
+      delivery.boxes.forEach((box) => {
+        if (box.status === 'delivered' || box.status === 'carried') return;
+        this.drawCarton(ctx, box.x, box.y);
+      });
+      if (delivery.boxes.length && delivery.state !== 'arriving' && delivery.state !== 'leaving') {
+        ctx.save();
+        ctx.font = 'bold 11px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+        const label = 'CONWAY · DESCARGA ' + delivery.transferredCount + '/' + delivery.boxes.length;
+        ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(35,24,17,0.9)'; ctx.strokeText(label, truck.x + 210, truck.y - 85);
+        ctx.fillStyle = '#fff3d4'; ctx.fillText(label, truck.x + 210, truck.y - 85);
+        ctx.restore();
+      }
+    }
     drawPoints(ctx, now, rm) {
       const G = this.G;
       // marcador de destino del avatar
@@ -364,6 +420,7 @@
       // aros de los puntos de apertura
       if (G.state !== 'playing') return;
       this.drawFreeStations(ctx, now, rm);
+      this.drawPrepPoint(ctx, now, rm);
       G.interaction.items().forEach((it) => {
         if (it.done) return;
         const pulse = rm ? 0 : (Math.sin(now * 3.2) + 1) * 0.5;
@@ -376,7 +433,41 @@
         ctx.restore();
       });
     }
-    // Puestos sin empleado: círculo oscuro en el suelo; el encargado puede ocuparlos pulsando sobre ellos.
+    stationGuidance() {
+      const G = this.G, ops = G.cfg.operations;
+      return ops.positioningOrder.filter((id) => {
+        const st = ops.stations[id], inf = ops.stationInfo[id];
+        return st && inf && st.category !== 'support' && inf.recommended > 0;
+      }).map((id) => {
+        const st = ops.stations[id], inf = ops.stationInfo[id];
+        const hotspot = G.bottlenecks.items.find((item) => item.station === id);
+        return hotspot ? { id, x: st.pos[0], y: st.pos[1], hotspot } : null;
+      }).filter(Boolean);
+    }
+    drawStationGuidance(ctx, now, rm) {
+      const G = this.G;
+      this.stationHits = [];
+      if (G.ui.el.operationsPanel.hidden) return;
+      const guidance = this.stationGuidance(), pulse = rm ? 0 : (Math.sin(now * 3) + 1) * 0.5;
+      guidance.forEach((station) => {
+        const p = this.toScreen(station.x, station.y);
+        if (p.x < -80 || p.x > this.W + 80 || p.y < -50 || p.y > this.H + 50) return;
+        const hot = station.hotspot, critical = hot.severity === 'critical';
+        ctx.save();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = critical ? '#ff4b3e' : '#ffc247';
+        ctx.fillStyle = critical ? 'rgba(229,72,59,' + (0.2 + pulse * 0.18) + ')' : 'rgba(242,183,43,' + (0.16 + pulse * 0.16) + ')';
+        const r = 18 + pulse * 3;
+        ctx.beginPath(); ctx.ellipse(p.x, p.y, r, r * 0.64, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.restore();
+        this.stationHits.push({ id: station.id, x: p.x, y: p.y, r: 24 });
+      });
+    }
+    stationAt(sx, sy) {
+      const hits = this.stationHits || [];
+      return hits.filter((s) => Math.hypot(s.x - sx, s.y - sy) <= s.r)
+        .sort((a, b) => Math.hypot(a.x - sx, a.y - sy) - Math.hypot(b.x - sx, b.y - sy))[0] || null;
+    }
     freeStations() {
       const G = this.G, ops = G.cfg.operations, staffed = new Set();
       G.employees.list.forEach((c) => { if (c.available && !c.absent && c.position) staffed.add(c.position); });
@@ -395,6 +486,12 @@
         ctx.beginPath(); ctx.ellipse(f.x, f.y + 2, 15, 6.8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         ctx.restore();
       });
+    }
+    freeStationAt(wx, wy) {
+      return (this.freeHits || []).find((f) => Math.abs(f.x - wx) <= 22 && Math.abs(f.y + 2 - wy) <= 16) || null;
+    }
+    drawPrepPoint(ctx, now, rm) {
+      const pulse = rm ? 0 : (Math.sin(now * 2.4) + 1) * 0.5;
       const pp = this.G.map.points.productPrep;
       if (pp) {
         const need = this.G.production.needsPrep();
@@ -409,8 +506,19 @@
         ctx.restore();
       }
     }
-    freeStationAt(wx, wy) {
-      return (this.freeHits || []).find((f) => Math.abs(f.x - wx) <= 22 && Math.abs(f.y + 2 - wy) <= 16) || null;
+    drawBriefingFormation(ctx, now, rm) {
+      const G = this.G, briefing = G.briefing;
+      if (!briefing || !briefing.active || !briefing.team.length) return;
+      const p = briefing.point, pulse = rm ? 0 : Math.sin(now * 3) * 2;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255,210,122,0.65)';
+      ctx.fillStyle = 'rgba(255,210,122,0.08)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(p.x - 48, p.y, 74 + pulse, 58 + pulse * 0.4, 0, -Math.PI / 2, Math.PI / 2);
+      ctx.stroke();
+      ctx.fill();
+      ctx.restore();
     }
     drawDebug(ctx) {
       if (!this.dbgCanvas) {
@@ -451,11 +559,17 @@
           if (it.done) return;
           const p = this.toScreen(it.x, it.y), y = p.y - 40;
           const bob = rm ? 0 : Math.sin(now * 3 + it.x) * 2;
-          ctx.fillStyle = it.locked ? '#777' : '#f47a2c'; ctx.strokeStyle = '#fff6e8'; ctx.lineWidth = 2;
+          ctx.fillStyle = it.locked ? '#777' : it.kind === 'briefing' ? '#2fbf62' : '#f47a2c'; ctx.strokeStyle = '#fff6e8'; ctx.lineWidth = 2;
           shapePath(ctx, 'square', p.x, y + bob, 15);
           ctx.fill(); ctx.stroke();
           ctx.font = '17px system-ui, "Segoe UI Emoji", sans-serif'; ctx.fillStyle = '#fff';
-          ctx.fillText(it.task.action === 'door' ? '🚪' : '📋', p.x, y + bob + 1);
+          ctx.fillText(it.kind === 'briefing' ? '🗣️' : it.task.action === 'door' ? '🚪' : '📋', p.x, y + bob + 1);
+          if (it.kind === 'briefing') {
+            ctx.fillStyle = 'rgba(20,75,43,0.94)';
+            ctx.fillRect(p.x - 29, y + bob - 27, 58, 12);
+            ctx.font = 'bold 8px system-ui, sans-serif'; ctx.fillStyle = '#fff';
+            ctx.fillText('BRIEFING', p.x, y + bob - 21);
+          }
           this.badges.push({ x: p.x, y: y + bob, r: 24, it });
         });
       }

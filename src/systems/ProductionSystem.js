@@ -97,7 +97,6 @@
       for (const category of ['kitchen', 'fries', 'assembly']) {
         const cap = this.capacity(category);
         if (!cap) continue;
-        const speedMult = this.G.employees.speedFactor(category);
         const eligible = inProcess.filter((o) => !assigned.has(o.id) && this.stageCategory(o.components[o.stage] || 'ASSEMBLY') === category);
         eligible.slice(0, cap).forEach((o) => {
           assigned.add(o.id);
@@ -122,7 +121,7 @@
             o.blockedBy = null; o.blockedAt = null;
           }
           o.status = 'preparing';
-          o.stageT += dt * speedMult;
+          o.stageT += dt * this.G.employees.speedFactor(category, o.channel);
           const duration = this.stageSec[component] || this.stageSec.ASSEMBLY;
           if (o.stageT >= duration) {
             o.stage++;

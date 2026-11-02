@@ -41,6 +41,8 @@
     G.audio = new BK.AudioManager(G);
     G.renderer = new BK.Renderer(G, document.getElementById('game'));
     G.ui = new BK.UIManager(G);
+    G.briefing = new BK.BriefingSystem(G);
+    G.truckDelivery = new BK.TruckDeliverySystem(G);
 
     BK.bus.on('event:resolved', (e) => G.priority.onResult(e.ev, e.result));
     BK.bus.on('event:failed', (e) => G.priority.onResult(e.ev, 'failed'));
@@ -67,6 +69,7 @@
       G.debug.logs.push('[' + G.clock.label + '] ' + kind + (detail ? ' ' + detail : ''));
       if (G.debug.logs.length > 100) G.debug.logs.shift();
     };
+    G.debug.startTruckDelivery = () => G.truckDelivery.forceStart();
     const eventNames = {
       counter: 'COUNTER_CUSTOMER', kiosk: 'KIOSK_HELP', dirtyTable: 'DIRTY_TABLE',
       vehicle: 'DRIVE_THRU_PICKUP', delivery: 'DELIVERY_PICKUP', productShortage: 'PRODUCT_SHORTAGE',
@@ -108,6 +111,7 @@
     G.scoring.reset(); G.priority.reset(); G.events.clear(); G.customers.clear(); G.vehicles.clear();
     G.director.reset(); G.opening.reset(); G.employees.configure(G.roster); G.staffing.reset(); G.production.reset(); G.prep.reset(); G.kpi.reset();
     G.arrivals.reset(G.seed); G.bottlenecks.reset(); G.incidents.reset(); G.autonomy.reset(); G.manager.coveringPosition = null; G.manager.status = 'SUPERVISING'; G.audio.apply();
+    G.briefing.reset(); G.truckDelivery.reset();
     G.player.reset(330, 520);
     G.ui.clearTransient(); G.ui.closeModal();
     G.time = 0; G.paused = false; G.uiPause = false; G.saveT = 0;
@@ -135,6 +139,7 @@
     G.ui.hideTitleLogo();
     G.clock.set(run.t); G.time = run.time || 0;
     G.scoring.restore(run.scoring); G.opening.restore(run.opening);
+    G.briefing.restore(run.briefing);
     if (G.opening.isOpen) {
       G.restaurantState = G.clock.t >= G.clock.close - 60 ? 'CLOSING' : 'OPEN';
       BK.bus.emit('restaurant:opened', { time: G.clock.t, late: G.opening.lateMinutes, resumed: true });
@@ -147,6 +152,7 @@
     G.staffing.reset(); if (run.staffing) G.staffing.restore(run.staffing);
     if (run.pos) G.player.reset(run.pos.x, run.pos.y);
     G.state = 'playing';
+    G.truckDelivery.restore(run.truckDelivery);
     G.ui.toast('Turno recuperado.', 'info', 2500);
   };
   G.toMenu = function () { G.state = 'menu'; G.resetWorld(); G.ui.showStart(); };
@@ -194,6 +200,11 @@
   G.toggleMute = function () { G.audio.unlock(); G.audio.setMuted(!G.audio.muted); G.ui.caption(G.audio.muted ? 'Sonido silenciado (los avisos se muestran en pantalla)' : 'Sonido activado'); };
   G.setReduceMotion = function (v) { G.save.setSetting('reduceMotion', v); document.body.classList.toggle('reduce-motion', v); if (v) G.renderer.cam.zoom = G.renderer.zoomTarget; };
   G.setFollow = function (v) { G.renderer.setFollow(v); G.save.setSetting('follow', v); };
+  G.setManagerGender = function (g) {
+    g = g === 'f' ? 'f' : 'm';
+    G.save.setSetting('managerGender', g);
+    if (G.player && G.player.char) G.player.char.pal = g === 'f' ? 'managerF' : 'manager';
+  };
   G.setDifficulty = function (k) {
     if (!G.cfg.difficultyProfiles[k]) throw new Error('Dificultad no configurada: ' + k);
     G.save.setSetting('difficulty', k);
@@ -205,16 +216,20 @@
     if (G.state !== 'playing' || G.paused || (G.uiPause && !G.ui.tutorialStep)) return;
     G.audio.unlock();
     const R = G.renderer;
+    const station = R.stationAt(sx, sy);
+    if (station) { G.ui.reassign.close(); G.player.coverPosition(station.id); return; }
     for (const h of R.hits.slice().reverse()) {
       if (Math.hypot(h.x - sx, h.y - sy) <= h.r) { G.ui.reassign.close(); G.player.attend(h.ev); return; }
     }
     const tag = R.tagAt(sx, sy);
     if (tag) { G.ui.reassign.open(tag.emp); return; }
     if (G.ui.reassign.isOpen) { G.ui.reassign.close(); return; }
+    const w = R.toWorld(sx, sy);
+    const box = G.truckDelivery.boxAt(w.x, w.y);
+    if (box) { G.truckDelivery.managerCarry(box); return; }
     for (const b of R.badges) {
       if (Math.hypot(b.x - sx, b.y - sy) <= b.r) { G.interaction.activate(b.it); return; }
     }
-    const w = R.toWorld(sx, sy);
     const npc = G.customers.guests.find((g) => !g.dead && Math.abs(g.x - w.x) < 16 && w.y > g.y - 56 && w.y < g.y + 8);
     if (npc) {
       const live = npc.ev && G.events.isLive(npc.ev);
@@ -285,6 +300,8 @@
       G.arrivals.update(dt);
       G.production.update(dt);
       G.prep.update(dt);
+      G.briefing.update(dt);
+      G.truckDelivery.update(dt);
       G.bottlenecks.update();
       G.incidents.update(dt);
       G.director.update(dt);
@@ -293,7 +310,7 @@
       G.saveT += dt;
       if (G.saveT > 5) {
         G.saveT = 0;
-        G.save.saveRun({ t: G.clock.t, time: G.time, scoring: G.scoring.snapshot(), opening: G.opening.snapshot(), spawned: G.director.spawned, pos: { x: G.player.char.x, y: G.player.char.y }, production: G.production.snapshot(), prep: G.prep.snapshot(), kpi: G.kpi.snapshot(), incidents: G.incidents.snapshot(), staffing: G.staffing.snapshot(), roster: G.roster, seed: G.seed });
+        G.save.saveRun({ t: G.clock.t, time: G.time, scoring: G.scoring.snapshot(), opening: G.opening.snapshot(), briefing: G.briefing.snapshot(), truckDelivery: G.truckDelivery.snapshot(), spawned: G.director.spawned, pos: { x: G.player.char.x, y: G.player.char.y }, production: G.production.snapshot(), prep: G.prep.snapshot(), kpi: G.kpi.snapshot(), incidents: G.incidents.snapshot(), staffing: G.staffing.snapshot(), roster: G.roster, seed: G.seed });
       }
     } else if (G.state === 'playing' && G.ui.tutorialStep && !G.paused && !G.ui.modalOpen) {
       G.player.update(dt);

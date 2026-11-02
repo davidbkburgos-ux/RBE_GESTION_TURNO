@@ -7,7 +7,7 @@
     constructor(G) {
       this.G = G;
       const s = G.map.player || { x: 330, y: 520 };
-      this.char = new BK.Character({ id: 'MGR', kind: 'manager', pal: 'manager', x: s.x, y: s.y, speed: G.cfg.player.speed, dir: 2, scale: G.cfg.player.scale });
+      this.char = new BK.Character({ id: 'MGR', kind: 'manager', pal: G.save.settings.managerGender === 'f' ? 'managerF' : 'manager', x: s.x, y: s.y, speed: G.cfg.player.speed, dir: 2, scale: G.cfg.player.scale });
       this.pending = null;
       this.marker = null;
       this.locked = false;
@@ -42,6 +42,7 @@
     coverPosition(positionId) {
       const G = this.G, station = G.cfg.operations.stations[positionId];
       if (this.busy || !station || station.category === 'support') return false;
+      if (G.manager.coveringPosition === positionId && G.manager.status === 'WORKING_POSITION') return false;
       const destination = { x: station.pos[0], y: station.pos[1] };
       const route = G.nav.findPath('staff', this.char, destination);
       if (!route.reachable) { BK.bus.emit('player:blocked', destination); return false; }
@@ -147,6 +148,29 @@
           });
         }
       });
+    }
+
+    goBriefing(onArrive) {
+      if (this.busy) { BK.bus.emit('player:busy', {}); return false; }
+      this.leaveCover();
+      this.clearPending();
+      const point = this.G.briefing.point;
+      const route = this.G.nav.findPath('staff', this.char, point);
+      if (!route.reachable) { BK.bus.emit('player:blocked', point); return false; }
+      this.locked = true;
+      this.pending = { briefing: true };
+      this.char.idleAnim = 'idle';
+      const ok = this.walkThen(point, () => {
+        this.pending = null;
+        this.marker = null;
+        this.char.faceTo({ x: point.x - 96, y: point.y });
+        if (onArrive) onArrive();
+      });
+      if (!ok) {
+        this.pending = null;
+        this.locked = false;
+      }
+      return ok;
     }
 
     // Preparación de producto del tramo en la cámara de congelado; se puede repetir cuando se quiera.

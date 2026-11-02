@@ -38,7 +38,7 @@
     stationRates() {
       const G = this.G, dr = this.cfg.diminishingReturns, out = {};
       const byStation = {};
-      this.workers().forEach((c) => { (byStation[c.position] = byStation[c.position] || []).push(this.info[c.position].prepWeight * (c.workSpeed || 1)); });
+      this.workers().forEach((c) => { (byStation[c.position] = byStation[c.position] || []).push(this.info[c.position].prepWeight * G.employees.workSpeedFor(c, c.category)); });
       this.managerHelping = this.helpingStation();
       if (this.managerHelping) (byStation[this.managerHelping] = byStation[this.managerHelping] || []).push(this.info[this.managerHelping].prepWeight * this.cfg.managerSupportModifier);
       const diff = this.cfg.difficultyRate[G.save.settings.difficulty] || 1;

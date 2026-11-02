@@ -32,7 +32,7 @@
         const s = st[k];
         const onShift = assignment.shift === this.currentShift;
         const c = new BK.Character({
-          id: 'EMP' + String(i + 1).padStart(2, '0'), kind: 'employee', pal: 'employee', x: s.pos[0], y: s.pos[1], speed: G.cfg.npc.employeeSpeed,
+          id: 'EMP' + String(i + 1).padStart(2, '0'), kind: 'employee', pal: 'employee' + i, x: s.pos[0], y: s.pos[1], speed: G.cfg.npc.employeeSpeed,
           dir: BK.DIR.S, idleAnim: WORK_ANIM[k] || 'work', alpha: onShift ? 1 : 0
         });
         Object.assign(c, {
@@ -53,7 +53,7 @@
       const door = G.map.zones.find((z) => z.id === 'staffDoor').rect;
       const n = this.list.length + 1;
       const c = new BK.Character({
-        id: 'EMP' + String(n).padStart(2, '0'), kind: 'employee', pal: 'employee', x: (door[0] + door[2]) / 2, y: (door[1] + door[3]) / 2,
+        id: 'EMP' + String(n).padStart(2, '0'), kind: 'employee', pal: 'employee' + n, x: (door[0] + door[2]) / 2, y: (door[1] + door[3]) / 2,
         speed: G.cfg.npc.employeeSpeed, dir: BK.DIR.E, idleAnim: 'idle', alpha: 1
       });
       Object.assign(c, {
@@ -68,9 +68,36 @@
       return c;
     }
     // Rendimiento medio de la plantilla de una categoría (expertos > 1) para escalar tiempos de producción.
-    speedFactor(category) {
+    supportChannel(channel) {
+      if (channel === 'hall' || channel === 'dining') return 'dining';
+      if (channel === 'autoking' || channel === 'delivery') return channel;
+      return 'counter';
+    }
+    managerSupportChannel() {
+      const G = this.G, manager = G.manager;
+      if (!manager || manager.status !== 'WORKING_POSITION' || !manager.coveringPosition) return null;
+      const station = G.cfg.operations.stations[manager.coveringPosition];
+      if (!station) return null;
+      if (manager.coveringPosition === 'autoPay' || station.category === 'autoking') return 'autoking';
+      if (station.category === 'delivery') return 'delivery';
+      if (station.category === 'hall') return 'dining';
+      return 'counter';
+    }
+    supportMultiplier(channel) {
+      const supported = this.managerSupportChannel();
+      return supported && this.supportChannel(channel) === supported ? 1.2 : 1;
+    }
+    briefingMultiplier() {
+      const briefing = this.G.briefing;
+      return briefing && briefing.completed ? 1 + briefing.speedBonus / 100 : 1;
+    }
+    workSpeedFor(employee, channel) {
+      return (employee.workSpeed || 1) * this.briefingMultiplier() * this.supportMultiplier(channel || employee.category || employee.channel);
+    }
+    speedFactor(category, channel) {
       const w = this.list.filter((c) => c.available && !c.absent && c.status === 'WORKING' && (c.category === category || c.extraCategory === category));
-      return w.length ? w.reduce((n, c) => n + (c.workSpeed || 1), 0) / w.length : 1;
+      const base = w.length ? w.reduce((n, c) => n + (c.workSpeed || 1), 0) / w.length : 1;
+      return base * this.briefingMultiplier() * this.supportMultiplier(channel);
     }
     configure(roster) {
       this.init(roster);
@@ -232,6 +259,8 @@
         c.update(dt);
         if (!c.available || c.absent) { c.alpha = 0; c.status = c.absent ? 'ABSENT' : 'OFF_SHIFT'; c.state = c.absent ? 'Ausente' : 'Fuera de turno'; continue; }
         c.alpha = 1;
+        if (c.status === 'BRIEFING') { c.state = 'En briefing'; continue; }
+        if (c.status === 'TRUCK_DELIVERY') { c.state = 'Descargando camión Conway'; continue; }
         if (c.status === 'MOVING') {
           c.state = 'En desplazamiento'; c.occupancy = Math.max(0, c.occupancy - dt * 0.2);
           // Si la ruta terminó sin llegar al puesto, se reintenta y, si falla, se coloca directamente.
