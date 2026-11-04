@@ -307,6 +307,9 @@ No validado: móvil físico, contraste medido con herramienta específica, vista
 - Popeyes: stock con CHICKEN (lo gestiona el Chef), pedidos MAIN_PRODUCT > CHICKEN > FRIES > DRINKS; «Complementos» eliminado y «Freidora» pasa a «Patatas».
 - Burger King sin cambios (stock sin CHICKEN, puesto Complementos intacto). Turno completo sin errores JS en ambas marcas.
 
+## V5.40 · Tiempos de servicio coloreados por banda
+- Móvil de operación (Resumen › Velocidad y pestaña Tiempos) y resumen de fin de día: el tiempo se pinta en verde / ámbar / rojo según su banda (`lastBand` y `meanBand` de ServiceKpiSystem) y se elimina el texto «Verde/Ámbar/Rojo» (y el «GREEN/YELLOW/RED» que se veía en el móvil). Colores claros sobre el móvil oscuro y oscuros sobre el modal beige. Ambas marcas.
+
 ## V5.39 · Chef primero en el posicionamiento y tutorial restringido
 - Popeyes: la lista del posicionamiento (paso 2) arranca por Chef. Nuevo `operations.rosterOrder` opcional (RosterPlanner ordena `stationIds` con él; BK no lo define y no cambia). Antes Chef salía el último porque se añade al final de `stationInfo`.
 - Tutorial: mientras está abierto solo se puede mover al encargado (clic en suelo/teclas); eventos, badges, mesas, checklist, chips, tecla E y botones de apoyo del móvil quedan bloqueados. En los pasos de reasignación se permite el menú de reasignar. Afecta a ambas marcas.

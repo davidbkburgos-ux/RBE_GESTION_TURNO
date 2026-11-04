@@ -65,7 +65,8 @@
       body.scrollTop = scroll;
     }
     sec(title, ...kids) { return this.ui.h('section', { class: 'ph-sec' }, this.ui.h('h3', {}, title), ...kids); }
-    row(a, b, cls) { return this.ui.h('div', { class: 'ph-row ' + (cls || '') }, this.ui.h('span', {}, a), this.ui.h('b', {}, b)); }
+    row(a, b, cls, valCls) { return this.ui.h('div', { class: 'ph-row ' + (cls || '') }, this.ui.h('span', {}, a), this.ui.h('b', valCls ? { class: valCls } : {}, b)); }
+    bandCls(band) { return band ? 'band-' + band.toLowerCase() : ''; }
     tab_sum() {
       const h = this.ui.h, s = this.summary(), G = this.G;
       const bn = G.bottlenecks.items.slice()
@@ -82,7 +83,7 @@
         this.sec('Cuellos de botella', ...(bn.length ? bn : [h('div', { class: 'ph-row ok' }, h('span', {}, 'Sin cuellos detectados'))])),
         this.sec('Preparación', this.row('Preparación general', s.prep + ' %'), this.bar(s.prep, 'prep')),
         this.sec('Actividad', this.row('Pedidos activos', String(s.orders)), this.row('Eventos activos', String(s.events))),
-        this.sec('Velocidad', this.row('Mostrador', this.fmt(s.counter.last)), this.row(BK.autoName, this.fmt(s.auto.last)), this.row('Delivery · entrega', this.fmt(s.delivery.last)))
+        this.sec('Velocidad', this.row('Mostrador', this.fmt(s.counter.last), '', this.bandCls(s.counter.lastBand)), this.row(BK.autoName, this.fmt(s.auto.last), '', this.bandCls(s.auto.lastBand)), this.row('Delivery · entrega', this.fmt(s.delivery.last), '', this.bandCls(s.delivery.lastBand)))
       ];
     }
     tab_team() {
@@ -167,7 +168,7 @@
       const blk = (b) => {
         const s = G.kpi.stats(b);
         return this.sec(s.label,
-          this.row('Último', this.fmt(s.last)), this.row('Media del día', this.fmt(s.mean) + (s.meanBand ? ' · ' + s.meanBand : '')),
+          this.row('Último', this.fmt(s.last), '', this.bandCls(s.lastBand)), this.row('Media del día', this.fmt(s.mean), '', this.bandCls(s.meanBand)),
           this.row('Servicios medidos', String(s.measured) + (s.abandoned ? ' (+' + s.abandoned + ' abandonos)' : '')));
       };
       return [blk('counter'), blk('autoking'), blk('delivery')];

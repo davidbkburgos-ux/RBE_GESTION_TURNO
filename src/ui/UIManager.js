@@ -1356,11 +1356,13 @@
       const avg = m.respN ? (m.respTotal / m.respN).toFixed(1) + ' s' : '—';
       const open = G.opening.openedAtT === null ? 'No se abrió' : m.lateMin > 0 ? 'Con ' + m.lateMin + ' min de retraso' : 'A tiempo';
       const kpi = G.kpi.endOfDayScore();
-      const bandTxt = { GREEN: 'Verde', YELLOW: 'Ámbar', RED: 'Rojo' };
-      const labelOf = { counter: 'Mostrador', autoking: BK.autoName, delivery: 'DELIVERY · TIEMPO DE ENTREGA' };
+      const labelOf =  { counter: 'Mostrador', autoking: BK.autoName, delivery: 'DELIVERY · TIEMPO DE ENTREGA' };
       const channelKpis = Object.keys(kpi.lines).map((b) => {
         const l = kpi.lines[b];
-        return li('Media ' + (labelOf[b] || l.label), l.mean === null ? '—' : this.formatDuration(l.mean) + ' · ' + bandTxt[l.meanBand] + ' (' + (l.points > 0 ? '+' : '') + l.points + ')');
+        const text = l.mean === null ? '—' : this.formatDuration(l.mean) + ' (' + (l.points > 0 ? '+' : '') + l.points + ')';
+        const item = li('Media ' + (labelOf[b] || l.label), text);
+        if (l.meanBand) item.lastChild.classList.add('band-' + l.meanBand.toLowerCase());
+        return item;
       });
       const total = s.score + kpi.total;
       const board = h('div', { class: 'lb-save' });
