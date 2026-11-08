@@ -72,7 +72,7 @@
   function brandize(key, p) {
     if (!BK.game || BK.game.brand !== 'popeyes') return p;
     if (key === 'manager' || key === 'managerF') {
-      return Object.assign({}, p, { shirt: '#7ec6f3', shade: '#5a9fd0', pants: '#c3ae8a', pantsShade: '#a08c6c', cap: '#4a3b2f', capShade: '#33281f', belt: '#6a4a34', shoe: '#e9e6df', tie: null, collar: '#a6d8f7', chestCol: '#ff7a00', chestLogo: true });
+      return Object.assign({}, p, { shirt: '#7ec6f3', shade: '#5a9fd0', pants: '#c3ae8a', pantsShade: '#a08c6c', cap: '#d9c7a3', capShade: '#b8a684', belt: '#6a4a34', shoe: '#e9e6df', tie: null, collar: '#a6d8f7', chestCol: '#ff7a00', chestLogo: true });
     }
     if (key.startsWith('employee')) {
       return Object.assign({}, p, { shirt: '#f27a12', shade: '#bf5a08', pants: '#2d2a26', pantsShade: '#1c1a17', cap: '#4a3b2f', capShade: '#33281f', chestCol: '#ffffff' });
@@ -410,6 +410,10 @@
       return Math.floor(ch.animT * (FPS[ch.anim] || 4)) % n;
     }
     static draw(ctx, ch, scale = 1, alpha = 1) {
+      // Sprites HD-2D del manifest (Summer Engine); el dibujo procedural queda como respaldo.
+      if (BK.SpriteLoader && BK.SpriteLoader.draw(ctx, ch, scale, alpha)) return;
+      // Con hoja en el manifest (cargando): no se pinta el peón; solo si la imagen falla de verdad.
+      if (BK.SpriteLoader && BK.SpriteLoader.expects(ch) && !ch.forceProcedural) return;
       const anim = FRAMES[ch.anim] ? ch.anim : 'idle';
       const s = sprite(ch.pal, anim, ch.dir, CharacterAnimationSystem.frameOf(ch), ch.seated);
       if (alpha < 1) ctx.globalAlpha = alpha;

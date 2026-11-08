@@ -99,6 +99,23 @@
         } else if (WAITING.includes(e.state)) {
           e.elapsed += dt / (G.priority.patience(e.channel) * G.employees.busyMult(e.channel));
           if (e.elapsed >= e.timer) this.fail(e);
+          // el encargado iba hacia él y cambió de plan: se libera para que el equipo pueda atenderlo
+          else if (e.state !== 'pending' && !(G.player && G.player.pending && G.player.pending.ev === e)) {
+            e.relT = (e.relT || 0) + dt;
+            if (e.relT > 1) { e.state = 'pending'; e.relT = 0; }
+          } else e.relT = 0;
+        } else if (e.state === 'inProgress') {
+          // Vigilante anti-atasco: si nadie está trabajando el evento (acción del encargado interrumpida,
+          // empleado reasignado, ventana cerrada), vuelve a pendiente y su temporizador sigue corriendo.
+          const P = G.player, act = P && P.char && P.char.action;
+          const engaged = e.auto ? !!(G.autonomy && G.autonomy.jobs.some((j) => j.ev === e))
+            : (act && act.ev === e) || (e.type === 'complaint' && G.ui && G.ui.q && G.ui.q.kind === 'complaint');
+          e.ipT = (e.ipT || 0) + dt;
+          e.lostT = engaged ? 0 : (e.lostT || 0) + dt;
+          if (e.lostT > 1.5 || e.ipT > 90) {
+            e.state = 'pending'; e.auto = false; e.lostT = 0; e.ipT = 0;
+            BK.bus.emit('event:released', e);
+          }
         } else if (e.state.startsWith('resolved') || e.state === 'failed') {
           e.resultT += dt;
         }

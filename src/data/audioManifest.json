@@ -1,62 +1,785 @@
 {
-  "provenance": "Todos los sonidos se sintetizan en tiempo real con WebAudio (osciladores y ruido filtrado) por el propio proyecto. No hay archivos de audio de terceros ni licencias externas. 'variants' son recetas de síntesis, no ficheros.",
+  "provenance": "Efectos y ambientes grabados generados con Summer (ElevenLabs SFX) en assets/audio (sfx/ y amb/, AAC). Cada sonido conserva su receta de síntesis WebAudio como respaldo si el archivo no carga. Ganancias calibradas por RMS/pico.",
   "buses": {
-    "ambience": { "volume": 1, "maxVoices": 8, "priority": 0 },
-    "weather": { "volume": 1, "maxVoices": 6, "priority": 0 },
-    "kitchen": { "volume": 0.8, "maxVoices": 5, "priority": 1 },
-    "customers": { "volume": 0.7, "maxVoices": 5, "priority": 1 },
-    "vehicles": { "volume": 0.85, "maxVoices": 4, "priority": 1 },
-    "ui": { "volume": 0.8, "maxVoices": 4, "priority": 2 },
-    "events": { "volume": 1, "maxVoices": 8, "priority": 3 }
+    "ambience": {
+      "volume": 1,
+      "maxVoices": 8,
+      "priority": 0
+    },
+    "weather": {
+      "volume": 1,
+      "maxVoices": 6,
+      "priority": 0
+    },
+    "kitchen": {
+      "volume": 0.8,
+      "maxVoices": 5,
+      "priority": 1
+    },
+    "customers": {
+      "volume": 0.7,
+      "maxVoices": 5,
+      "priority": 1
+    },
+    "vehicles": {
+      "volume": 0.85,
+      "maxVoices": 4,
+      "priority": 1
+    },
+    "ui": {
+      "volume": 0.8,
+      "maxVoices": 4,
+      "priority": 2
+    },
+    "events": {
+      "volume": 1,
+      "maxVoices": 8,
+      "priority": 3
+    }
   },
-  "budget": { "maxVoices": 22, "dropDecorativeAt": 16, "warnAt": 18 },
-  "ducking": { "amountDb": 4, "attack": 0.04, "hold": 0.35, "release": 1.2 },
-  "spatial": { "nearPx": 250, "farPx": 900, "farGain": 0.25, "maxPan": 0.6, "panRangePx": 600, "occludedGain": 0.55, "occludedLowpass": 1400 },
-  "reverb": { "kitchen": 0.04, "hall": 0.1, "restrooms": 0.18, "counter": 0.07, "exterior": 0, "autoking": 0 },
+  "budget": {
+    "maxVoices": 22,
+    "dropDecorativeAt": 16,
+    "warnAt": 18
+  },
+  "ducking": {
+    "amountDb": 4,
+    "attack": 0.04,
+    "hold": 0.35,
+    "release": 1.2
+  },
+  "spatial": {
+    "nearPx": 250,
+    "farPx": 900,
+    "farGain": 0.25,
+    "maxPan": 0.6,
+    "panRangePx": 600,
+    "occludedGain": 0.55,
+    "occludedLowpass": 1400
+  },
+  "reverb": {
+    "kitchen": 0.04,
+    "hall": 0.1,
+    "restrooms": 0.18,
+    "counter": 0.07,
+    "exterior": 0,
+    "autoking": 0
+  },
   "families": {
-    "alert": { "minInterval": 0.35, "stagger": true },
-    "metal": { "minInterval": 0.4, "maxConcurrent": 2 },
-    "foley": { "minInterval": 0.25, "window": 2, "maxPerWindow": 3 },
-    "vehicle": { "minInterval": 0.6, "stagger": true },
-    "fryer": { "minInterval": 1.5 },
-    "ui": { "minInterval": 0.08 },
-    "step": { "minInterval": 0.12 },
-    "tray": { "minInterval": 0.2, "window": 2, "maxPerWindow": 2 }
+    "phone": {
+      "minInterval": 6
+    },
+    "alert": {
+      "minInterval": 0.35,
+      "stagger": true
+    },
+    "metal": {
+      "minInterval": 0.4,
+      "maxConcurrent": 2
+    },
+    "foley": {
+      "minInterval": 0.25,
+      "window": 2,
+      "maxPerWindow": 3
+    },
+    "vehicle": {
+      "minInterval": 0.6,
+      "stagger": true
+    },
+    "fryer": {
+      "minInterval": 1.5
+    },
+    "ui": {
+      "minInterval": 0.08
+    },
+    "step": {
+      "minInterval": 0.12
+    },
+    "tray": {
+      "minInterval": 0.2,
+      "window": 2,
+      "maxPerWindow": 2
+    }
   },
   "sounds": {
-    "alert": { "bus": "events", "gain": 0.22, "priority": 3, "family": "alert", "dur": 0.4, "recipe": "twoTone", "variants": [{ "a": 880, "b": 1175 }], "randomPitch": 0.02, "duck": true, "caption": "Aviso: nuevo evento" },
-    "bell": { "bus": "events", "gain": 0.2, "priority": 3, "family": "alert", "dur": 0.55, "recipe": "bell", "variants": [{ "f": 1568 }], "randomPitch": 0.02, "duck": true, "caption": "Campanilla: pedido listo" },
-    "kiosk": { "bus": "events", "gain": 0.08, "priority": 2, "family": "alert", "dur": 0.2, "recipe": "kioskBeep", "variants": [{ "a": 660, "b": 880 }], "caption": "Pitido de kiosco" },
-    "car": { "bus": "events", "gain": 0.14, "priority": 2, "family": "alert", "dur": 0.7, "recipe": "glide", "variants": [{ "f": 150, "to": 90 }], "caption": "Llega un coche" },
-    "complaint": { "bus": "events", "gain": 0.12, "priority": 3, "family": "alert", "dur": 0.35, "recipe": "complaint", "variants": [{ "a": 440, "b": 330 }], "duck": true, "caption": "Aviso de queja" },
-    "clean": { "bus": "ui", "gain": 0.25, "priority": 2, "family": "ui", "dur": 0.45, "recipe": "swish", "variants": [{ "f": 2400, "d": 0.45 }], "caption": "Limpieza" },
-    "ok": { "bus": "ui", "gain": 0.2, "priority": 2, "family": "ui", "dur": 0.45, "recipe": "arpUp", "variants": [{ "n": [523, 659, 784] }], "caption": "Confirmación" },
-    "error": { "bus": "events", "gain": 0.14, "priority": 3, "family": "alert", "dur": 0.4, "recipe": "glideSaw", "variants": [{ "f": 220, "to": 130 }], "duck": true, "caption": "Error" },
-    "hour": { "bus": "ui", "gain": 0.12, "priority": 1, "family": "ui", "dur": 0.8, "recipe": "twoTone", "variants": [{ "a": 660, "b": 990 }], "caption": "Cambio de hora" },
-    "open": { "bus": "events", "gain": 0.2, "priority": 3, "family": "alert", "dur": 0.75, "recipe": "arpUp", "variants": [{ "n": [392, 523, 659], "type": "triangle" }], "duck": true, "caption": "Puerta abierta" },
-    "kpi": { "bus": "ui", "gain": 0.08, "priority": 0, "family": "ui", "dur": 0.1, "recipe": "tick", "variants": [{ "f": 740 }], "decorative": true, "caption": "Actualización de servicio" },
-    "fryerYellow": { "bus": "events", "gain": 0.09, "priority": 3, "family": "fryer", "dur": 1.2, "recipe": "fryerBeeps", "variants": [{ "f": 1750, "gap": 0.1 }], "caption": "Fritadora: quedan pocas patatas" },
-    "fryerRed": { "bus": "events", "gain": 0.09, "priority": 3, "family": "fryer", "dur": 1.4, "recipe": "fryerBeeps", "variants": [{ "f": 2250, "gap": 0.14 }], "duck": true, "caption": "Fritadora: sin patatas" },
-    "autokingOrder": { "bus": "events", "gain": 0.2, "priority": 3, "family": "vehicle", "dur": 0.75, "recipe": "drivePoint", "variants": [{ "a": 988, "b": 784 }], "duck": true, "caption": "AutoKing: coche en el punto de pedido" },
-    "attendStart": { "bus": "ui", "gain": 0.1, "priority": 2, "family": "ui", "dur": 0.15, "recipe": "tick", "variants": [{ "f": 520 }, { "f": 560 }], "randomPitch": 0.03 },
-    "negativeReview": { "bus": "events", "gain": 0.1, "priority": 2, "family": "alert", "dur": 0.3, "recipe": "glide", "variants": [{ "f": 330, "to": 250 }] },
-    "uiTap": { "bus": "ui", "gain": 0.07, "priority": 1, "family": "ui", "dur": 0.06, "recipe": "tick", "variants": [{ "f": 900 }], "randomPitch": 0.03 },
-    "panelOpen": { "bus": "ui", "gain": 0.07, "priority": 1, "family": "ui", "dur": 0.15, "recipe": "glide", "variants": [{ "f": 600, "to": 900 }] },
-    "panelClose": { "bus": "ui", "gain": 0.07, "priority": 1, "family": "ui", "dur": 0.15, "recipe": "glide", "variants": [{ "f": 900, "to": 600 }] },
-    "vehicleEnter": { "bus": "vehicles", "gain": 0.12, "priority": 1, "family": "vehicle", "spatial": true, "maxDistance": 1100, "dur": 1.1, "recipe": "engine", "variants": [{ "f": 140, "to": 95, "wet": false }, { "f": 150, "to": 100, "wet": false }], "wetVariants": [{ "f": 140, "to": 95, "wet": true }], "randomPitch": 0.03 },
-    "deliveryArrival": { "bus": "vehicles", "gain": 0.12, "priority": 2, "family": "vehicle", "spatial": true, "maxDistance": 1300, "dur": 0.9, "recipe": "scooter", "variants": [{ "f": 320, "to": 200 }], "randomPitch": 0.03 },
-    "customerEnter": { "bus": "customers", "gain": 0.06, "priority": 0, "family": "foley", "spatial": true, "maxDistance": 700, "probability": 0.5, "decorative": true, "dur": 0.25, "recipe": "swish", "variants": [{ "f": 1400, "d": 0.25 }, { "f": 1700, "d": 0.2 }], "randomPitch": 0.06 },
-    "customerSit": { "bus": "customers", "gain": 0.06, "priority": 0, "family": "foley", "spatial": true, "maxDistance": 600, "probability": 0.45, "decorative": true, "dur": 0.18, "recipe": "thud", "variants": [{ "f": 140 }, { "f": 120 }], "randomPitch": 0.05 },
-    "customerLeave": { "bus": "customers", "gain": 0.05, "priority": 0, "family": "foley", "spatial": true, "maxDistance": 600, "probability": 0.35, "decorative": true, "dur": 0.2, "recipe": "swish", "variants": [{ "f": 1100, "d": 0.2 }], "randomPitch": 0.06 },
-    "tray": { "bus": "customers", "gain": 0.06, "priority": 0, "family": "tray", "spatial": true, "maxDistance": 600, "decorative": true, "dur": 0.15, "recipe": "thud", "variants": [{ "f": 220 }, { "f": 260 }], "randomPitch": 0.05 },
-    "metal": { "bus": "kitchen", "gain": 0.07, "priority": 0, "family": "metal", "spatial": true, "maxDistance": 800, "decorative": true, "dur": 0.12, "recipe": "clank", "variants": [{ "f": 2400 }, { "f": 2900 }, { "f": 3300 }], "randomPitch": 0.04 },
-    "sizzleHit": { "bus": "kitchen", "gain": 0.09, "priority": 0, "family": "metal", "spatial": true, "maxDistance": 800, "decorative": true, "dur": 0.5, "recipe": "swish", "variants": [{ "f": 3600, "d": 0.5 }, { "f": 4200, "d": 0.4 }] },
-    "step": { "bus": "customers", "gain": 0.05, "priority": 1, "family": "step", "dur": 0.08, "recipe": "step", "variants": [{ "surface": "tile" }], "randomPitch": 0.05 }
+    "alert": {
+      "bus": "events",
+      "gain": 0.22,
+      "priority": 3,
+      "family": "alert",
+      "dur": 0.6,
+      "recipe": "twoTone",
+      "variants": [
+        {
+          "a": 880,
+          "b": 1175
+        }
+      ],
+      "randomPitch": 0.02,
+      "duck": true,
+      "caption": "Aviso: nuevo evento",
+      "samples": [
+        "assets/audio/sfx/alert.m4a"
+      ],
+      "sampleGain": 3.19
+    },
+    "bell": {
+      "bus": "events",
+      "gain": 0.2,
+      "priority": 3,
+      "family": "alert",
+      "dur": 1.0,
+      "recipe": "bell",
+      "variants": [
+        {
+          "f": 1568
+        }
+      ],
+      "randomPitch": 0.02,
+      "duck": true,
+      "caption": "Campanilla: pedido listo",
+      "samples": [
+        "assets/audio/sfx/bell.m4a",
+        "assets/audio/sfx/bell2.m4a"
+      ],
+      "sampleGain": 3.37
+    },
+    "kiosk": {
+      "bus": "events",
+      "gain": 0.08,
+      "priority": 2,
+      "family": "alert",
+      "dur": 0.48,
+      "recipe": "kioskBeep",
+      "variants": [
+        {
+          "a": 660,
+          "b": 880
+        }
+      ],
+      "caption": "Pitido de kiosco",
+      "samples": [
+        "assets/audio/sfx/kiosk.m4a"
+      ],
+      "sampleGain": 2.18
+    },
+    "car": {
+      "bus": "events",
+      "gain": 0.14,
+      "priority": 2,
+      "family": "alert",
+      "dur": 2.0,
+      "recipe": "glide",
+      "variants": [
+        {
+          "f": 150,
+          "to": 90
+        }
+      ],
+      "caption": "Llega un coche",
+      "samples": [
+        "assets/audio/sfx/car.m4a"
+      ],
+      "sampleGain": 3.22
+    },
+    "complaint": {
+      "bus": "events",
+      "gain": 0.12,
+      "priority": 3,
+      "family": "alert",
+      "dur": 1.48,
+      "recipe": "complaint",
+      "variants": [
+        {
+          "a": 440,
+          "b": 330
+        }
+      ],
+      "duck": true,
+      "caption": "Aviso de queja",
+      "samples": [
+        "assets/audio/sfx/complaint.m4a"
+      ],
+      "sampleGain": 2.96
+    },
+    "clean": {
+      "bus": "ui",
+      "gain": 0.25,
+      "priority": 2,
+      "family": "ui",
+      "dur": 1.48,
+      "recipe": "swish",
+      "variants": [
+        {
+          "f": 2400,
+          "d": 0.45
+        }
+      ],
+      "caption": "Limpieza",
+      "samples": [
+        "assets/audio/sfx/clean.m4a"
+      ],
+      "sampleGain": 2.75
+    },
+    "ok": {
+      "bus": "ui",
+      "gain": 0.2,
+      "priority": 2,
+      "family": "ui",
+      "dur": 0.8,
+      "recipe": "arpUp",
+      "variants": [
+        {
+          "n": [
+            523,
+            659,
+            784
+          ]
+        }
+      ],
+      "caption": "Confirmación",
+      "samples": [
+        "assets/audio/sfx/ok.m4a"
+      ],
+      "sampleGain": 3.48
+    },
+    "error": {
+      "bus": "events",
+      "gain": 0.14,
+      "priority": 3,
+      "family": "alert",
+      "dur": 0.6,
+      "recipe": "glideSaw",
+      "variants": [
+        {
+          "f": 220,
+          "to": 130
+        }
+      ],
+      "duck": true,
+      "caption": "Error",
+      "samples": [
+        "assets/audio/sfx/error.m4a"
+      ],
+      "sampleGain": 1.56
+    },
+    "hour": {
+      "bus": "ui",
+      "gain": 0.12,
+      "priority": 1,
+      "family": "ui",
+      "dur": 1.2,
+      "recipe": "twoTone",
+      "variants": [
+        {
+          "a": 660,
+          "b": 990
+        }
+      ],
+      "caption": "Cambio de hora",
+      "samples": [
+        "assets/audio/sfx/hour.m4a"
+      ],
+      "sampleGain": 3.25
+    },
+    "open": {
+      "bus": "events",
+      "gain": 0.2,
+      "priority": 3,
+      "family": "alert",
+      "dur": 1.48,
+      "recipe": "arpUp",
+      "variants": [
+        {
+          "n": [
+            392,
+            523,
+            659
+          ],
+          "type": "triangle"
+        }
+      ],
+      "duck": true,
+      "caption": "Puerta abierta",
+      "samples": [
+        "assets/audio/sfx/open.m4a"
+      ],
+      "sampleGain": 3.37
+    },
+    "kpi": {
+      "bus": "ui",
+      "gain": 0.08,
+      "priority": 0,
+      "family": "ui",
+      "dur": 0.1,
+      "recipe": "tick",
+      "variants": [
+        {
+          "f": 740
+        }
+      ],
+      "decorative": true,
+      "caption": "Actualización de servicio"
+    },
+    "fryerYellow": {
+      "bus": "events",
+      "gain": 0.09,
+      "priority": 3,
+      "family": "fryer",
+      "dur": 1.48,
+      "recipe": "fryerBeeps",
+      "variants": [
+        {
+          "f": 1750,
+          "gap": 0.1
+        }
+      ],
+      "caption": "Fritadora: quedan pocas patatas",
+      "samples": [
+        "assets/audio/sfx/fryer.m4a"
+      ],
+      "sampleGain": 2.47
+    },
+    "fryerRed": {
+      "bus": "events",
+      "gain": 0.09,
+      "priority": 3,
+      "family": "fryer",
+      "dur": 1.48,
+      "recipe": "fryerBeeps",
+      "variants": [
+        {
+          "f": 2250,
+          "gap": 0.14
+        }
+      ],
+      "duck": true,
+      "caption": "Fritadora: sin patatas",
+      "samples": [
+        "assets/audio/sfx/fryer.m4a"
+      ],
+      "sampleGain": 2.47,
+      "samplePitch": 1.12
+    },
+    "phoneBuzz": {
+      "bus": "ui",
+      "gain": 0.09,
+      "priority": 2,
+      "family": "phone",
+      "dur": 1.0,
+      "recipe": "buzz",
+      "variants": [
+        {
+          "f": 150,
+          "chime": 1320
+        }
+      ],
+      "caption": "Móvil de gestión: nueva alerta operativa",
+      "samples": [
+        "assets/audio/sfx/phone.m4a"
+      ],
+      "sampleGain": 1.31
+    },
+    "autokingOrder": {
+      "bus": "events",
+      "gain": 0.2,
+      "priority": 3,
+      "family": "vehicle",
+      "dur": 1.48,
+      "recipe": "speaker",
+      "variants": [
+        {
+          "a": 988,
+          "b": 784
+        }
+      ],
+      "duck": true,
+      "caption": "AutoKing: coche en el punto de pedido",
+      "samples": [
+        "assets/audio/sfx/autoking.m4a"
+      ],
+      "sampleGain": 3.08
+    },
+    "attendStart": {
+      "bus": "ui",
+      "gain": 0.1,
+      "priority": 2,
+      "family": "ui",
+      "dur": 0.15,
+      "recipe": "tick",
+      "variants": [
+        {
+          "f": 520
+        },
+        {
+          "f": 560
+        }
+      ],
+      "randomPitch": 0.03
+    },
+    "negativeReview": {
+      "bus": "events",
+      "gain": 0.1,
+      "priority": 2,
+      "family": "alert",
+      "dur": 0.6,
+      "recipe": "glide",
+      "variants": [
+        {
+          "f": 330,
+          "to": 250
+        }
+      ],
+      "samples": [
+        "assets/audio/sfx/review.m4a"
+      ],
+      "sampleGain": 1.73
+    },
+    "uiTap": {
+      "bus": "ui",
+      "gain": 0.07,
+      "priority": 1,
+      "family": "ui",
+      "dur": 0.06,
+      "recipe": "tick",
+      "variants": [
+        {
+          "f": 900
+        }
+      ],
+      "randomPitch": 0.03
+    },
+    "panelOpen": {
+      "bus": "ui",
+      "gain": 0.07,
+      "priority": 1,
+      "family": "ui",
+      "dur": 0.15,
+      "recipe": "glide",
+      "variants": [
+        {
+          "f": 600,
+          "to": 900
+        }
+      ]
+    },
+    "panelClose": {
+      "bus": "ui",
+      "gain": 0.07,
+      "priority": 1,
+      "family": "ui",
+      "dur": 0.15,
+      "recipe": "glide",
+      "variants": [
+        {
+          "f": 900,
+          "to": 600
+        }
+      ]
+    },
+    "vehicleEnter": {
+      "bus": "vehicles",
+      "gain": 0.12,
+      "priority": 1,
+      "family": "vehicle",
+      "spatial": true,
+      "maxDistance": 1100,
+      "dur": 2.0,
+      "recipe": "engine",
+      "variants": [
+        {
+          "f": 140,
+          "to": 95,
+          "wet": false
+        },
+        {
+          "f": 150,
+          "to": 100,
+          "wet": false
+        }
+      ],
+      "wetVariants": [
+        {
+          "f": 140,
+          "to": 95,
+          "wet": true
+        }
+      ],
+      "randomPitch": 0.03,
+      "samples": [
+        "assets/audio/sfx/car.m4a"
+      ],
+      "sampleGain": 3.22
+    },
+    "deliveryArrival": {
+      "bus": "vehicles",
+      "gain": 0.12,
+      "priority": 2,
+      "family": "vehicle",
+      "spatial": true,
+      "maxDistance": 1300,
+      "dur": 2.0,
+      "recipe": "scooter",
+      "variants": [
+        {
+          "f": 320,
+          "to": 200
+        }
+      ],
+      "randomPitch": 0.03,
+      "samples": [
+        "assets/audio/sfx/scooter.m4a"
+      ],
+      "sampleGain": 3.37
+    },
+    "customerEnter": {
+      "bus": "customers",
+      "gain": 0.06,
+      "priority": 0,
+      "family": "foley",
+      "spatial": true,
+      "maxDistance": 700,
+      "probability": 0.5,
+      "decorative": true,
+      "dur": 1.48,
+      "recipe": "swish",
+      "variants": [
+        {
+          "f": 1400,
+          "d": 0.25
+        },
+        {
+          "f": 1700,
+          "d": 0.2
+        }
+      ],
+      "randomPitch": 0.06,
+      "samples": [
+        "assets/audio/sfx/door.m4a",
+        "assets/audio/sfx/door2.m4a"
+      ],
+      "sampleGain": 3.37
+    },
+    "customerSit": {
+      "bus": "customers",
+      "gain": 0.06,
+      "priority": 0,
+      "family": "foley",
+      "spatial": true,
+      "maxDistance": 600,
+      "probability": 0.45,
+      "decorative": true,
+      "dur": 0.8,
+      "recipe": "thud",
+      "variants": [
+        {
+          "f": 140
+        },
+        {
+          "f": 120
+        }
+      ],
+      "randomPitch": 0.05,
+      "samples": [
+        "assets/audio/sfx/chair.m4a"
+      ],
+      "sampleGain": 3.51
+    },
+    "customerLeave": {
+      "bus": "customers",
+      "gain": 0.05,
+      "priority": 0,
+      "family": "foley",
+      "spatial": true,
+      "maxDistance": 600,
+      "probability": 0.35,
+      "decorative": true,
+      "dur": 0.2,
+      "recipe": "swish",
+      "variants": [
+        {
+          "f": 1100,
+          "d": 0.2
+        }
+      ],
+      "randomPitch": 0.06
+    },
+    "tray": {
+      "bus": "customers",
+      "gain": 0.06,
+      "priority": 0,
+      "family": "tray",
+      "spatial": true,
+      "maxDistance": 600,
+      "decorative": true,
+      "dur": 0.8,
+      "recipe": "thud",
+      "variants": [
+        {
+          "f": 220
+        },
+        {
+          "f": 260
+        }
+      ],
+      "randomPitch": 0.05,
+      "samples": [
+        "assets/audio/sfx/tray.m4a",
+        "assets/audio/sfx/tray2.m4a"
+      ],
+      "sampleGain": 3.37
+    },
+    "metal": {
+      "bus": "kitchen",
+      "gain": 0.07,
+      "priority": 0,
+      "family": "metal",
+      "spatial": true,
+      "maxDistance": 800,
+      "decorative": true,
+      "dur": 0.6,
+      "recipe": "clank",
+      "variants": [
+        {
+          "f": 2400
+        },
+        {
+          "f": 2900
+        },
+        {
+          "f": 3300
+        }
+      ],
+      "randomPitch": 0.04,
+      "samples": [
+        "assets/audio/sfx/metal.m4a",
+        "assets/audio/sfx/metal2.m4a"
+      ],
+      "sampleGain": 3.37
+    },
+    "sizzleHit": {
+      "bus": "kitchen",
+      "gain": 0.09,
+      "priority": 0,
+      "family": "metal",
+      "spatial": true,
+      "maxDistance": 800,
+      "decorative": true,
+      "dur": 1.2,
+      "recipe": "swish",
+      "variants": [
+        {
+          "f": 3600,
+          "d": 0.5
+        },
+        {
+          "f": 4200,
+          "d": 0.4
+        }
+      ],
+      "samples": [
+        "assets/audio/sfx/sizzle.m4a"
+      ],
+      "sampleGain": 2.98
+    },
+    "step": {
+      "bus": "customers",
+      "gain": 0.05,
+      "priority": 1,
+      "family": "step",
+      "dur": 0.17,
+      "recipe": "step",
+      "variants": [
+        {
+          "surface": "tile"
+        }
+      ],
+      "randomPitch": 0.06,
+      "samples": [
+        "assets/audio/sfx/stepA.m4a",
+        "assets/audio/sfx/stepB.m4a"
+      ],
+      "sampleGain": 2.11
+    },
+    "bagHandoff": {
+      "bus": "customers",
+      "gain": 0.06,
+      "priority": 0,
+      "family": "tray",
+      "spatial": true,
+      "maxDistance": 600,
+      "decorative": true,
+      "dur": 0.8,
+      "recipe": "thud",
+      "variants": [
+        {
+          "f": 220
+        },
+        {
+          "f": 260
+        }
+      ],
+      "randomPitch": 0.05,
+      "samples": [
+        "assets/audio/sfx/bag.m4a"
+      ],
+      "sampleGain": 3.37,
+      "caption": "Entrega de bolsa"
+    }
   },
   "surfaces": {
-    "tile": { "f": 650, "d": 0.05 },
-    "concrete": { "f": 420, "d": 0.06 },
-    "asphalt": { "f": 300, "d": 0.07 },
-    "paving": { "f": 520, "d": 0.06 }
+    "tile": {
+      "f": 650,
+      "d": 0.05
+    },
+    "concrete": {
+      "f": 420,
+      "d": 0.06
+    },
+    "asphalt": {
+      "f": 300,
+      "d": 0.07
+    },
+    "paving": {
+      "f": 520,
+      "d": 0.06
+    }
+  },
+  "ambientLoops": {
+    "restaurant": {
+      "src": "assets/audio/amb/roomtone.m4a",
+      "mul": 0.43
+    },
+    "dining": {
+      "src": "assets/audio/amb/dining.m4a",
+      "mul": 4.1
+    },
+    "kitchen": {
+      "src": "assets/audio/amb/kitchen.m4a",
+      "mul": 0.8,
+      "mutes": [
+        "hood",
+        "fryerBubble"
+      ]
+    },
+    "driveThru": {
+      "src": "assets/audio/amb/drivethru.m4a",
+      "mul": 0.68
+    },
+    "rain": {
+      "src": "assets/audio/amb/rain.m4a",
+      "mul": 6.0
+    }
+  },
+  "music": {
+    "calm": {
+      "src": "assets/audio/music/calma.m4a",
+      "gain": 0.115
+    },
+    "peak": {
+      "src": "assets/audio/music/punta.m4a",
+      "gain": 0.071
+    },
+    "note": "Música ambiente del local: calma en valles y apertura, enérgica en las puntas de comida y cena (crossfade). Sigue el volumen de ambiente."
   }
 }

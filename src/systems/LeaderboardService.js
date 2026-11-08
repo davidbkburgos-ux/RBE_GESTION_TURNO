@@ -24,14 +24,27 @@
   const LeaderboardService = {
     cleanName(name) { return String(name || '').replace(/\s+/g, ' ').trim().slice(0, 14) || 'Encargado'; },
     // TOP 10 global ordenado por score descendente (a igualdad, el más antiguo primero).
+    // Columna opcional `avatar` ("marca:género", p. ej. "popeyes:f"). Si la tabla aún no la tiene, se
+    // consulta e inserta sin ella (y se recuerda para no repetir el intento fallido en cada petición).
+    hasAvatar: true,
     async top(limit) {
-      const url = ENDPOINT + '?select=player_name,score,created_at&order=score.desc,created_at.asc&limit=' + (limit || 10);
-      const rows = await (await request(url, { method: 'GET' })).json();
-      return (Array.isArray(rows) ? rows : []).map((r) => ({ name: r.player_name, score: r.score, date: r.created_at }));
+      const q = (cols) => ENDPOINT + '?select=' + cols + '&order=score.desc,created_at.asc&limit=' + (limit || 10);
+      let rows;
+      if (this.hasAvatar) {
+        try { rows = await (await request(q('player_name,score,created_at,avatar'), { method: 'GET' })).json(); }
+        catch (e) { this.hasAvatar = false; console.warn('[Leaderboard] Sin columna avatar; añádela para guardar el avatar del récord.'); }
+      }
+      if (!rows) rows = await (await request(q('player_name,score,created_at'), { method: 'GET' })).json();
+      return (Array.isArray(rows) ? rows : []).map((r) => ({ name: r.player_name, score: r.score, date: r.created_at, avatar: r.avatar || null }));
     },
     // created_at lo genera la base de datos.
-    async insert(name, score) {
-      await request(ENDPOINT, { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ player_name: name, score }) });
+    async insert(name, score, avatar) {
+      const post = (body) => request(ENDPOINT, { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(body) });
+      if (avatar && this.hasAvatar) {
+        try { await post({ player_name: name, score, avatar }); return; }
+        catch (e) { this.hasAvatar = false; console.warn('[Leaderboard] Guardado sin avatar:', e.message); }
+      }
+      await post({ player_name: name, score });
     }
   };
   BK.LeaderboardService = LeaderboardService;

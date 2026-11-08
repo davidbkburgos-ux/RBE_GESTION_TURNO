@@ -479,6 +479,11 @@
           } else if (g.orderReady && !g.collecting) {
             g.collecting = true;
             BK.bus.emit('ambient:activity', { type: 'CUSTOMER_ORDER_READY', channel: g.ambientChannel, entity: g });
+            // pose de recogida (coge la bolsa) antes de marcharse o sentarse
+            g.pickupT = 1.2; g.idleAnim = 'deliver';
+            if (G.audio && G.audio.emit) G.audio.emit({ event: 'bagHandoff', x: g.x, y: g.y, caption: false });
+          } else if (g.collecting && g.pickupT > 0 && (g.pickupT -= dt) <= 0) {
+            g.pickupT = 0; g.idleAnim = 'idle';
             if (g.role === 'rider') {
               this.free(g);
               this.leave(g, true);

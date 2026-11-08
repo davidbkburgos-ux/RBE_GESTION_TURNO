@@ -19,7 +19,9 @@
       return this.G.employees.list.filter((c) => c.available && !c.absent && c.status === 'WORKING' && c.category === category && c.position).length;
     }
     idleWorker(category) {
-      return this.G.employees.list.find((c) => c.available && !c.absent && c.status === 'WORKING' && c.category === category && c.position && !c.override && !c.autoJob);
+      const L = this.G.employees.list, ok = (c) => c.available && !c.absent && c.status === 'WORKING' && c.position && !c.override && !c.autoJob;
+      // primero los del propio puesto; si no hay, quien esté cubriéndolo de forma secundaria
+      return L.find((c) => ok(c) && c.category === category) || L.find((c) => ok(c) && c.extraCategory === category);
     }
     reaction(ev) { return ev.type === 'restroom' ? this.restroomReactionSec : this.cfg.reactionSec; }
     // Al reasignar a un empleado se aborta su tarea automática y se liberan sus reservas.

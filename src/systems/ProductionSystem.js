@@ -20,6 +20,7 @@
       this.expectedCache = null;
       this.blockedMsgAt = -999;
       this.wasteSettled = false;
+      this.curTramo = null; this.wasteLog = []; this.wasteHeld = 0; this.wasteCost = 0; this.shortages = 0;
       this.warned = new Set();
       this.friesLevel = null;
       this.openingExtraStockUseChance = 0;
@@ -60,8 +61,17 @@
       return 'assembly';
     }
     update(dt) {
-      const tr = this.tramo();
-      if (this.G.clock.t >= 720 && !this.prepRuns[tr.id] && !this.notified[tr.id]) {
+      const tr = this.tramo(), sp = this.G.cfg.operations.stockPrep, t = this.G.clock.t;
+      // Cambio de tramo: parte del producto preparado y no usado supera su tiempo de mantenimiento y caduca.
+      if (this.curTramo && this.curTramo !== tr.id && this.G.state === 'playing') this.expireHeld(this.curTramo, tr);
+      this.curTramo = tr.id;
+      // Aviso anticipado de la punta (y del valle) para preparar producto y reposicionar al equipo a tiempo.
+      const nx = this.nextTramo(t);
+      if (nx && t >= nx.from * 60 - (sp.leadMin || 20) && t < nx.from * 60 && !this.notified['soon_' + nx.id] && this.G.state === 'playing') {
+        this.notified['soon_' + nx.id] = true;
+        BK.bus.emit('production:peak-soon', { tramo: nx, inMin: Math.round(nx.from * 60 - t), batch: this.batchFor(nx) });
+      }
+      if (t >= 720 && !this.prepRuns[tr.id] && !this.notified[tr.id]) {
         this.notified[tr.id] = true;
         BK.bus.emit('production:prep-needed', { tramo: tr });
       }
@@ -109,7 +119,7 @@
               if (this.stock[stockKey] <= 0) {
                 o.status = 'blocked';
                 o.blockedBy = stockKey;
-                if (o.blockedAt == null) o.blockedAt = this.G.time;
+                if (o.blockedAt == null) { o.blockedAt = this.G.time; this.shortages++; }
                 return;
               }
               this.stock[stockKey] -= 1;
@@ -207,12 +217,34 @@
       const sp = this.G.cfg.operations.stockPrep, base = Math.ceil(this.expected(tramo) * sp.coverage);
       return Object.fromEntries(sp.products.map((id) => [id, id === 'SIDES' ? Math.max(1, Math.ceil(base * sp.deliveryShare)) : base]));
     }
+    nextTramo(t = this.G.clock.t) {
+      const list = this.G.cfg.operations.stockPrep.tramos, h = t / 60;
+      return list.find((x) => x.from > h) || null;
+    }
+    // Tramo para el que se prepara: el actual, o el siguiente si falta menos del margen de aviso.
+    prepTarget(t = this.G.clock.t) {
+      const sp = this.G.cfg.operations.stockPrep, nx = this.nextTramo(t);
+      return nx && t >= nx.from * 60 - (sp.leadMin || 20) ? nx : this.tramo(t);
+    }
+    expireHeld(fromId, toTramo) {
+      const sp = this.G.cfg.operations.stockPrep, cost = sp.unitCost || {}, k = sp.holdLoss || 0;
+      if (!k) return;
+      let units = 0, eur = 0;
+      sp.products.forEach((id) => {
+        const lost = Math.floor((this.reserve[id] || 0) * k);
+        if (lost > 0) { this.reserve[id] -= lost; units += lost; eur += lost * (cost[id] || 0); }
+      });
+      if (!units) return;
+      this.wasteHeld += units; this.wasteCost += eur;
+      this.wasteLog.push({ tramo: fromId, units, eur: +eur.toFixed(2) });
+      BK.bus.emit('production:expired', { from: fromId, to: toTramo, units, eur });
+    }
     needsPrep() {
-      const tr = this.tramo();
+      const tr = this.prepTarget();
       return !this.prepRuns[tr.id] && this.G.state === 'playing';
     }
     managerPrepare() {
-      const tr = this.tramo(), batch = this.batchFor(tr);
+      const tr = this.prepTarget(), batch = this.batchFor(tr);
       Object.entries(batch).forEach(([id, n]) => { this.reserve[id] = (this.reserve[id] || 0) + n; });
       const first = !this.prepRuns[tr.id];
       this.prepRuns[tr.id] = (this.prepRuns[tr.id] || 0) + 1;
@@ -224,7 +256,12 @@
     // Producto preparado que no llegó a usarse: penalización en el resumen final.
     wasteUnits() {
       const sp = this.G.cfg.operations.stockPrep;
-      return sp.products.reduce((n, id) => n + Math.max(0, Math.floor(this.reserve[id] || 0)), 0);
+      return (this.wasteHeld || 0) + sp.products.reduce((n, id) => n + Math.max(0, Math.floor(this.reserve[id] || 0)), 0);
+    }
+    // Coste estimado (COGS) del desperdicio: caducado durante el día + sobrante al cierre.
+    wasteEuros() {
+      const sp = this.G.cfg.operations.stockPrep, cost = sp.unitCost || {};
+      return (this.wasteCost || 0) + sp.products.reduce((n, id) => n + Math.max(0, Math.floor(this.reserve[id] || 0)) * (cost[id] || 0), 0);
     }
     settleWaste() {
       if (this.wasteSettled) return 0;
@@ -256,11 +293,13 @@
       };
     }
     snapshot() {
-      return { nextId: this.nextId, orders: this.orders, records: this.records, stock: this.stock, restocking: this.restocking, reserve: this.reserve, prepRuns: this.prepRuns, preparedTotal: this.preparedTotal, openingExtraStockUseChance: this.openingExtraStockUseChance };
+      return { nextId: this.nextId, orders: this.orders, records: this.records, stock: this.stock, restocking: this.restocking, reserve: this.reserve, prepRuns: this.prepRuns, preparedTotal: this.preparedTotal, openingExtraStockUseChance: this.openingExtraStockUseChance, curTramo: this.curTramo, wasteHeld: this.wasteHeld, wasteCost: this.wasteCost, wasteLog: this.wasteLog, shortages: this.shortages, notified: this.notified };
     }
     restore(s) {
       if (!s) return;
       this.nextId = s.nextId || 0; this.orders = s.orders || [];
+      this.curTramo = s.curTramo || null; this.wasteHeld = s.wasteHeld || 0; this.wasteCost = s.wasteCost || 0;
+      this.wasteLog = s.wasteLog || []; this.shortages = s.shortages || 0; this.notified = s.notified || this.notified;
       this.records = s.records || this.records; this.stock = s.stock || this.stock; this.restocking = s.restocking || {};
       this.openingExtraStockUseChance = s.openingExtraStockUseChance || 0;
       this.reserve = s.reserve || {}; this.prepRuns = s.prepRuns || {}; this.preparedTotal = s.preparedTotal || 0;

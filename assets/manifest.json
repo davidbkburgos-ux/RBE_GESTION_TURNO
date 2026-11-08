@@ -1,0 +1,1177 @@
+{
+  "version": 1,
+  "note": "Recursos visuales generados con Summer Engine. Planos de día y de noche alineados con map.json (BK) y brands.json (Popeyes), 1536x1024. Avatares por género (settings.managerGender m/f) con uniforme por marca; si falta el sprite de una marca se usa el de BK de forma provisional. Sprites normalizados con tools/normalize_sprites.py.",
+  "world": {
+    "width": 1536,
+    "height": 1024
+  },
+  "brands": {
+    "bk": {
+      "label": "Burger King",
+      "logo": "assets/brand/bk_logo.webp",
+      "tagline": "Parrilla a la llama · AutoKing · Delivery",
+      "maps": {
+        "day": "assets/map/plano_bk_dia@2x.webp",
+        "night": "assets/map/plano_bk_noche@2x.webp"
+      },
+      "menu": "assets/ui/menu_bk.jpg",
+      "lane": {
+        "label": "AUTO KING",
+        "x": 510,
+        "y": 250
+      },
+      "props": [
+        {
+          "src": "assets/props/totem_auto.png",
+          "x": 97,
+          "y": 572,
+          "w": 37,
+          "h": 64,
+          "anchor": [
+            0.5,
+            1.0
+          ],
+          "glow": {
+            "x": 97,
+            "y": 528,
+            "r": 26
+          }
+        }
+      ],
+      "theme": {
+        "accent": "#f47a2c",
+        "accent2": "#d83b2d",
+        "ink": "#2a1c14",
+        "paper": "#f5ebdc"
+      }
+    },
+    "popeyes": {
+      "label": "Popeyes",
+      "logo": "assets/brand/popeyes_logo.png",
+      "tagline": "Pollo marinado y rebozado · popAuto · Delivery",
+      "maps": {
+        "day": "assets/map/plano_popeyes_dia@2x.webp",
+        "night": "assets/map/plano_popeyes_noche@2x.webp"
+      },
+      "menu": "assets/ui/menu_popeyes.jpg",
+      "lane": {
+        "label": "POP AUTO",
+        "x": 640,
+        "y": 46,
+        "size": 19
+      },
+      "props": [
+        {
+          "src": "assets/props/totem_auto.png",
+          "x": 118,
+          "y": 556,
+          "w": 37,
+          "h": 64,
+          "anchor": [
+            0.5,
+            1.0
+          ],
+          "glow": {
+            "x": 118,
+            "y": 512,
+            "r": 26
+          }
+        }
+      ],
+      "theme": {
+        "accent": "#e8662a",
+        "accent2": "#b5441c",
+        "ink": "#2b211b",
+        "paper": "#fbf6ee"
+      }
+    }
+  },
+  "avatars": {
+    "m": {
+      "label": "Encargado",
+      "character": {
+        "bk": "encargado",
+        "popeyes": "encargado_popeyes"
+      },
+      "portrait": {
+        "bk": "assets/ui/portraits/encargado.png",
+        "popeyes": "assets/ui/portraits/encargado_popeyes.png"
+      }
+    },
+    "f": {
+      "label": "Encargada",
+      "character": {
+        "bk": "encargada",
+        "popeyes": "encargada_popeyes"
+      },
+      "portrait": {
+        "bk": "assets/ui/portraits/encargada.png",
+        "popeyes": "assets/ui/portraits/encargada_popeyes.png"
+      }
+    }
+  },
+  "palettes": {
+    "employee": {
+      "bk": [
+        "empleado_bk",
+        "empleada_bk"
+      ],
+      "popeyes": [
+        "empleado_popeyes",
+        "empleada_popeyes"
+      ]
+    },
+    "rider": {
+      "any": "repartidor"
+    },
+    "guest": {
+      "pool": [
+        "cliente_a",
+        "cliente_b",
+        "cliente_c"
+      ]
+    }
+  },
+  "characters": {
+    "encargado": {
+      "sheet": "assets/characters/encargado/encargado.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "work": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8,
+              "seq": [
+                0,
+                1,
+                7,
+                4
+              ]
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            },
+            "left": {
+              "row": 10,
+              "frames": 8
+            },
+            "right": {
+              "row": 11,
+              "frames": 8
+            }
+          }
+        }
+      }
+    },
+    "encargada": {
+      "sheet": "assets/characters/encargada/encargada.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "work": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            },
+            "left": {
+              "row": 10,
+              "frames": 8
+            },
+            "right": {
+              "row": 11,
+              "frames": 8
+            }
+          }
+        }
+      }
+    },
+    "encargado_popeyes": {
+      "sheet": "assets/characters/encargado_popeyes/encargado_popeyes.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "work": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            },
+            "left": {
+              "row": 10,
+              "frames": 8
+            },
+            "right": {
+              "row": 11,
+              "frames": 8
+            }
+          }
+        }
+      }
+    },
+    "encargada_popeyes": {
+      "sheet": "assets/characters/encargada_popeyes/encargada_popeyes.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "work": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            },
+            "left": {
+              "row": 10,
+              "frames": 8
+            },
+            "right": {
+              "row": 11,
+              "frames": 8
+            }
+          }
+        }
+      }
+    },
+    "empleado_bk": {
+      "sheet": "assets/characters/empleado_bk/empleado_bk.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "work": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            },
+            "left": {
+              "row": 10,
+              "frames": 8
+            },
+            "right": {
+              "row": 11,
+              "frames": 8
+            }
+          }
+        }
+      }
+    },
+    "empleada_bk": {
+      "sheet": "assets/characters/empleada_bk/empleada_bk.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "work": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            },
+            "left": {
+              "row": 10,
+              "frames": 8
+            },
+            "right": {
+              "row": 11,
+              "frames": 8
+            }
+          }
+        }
+      }
+    },
+    "empleado_popeyes": {
+      "sheet": "assets/characters/empleado_popeyes/empleado_popeyes.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "work": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            },
+            "left": {
+              "row": 10,
+              "frames": 8
+            },
+            "right": {
+              "row": 11,
+              "frames": 8
+            }
+          }
+        }
+      }
+    },
+    "empleada_popeyes": {
+      "sheet": "assets/characters/empleada_popeyes/empleada_popeyes.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "work": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            },
+            "left": {
+              "row": 10,
+              "frames": 8
+            },
+            "right": {
+              "row": 11,
+              "frames": 8
+            }
+          }
+        }
+      }
+    },
+    "cliente_a": {
+      "sheet": "assets/characters/cliente_a/cliente_a.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "sit": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "left": {
+              "row": 9,
+              "frames": 8
+            },
+            "right": {
+              "row": 10,
+              "frames": 8
+            }
+          }
+        },
+        "deliver": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 11,
+              "frames": 8
+            },
+            "up": {
+              "row": 12,
+              "frames": 1
+            }
+          }
+        }
+      }
+    },
+    "cliente_b": {
+      "sheet": "assets/characters/cliente_b/cliente_b.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "sit": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "left": {
+              "row": 9,
+              "frames": 8
+            },
+            "right": {
+              "row": 10,
+              "frames": 8
+            }
+          }
+        },
+        "deliver": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 11,
+              "frames": 8
+            },
+            "up": {
+              "row": 12,
+              "frames": 1
+            }
+          }
+        }
+      }
+    },
+    "cliente_c": {
+      "sheet": "assets/characters/cliente_c/cliente_c.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "sit": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "left": {
+              "row": 9,
+              "frames": 8
+            },
+            "right": {
+              "row": 10,
+              "frames": 8
+            }
+          }
+        },
+        "deliver": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 11,
+              "frames": 8
+            },
+            "up": {
+              "row": 12,
+              "frames": 1
+            }
+          }
+        }
+      }
+    },
+    "repartidor": {
+      "sheet": "assets/characters/repartidor/repartidor.png",
+      "cell": [
+        128,
+        168
+      ],
+      "anchor": [
+        64,
+        156
+      ],
+      "targetHeight": 112,
+      "anims": {
+        "idle": {
+          "fps": 2,
+          "dirs": {
+            "down": {
+              "row": 0,
+              "frames": 1
+            },
+            "up": {
+              "row": 1,
+              "frames": 1
+            },
+            "left": {
+              "row": 2,
+              "frames": 1
+            },
+            "right": {
+              "row": 3,
+              "frames": 1
+            }
+          }
+        },
+        "walk": {
+          "fps": 10,
+          "dirs": {
+            "down": {
+              "row": 4,
+              "frames": 8
+            },
+            "up": {
+              "row": 5,
+              "frames": 8
+            },
+            "left": {
+              "row": 6,
+              "frames": 8
+            },
+            "right": {
+              "row": 7,
+              "frames": 8
+            }
+          }
+        },
+        "deliver": {
+          "fps": 6,
+          "dirs": {
+            "down": {
+              "row": 8,
+              "frames": 8
+            },
+            "up": {
+              "row": 9,
+              "frames": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "vehicles": {
+    "note": "Vista cenital, frente hacia +x. len/wid en unidades de mundo.",
+    "cars": [
+      {
+        "src": "assets/vehicles/car_red.png",
+        "len": 100,
+        "wid": 49
+      },
+      {
+        "src": "assets/vehicles/car_white.png",
+        "len": 100,
+        "wid": 44
+      },
+      {
+        "src": "assets/vehicles/car_blue.png",
+        "len": 100,
+        "wid": 46
+      },
+      {
+        "src": "assets/vehicles/car_yellow.png",
+        "len": 100,
+        "wid": 49
+      },
+      {
+        "src": "assets/vehicles/car_pickup.png",
+        "len": 100,
+        "wid": 42
+      }
+    ],
+    "truck": {
+      "src": "assets/vehicles/truck_conway.png",
+      "len": 190,
+      "wid": 59
+    }
+  },
+  "props": {
+    "caja": {
+      "src": "assets/props/caja_conway.png",
+      "w": 20,
+      "h": 18
+    },
+    "bandejaSucia": {
+      "src": "assets/props/bandeja_sucia.png",
+      "w": 34,
+      "h": 24
+    },
+    "bolsa": {
+      "src": "assets/props/bolsa.png",
+      "w": 15,
+      "h": 19
+    },
+    "vapor": {
+      "src": "assets/props/vapor.png",
+      "w": 22,
+      "h": 37
+    }
+  },
+  "icons": {
+    "alert": "assets/ui/icons/alert.png",
+    "bell": "assets/ui/icons/bell.png",
+    "box": "assets/ui/icons/box.png",
+    "briefing": "assets/ui/icons/briefing.png",
+    "broom": "assets/ui/icons/broom.png",
+    "burger": "assets/ui/icons/burger.png",
+    "car": "assets/ui/icons/car.png",
+    "chair": "assets/ui/icons/chair.png",
+    "checklist": "assets/ui/icons/checklist.png",
+    "chef": "assets/ui/icons/chef.png",
+    "chicken": "assets/ui/icons/chicken.png",
+    "door": "assets/ui/icons/door.png",
+    "doubt": "assets/ui/icons/doubt.png",
+    "face_annoyed": "assets/ui/icons/face_annoyed.png",
+    "face_furious": "assets/ui/icons/face_furious.png",
+    "face_happy": "assets/ui/icons/face_happy.png",
+    "face_neutral": "assets/ui/icons/face_neutral.png",
+    "flame": "assets/ui/icons/flame.png",
+    "fries": "assets/ui/icons/fries.png",
+    "handshake": "assets/ui/icons/handshake.png",
+    "kiosk": "assets/ui/icons/kiosk.png",
+    "leaving": "assets/ui/icons/leaving.png",
+    "ready": "assets/ui/icons/ready.png",
+    "receipt": "assets/ui/icons/receipt.png",
+    "sandwich": "assets/ui/icons/sandwich.png",
+    "scooter": "assets/ui/icons/scooter.png",
+    "star": "assets/ui/icons/star.png",
+    "stopwatch": "assets/ui/icons/stopwatch.png",
+    "talking": "assets/ui/icons/talking.png",
+    "thermo": "assets/ui/icons/thermo.png",
+    "waiting": "assets/ui/icons/waiting.png",
+    "wrench": "assets/ui/icons/wrench.png"
+  }
+}

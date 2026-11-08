@@ -149,12 +149,14 @@
       const G = this.G, h = this.ui.h, P = G.cfg.operations.products;
       const stock = Object.entries(G.production.stock).map(([id, v]) => this.row(P[id].label, String(Math.round(v)), v <= P[id].minimumStock ? 'warn' : ''));
       const waiting = G.production.orders.filter((o) => o.status === 'blocked').length;
-      const tr = G.production.tramo(), batch = G.production.batchFor(tr), runs = G.production.prepRuns[tr.id] || 0;
+      const tr = G.production.prepTarget(), batch = G.production.batchFor(tr), runs = G.production.prepRuns[tr.id] || 0;
+      const early = tr.id !== G.production.tramo().id;
       const reserveRows = G.cfg.operations.stockPrep.products.map((id) => this.row(P[id].label, String(G.production.reserve[id] || 0) + ' uds.'));
       return [
         this.sec('Preparación', this.row('Producto preparado', Math.round(G.prep.progress) + ' %'), this.bar(G.prep.progress, 'prep')),
-        this.sec('Cámara de congelado · ' + tr.label,
+        this.sec('Cámara de congelado · ' + tr.label + (early ? ' (se acerca)' : '') + (tr.peak ? ' · PUNTA' : ' · VALLE'),
           this.row('Tanda recomendada', '+' + batch.MAIN_PRODUCT + ' uds. (≈60 % de los clientes)'),
+          this.row('Desperdicio (COGS)', (G.production.wasteHeld || 0) + ' uds. · ' + (G.production.wasteCost || 0).toFixed(2).replace('.', ',') + ' €', (G.production.wasteHeld || 0) > 0 ? 'warn' : 'ok'),
           this.row('Preparaciones hechas', String(runs), runs ? 'ok' : 'warn'),
           ...reserveRows,
           h('div', { class: 'ph-btns' }, h('button', { type: 'button', class: 'ph-btn go', onclick: () => G.player.goPrep() }, 'Preparar producto')),

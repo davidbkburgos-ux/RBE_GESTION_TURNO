@@ -201,6 +201,15 @@
     reaction(ok) { if (!this.char.action) this.char.playAction(ok ? 'reactGood' : 'reactBad', 1.0); }
 
     update(dt) {
+      // Cubriendo un puesto: animación de trabajo solo con trabajo real en esa estación (en sala, solo
+      // durante la acción de limpiar, que ya usa su propia animación). En reposo, postura quieta.
+      const G = this.G, M = G.manager, ch = this.char;
+      if (M && M.status === 'WORKING_POSITION' && M.coveringPosition && !ch.action && !ch.moving) {
+        const st = G.cfg.operations.stations[M.coveringPosition];
+        const busy = st && st.category !== 'hall' && G.employees.workFor && G.employees.workFor(st.category) > 0;
+        const want = busy ? 'work' : 'idle';
+        if (ch.idleAnim !== want) { ch.idleAnim = want; ch.anim = want; ch.animT = 0; }
+      }
       this.char.update(dt);
       if (this.marker) { this.marker.t += dt; if (this.marker.t > 1.4 && !this.marker.target) this.marker = null; }
       if (this.marker && this.marker.target && !this.char.moving && !this.char.action) this.marker = null;
