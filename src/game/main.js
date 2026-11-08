@@ -10,6 +10,10 @@
     G.save = new BK.SaveSystem(G.cfg.meta.saveKey);
     G.brand = G.save.settings.brand === 'popeyes' ? 'popeyes' : 'bk';
     BK.applyBrand(d, G.brand);
+    // Capa visual (assets/manifest.json): planos día/noche, sprites HD-2D, retratos y tema de color de la marca.
+    G.manifest = d.manifest || null;
+    if (BK.SpriteLoader) BK.SpriteLoader.init(G.manifest, () => G.save.settings);
+    G.applyBrandTheme();
     if (G.save.settings.difficulty === 'easy' || G.save.settings.difficulty === 'normal') G.save.setSetting('difficulty', 'weekday');
     if (G.save.settings.difficulty === 'hard') G.save.setSetting('difficulty', 'weekend');
     BK.settings = G.save.settings;
@@ -211,6 +215,15 @@
     if (changed) { location.reload(); return; }
     if (G.renderer) G.renderer.setBrand(b);
   };
+  G.applyBrandTheme = function () {
+    const b = G.manifest && G.manifest.brands && G.manifest.brands[G.brand];
+    document.body.dataset.brand = G.brand;
+    if (!b || !b.theme) return;
+    const st = document.documentElement.style;
+    st.setProperty('--brand-accent', b.theme.accent); st.setProperty('--brand-accent2', b.theme.accent2);
+    st.setProperty('--brand-ink', b.theme.ink); st.setProperty('--brand-paper', b.theme.paper);
+  };
+  G.roleWord = function (upper) { const w = G.save && G.save.settings.managerGender === 'f' ? 'Encargada' : 'Encargado'; return upper ? w.toUpperCase() : w; };
   G.setManagerGender = function (g) {
     g = g === 'f' ? 'f' : 'm';
     G.save.setSetting('managerGender', g);
@@ -423,13 +436,19 @@
     G.noTutorial = tut;
     return { baseline, rows, ok: rows.every((r) => r.clean) };
   };
+  let lastState = null, lastStaticDraw = 0;
   function frame(ts) {
     const dt = Math.min(0.1, (ts - last) / 1000);
     last = ts;
     try {
       step(dt);
       G.renderer.update(dt);
-      G.renderer.draw();
+      // Partida en marcha: 60 FPS. En el menú, la pantalla final o con la partida en pausa la escena está
+      // congelada: solo se repinta si algo cambió (tamaño, marca, cámara) y, en pausa, como mucho a 4 FPS.
+      const R = G.renderer, live = G.state === 'playing' && !G.paused;
+      if (G.state !== lastState) { lastState = G.state; R.dirty = true; }
+      if (live || R.dirty || R.animating) R.draw();
+      else if (G.state === 'playing' && ts - lastStaticDraw > 250) { lastStaticDraw = ts; R.draw(); }
       G.audio.update(dt);
       G.ui.update(dt);
     } catch (err) { console.error(err); }

@@ -67,7 +67,9 @@
       this.state.playerName = clean;
       this.save();
       try {
-        await BK.LeaderboardService.insert(clean, value);
+        // avatar con el que se hizo el récord: marca de la partida + encargado/encargada
+        const avatar = ((BK.game && BK.game.brand) || this.settings.brand || 'bk') + ':' + (this.settings.managerGender === 'f' ? 'f' : 'm');
+        await BK.LeaderboardService.insert(clean, value, avatar);
       } catch (e) {
         console.error('[Leaderboard] No se pudo guardar la puntuación:', e);
         return null;

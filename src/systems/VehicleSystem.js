@@ -72,6 +72,7 @@
       car.released = true; car.hazard = ok === false;
       car.dwell = ok ? 0.8 : 0.4;
       car.serviceResult = ok ? 'resolved' : 'failed';
+      if (ok && this.G.audio && this.G.audio.emit) this.G.audio.emit({ event: 'bagHandoff', x: car.x, y: car.y, caption: false });
       if (car.state !== 'leaving') { car.state = 'leaving'; car.dwellLeft = car.dwell; }
     }
     tickPatience(car, dt, queued) {

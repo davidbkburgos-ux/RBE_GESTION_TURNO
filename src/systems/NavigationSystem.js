@@ -156,6 +156,9 @@
       }
       out.shift();
       if (g.x === to.x && g.y === to.y) { if (out.length) out[out.length - 1] = { x: to.x, y: to.y }; else out.push({ x: to.x, y: to.y }); }
+      // Tramo final: destinos dentro de mobiliario (asientos, puestos pegados a equipos) a poca distancia del
+      // suelo transitable se alcanzan andando el último tramo, en lugar de quedarse fuera y "saltar" al llegar.
+      else if (Math.hypot(g.x - to.x, g.y - to.y) <= NavigationSystem.FINAL_LEG) out.push({ x: to.x, y: to.y });
       return { path: out, reachable: true, dest: out.length ? out[out.length - 1] : { x: s.x, y: s.y } };
     }
 
@@ -180,5 +183,6 @@
       return best || this.nearestWalkable(kind, target.x, target.y, 90);
     }
   }
+  NavigationSystem.FINAL_LEG = 40; // px
   BK.NavigationSystem = NavigationSystem;
 })();

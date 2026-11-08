@@ -48,10 +48,15 @@
       const start = fromStart ? 540 : Math.round(W.startRangeMin[0] + startRnd * (W.startRangeMin[1] - W.startRangeMin[0]));
       const end = Math.min(1500, start + Math.round(W.durationRangeMin[0] + durRnd * (W.durationRangeMin[1] - W.durationRangeMin[0])));
       const rain = { chance, active, start, end, intensity: +(W.intensityRange[0] + intRnd * (W.intensityRange[1] - W.intensityRange[0])).toFixed(2) };
-      return Object.assign({}, base, {
+      const prof = Object.assign({}, base, {
         staff, mealShift: Math.max(1, Math.min(staff - 1, Math.round(staff / 2))),
         demand: +(staff * load).toFixed(3), loadLevel: loadK, lunchShare, rain
       });
+      // Turno de comida proporcional a su demanda prevista (12:00–19:00), mínimo 4 por turno.
+      const f = ArrivalDirector.hourlyForecast(cfg, prof), tot = f.reduce((x, y) => x + y, 0);
+      const MIN = Math.min(4, Math.floor(staff / 2));
+      if (tot > 0) prof.mealShift = Math.max(MIN, Math.min(staff - MIN, Math.round(staff * f.slice(0, 7).reduce((x, y) => x + y, 0) / tot)));
+      return prof;
     }
     // Intensidad de lluvia (0–1) a una hora dada (minutos del día), con transición suave al empezar y acabar.
     static rainLevel(cfg, profile, t) {

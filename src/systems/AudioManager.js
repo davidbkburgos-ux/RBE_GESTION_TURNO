@@ -32,6 +32,12 @@
       });
       BK.bus.on('event:begin', () => { if (G.state === 'playing') this.emit({ event: 'attendStart' }); });
       BK.bus.on('incident:negative-review', () => this.emit({ event: 'negativeReview' }));
+      let lastAlerts = 0;
+      BK.bus.on('bottleneck:change', ({ items }) => {
+        const n = (items || []).length, panel = typeof document !== 'undefined' && document.getElementById('operationsPanel');
+        if (G.state === 'playing' && n > lastAlerts && panel && panel.hidden) this.emit({ event: 'phoneBuzz' });
+        lastAlerts = n;
+      });
       if (typeof document !== 'undefined') {
         document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('button')) this.emit({ event: 'uiTap', caption: false }); }, true);
       }
@@ -44,6 +50,67 @@
       super.startAmbient();
       this.createAmbientLayer('rainWin', 2600, 0, 'bandpass');
       this.createAmbientLayer('rainHeavy', 1800, 0, 'lowpass');
+      // Cocina: zumbido grave de la campana extractora + burbujeo de freidora (ruido filtrado)
+      this.createAmbientLayer('hood', 170, 0, 'lowpass');
+      this.createAmbientLayer('fryerBubble', 900, 0, 'bandpass');
+      this.loadSamples();
+    }
+
+    // ---------- Audio grabado (Summer): se descarga y decodifica UNA vez al desbloquear el audio ----------
+    // Efectos con `samples` suenan con su archivo por el mismo bus/espacialización; si aún no ha cargado o
+    // falla, se usa su receta de síntesis. Los ambientes con archivo sustituyen al ruido filtrado de su capa
+    // y conservan toda la lógica de mezcla (ocupación, cercanía, hora, lluvia).
+    loadSamples() {
+      if (this.sampleBufs) return;
+      this.sampleBufs = {};
+      const c = this.ctx, get = (url) => fetch(url).then((r) => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+        .then((ab) => new Promise((res, rej) => c.decodeAudioData(ab, res, rej)));
+      const urls = new Set();
+      Object.values(this.M.sounds || {}).forEach((d) => (d.samples || []).forEach((u) => urls.add(u)));
+      urls.forEach((u) => get(u).then((b) => { this.sampleBufs[u] = b; }).catch((e) => console.warn('[audio] sin archivo, se usa síntesis:', u, e.message)));
+      Object.entries(this.M.ambientLoops || {}).forEach(([id, a]) => get(a.src).then((b) => this.swapLayer(id, b, a)).catch((e) => console.warn('[audio] ambiente sin archivo:', a.src, e.message)));
+      this.music = {};
+      ['calm', 'peak'].forEach((k) => {
+        const a = this.M.music && this.M.music[k];
+        if (!a) return;
+        get(a.src).then((b) => {
+          const src = c.createBufferSource(), g = c.createGain();
+          src.buffer = b; src.loop = true; g.gain.value = 0;
+          src.connect(g); g.connect(this.ambientBus); src.start(c.currentTime + 0.05);
+          this.music[k] = { g, base: a.gain };
+        }).catch((e) => console.warn('[audio] música sin archivo:', a.src, e.message));
+      });
+    }
+    // Música del local: calma en menú, apertura y valles; enérgica en las puntas (crossfade lento).
+    updateMusic(now) {
+      const M = this.music;
+      if (!M || (!M.calm && !M.peak)) return;
+      const G = this.G, playing = G.state === 'playing', open = playing && G.opening && G.opening.isOpen;
+      const peak = open && G.production && G.production.tramo && G.production.tramo().peak;
+      const level = (this.settings.musicEnabled === false ? 0 : 1) * (this.reduce ? 0.6 : 1) * (!playing ? 0.55 : open ? 1 : 0.75);
+      const set = (k, on) => { if (M[k]) M[k].g.gain.setTargetAtTime(on ? M[k].base * level : 0, now, 2.2); };
+      set('peak', !!peak); set('calm', !peak);
+    }
+    swapLayer(id, buf, a) {
+      const L = this.ambientLayers[id], c = this.ctx;
+      if (!L || L.sample) return;
+      if (L.filter) L.filter.disconnect();
+      const src = c.createBufferSource(), g = c.createGain();
+      src.buffer = buf; src.loop = true; g.gain.value = a.mul || 1;
+      src.connect(g); g.connect(L.gain); src.start(c.currentTime, Math.random() * buf.duration);
+      L.sample = src;
+      (a.mutes || []).forEach((m) => { const M2 = this.ambientLayers[m]; if (M2 && M2.filter) M2.filter.disconnect(); });
+    }
+    playSample(def, g) {
+      if (!def.samples || !this.sampleBufs) return false;
+      const ready = def.samples.filter((u) => this.sampleBufs[u]);
+      if (!ready.length) return false;
+      const c = this.ctx, s = c.createBufferSource(), gn = c.createGain();
+      s.buffer = this.sampleBufs[ready[Math.floor(Math.random() * ready.length)]];
+      s.playbackRate.value = (this.curPitch || 1) * (def.samplePitch || 1);
+      gn.gain.value = g * (def.sampleGain || 1);
+      s.connect(gn); this.route(gn, def.bus); s.start(c.currentTime + (this.curDelay || 0));
+      return true;
     }
     createAmbientLayer(id, frequency, volume, type) {
       const source = this.ctx.createBufferSource(), filter = this.ctx.createBiquadFilter(), gain = this.ctx.createGain();
@@ -124,6 +191,10 @@
         case 'arpUp': v.n.forEach((f, i) => this.tone(f, i === v.n.length - 1 ? 0.25 : 0.12, v.type || 'sine', g, i * (v.type ? 0.15 : 0.1))); break;
         case 'tick': this.tone(v.f, 0.06, 'triangle', g); break;
         case 'fryerBeeps': for (let i = 0; i < 4; i++) this.tone(v.f, 0.07, 'square', g, i * (0.07 + v.gap)); break;
+        case 'speaker': // tótem de pedido: chasquido de interfono + campanilla de dos tonos
+          this.swish(0.06, g * 0.8, 3200); this.tone(v.a, 0.2, 'sine', g, 0.07); this.tone(v.b, 0.36, 'sine', g, 0.29);
+          this.tone(v.a * 2, 0.26, 'triangle', g * 0.2, 0.29); this.swish(0.05, g * 0.5, 2600, undefined); break;
+        case 'buzz': for (let i = 0; i < 2; i++) this.tone(v.f, 0.16, 'square', g, i * 0.24); this.tone(v.chime, 0.12, 'sine', g * 0.7, 0.52); break;
         case 'drivePoint': this.tone(v.a, 0.22, 'sine', g); this.tone(v.b, 0.4, 'sine', g, 0.24); this.tone(v.a * 2, 0.3, 'triangle', g * 0.25, 0.24); break;
         case 'engine': this.tone(v.f, def.dur, 'triangle', g, 0, v.to); if (v.wet) this.swish(def.dur, g * 0.7, 1800); break;
         case 'scooter': this.tone(v.f, 0.5, 'sawtooth', g * 0.6, 0, v.to); this.tone(1400, 0.08, 'square', g * 0.5, 0.55); this.tone(1750, 0.08, 'square', g * 0.5, 0.7); break;
@@ -188,7 +259,7 @@
       const rp = def.randomPitch || 0;
       this.curPitch = 1 + (Math.random() * 2 - 1) * rp; this.curDelay = delay; this.curBus = def.bus; this.curSpatial = sp;
       const g = def.gain * (sp ? 1 : 1);
-      try { this.recipe(def.recipe, variant, g, def); } finally { this.curSpatial = null; this.curDelay = 0; this.curBus = null; this.curPitch = 1; }
+      try { if (!this.playSample(def, g)) this.recipe(def.recipe, variant, g, def); } finally { this.curSpatial = null; this.curDelay = 0; this.curBus = null; this.curPitch = 1; }
       const entry = { id, bus: def.bus, family: def.family, end: now + delay + def.dur, prio };
       this.voices.push(entry);
       this.recent.push({ id, bus: def.bus, db: Math.round(20 * Math.log10(Math.max(0.0001, g * (sp ? sp.gain : 1)))) });
@@ -234,6 +305,7 @@
     update() {
       if (!this.ctx || !this.buses || !this.G.player) return;
       const G = this.G, P = G.player.char, c = this.ctx, now = c.currentTime, L = this.ambientLayers, S = this.M.spatial;
+      this.updateMusic(now);
       const playing = G.state === 'playing';
       const rain = playing ? BK.ArrivalDirector.rainLevel(G.cfg, G.dayProfile, G.clock.t) : 0;
       this.rain = rain; this.zone = this.zoneAt(P);
@@ -260,6 +332,8 @@
       this.density = density;
       const kitchenLive = playing && G.clock.t >= 660;
       set('sizzle', kitchenLive ? (0.006 + 0.034 * near * (0.35 + 0.65 * density)) * reduce : 0, 0.5);
+      if (L.hood) set('hood', kitchenLive ? (0.012 + 0.03 * near) * reduce : playing ? 0.006 * near : 0, 0.8);
+      if (L.fryerBubble) set('fryerBubble', kitchenLive ? (0.004 + 0.022 * near * (0.3 + 0.7 * density)) * reduce : 0, 0.6);
       if (kitchenLive && now > this.nextKitchenSound) {
         this.nextKitchenSound = now + (this.reduce ? 6 : 3.2 - 2.2 * density) + Math.random() * 3;
         const at = { x: kPoint.x - 40 + Math.random() * 160, y: kPoint.y - 30 + Math.random() * 60 };

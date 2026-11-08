@@ -1,0 +1,18 @@
+# Sistema
+.DS_Store
+
+# Material de trabajo de la generación de recursos (no lo necesita el juego para funcionar)
+assets/**/_source/
+assets/**/_rejected/
+assets/characters/_rejected/
+assets/map/_lanczos2x/
+assets/ui/portraits/_3d/
+
+# Vistas de control generadas por tools/normalize_sprites.py
+assets/characters/*/preview.png
+
+# Planos 1x antiguos (el juego usa las versiones HD plano_*@2x.webp)
+assets/map/plano_bk_dia.jpg
+assets/map/plano_bk_noche.jpg
+assets/map/plano_popeyes_dia.jpg
+assets/map/plano_popeyes_noche.jpg

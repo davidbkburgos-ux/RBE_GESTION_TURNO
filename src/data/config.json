@@ -1,26 +1,171 @@
 {
-  "meta": { "title": "Turno de Encargado", "version": "1.0.0", "saveKey": "bk-turno-v1" },
+  "meta": {
+    "title": "Turno de Encargado",
+    "version": "v2.0.0",
+    "saveKey": "bk-turno-v1"
+  },
   "debugSimulation": false,
-  "day": { "start": "09:00", "open": "12:00", "close": "01:00", "timeScale": 1.2, "timeScaleOptions": [1, 1.2, 2, 4] },
+  "day": {
+    "start": "09:00",
+    "open": "12:00",
+    "close": "01:00",
+    "timeScale": 1.2,
+    "timeScaleOptions": [
+      1,
+      1.2,
+      2,
+      4
+    ]
+  },
   "phases": [
-    { "id": "prep", "label": "Preparación de apertura", "icon": "🔧", "from": "09:00", "to": "11:15",
-      "spawnEverySec": [0, 0], "maxActive": [0, 0], "ambientGuests": [0, 0],
-      "weights": {} },
-    { "id": "finalPrep", "label": "CSL / preparación final", "icon": "📋", "from": "11:15", "to": "12:00",
-      "spawnEverySec": [0, 0], "maxActive": [0, 0], "ambientGuests": [0, 0],
-      "weights": {} },
-    { "id": "lunch", "label": "Servicio de comida", "icon": "🍔", "from": "12:00", "to": "16:00",
-      "spawnEverySec": [24, 12], "maxActive": [2, 5], "ambientGuests": [2, 9],
-      "weights": { "counter": 3, "kiosk": 2, "dirtyTable": 2, "pendingOrder": 2, "vehicle": 2, "delivery": 1.5 } },
-    { "id": "afternoon", "label": "Tarde / limpieza", "icon": "🧹", "from": "16:00", "to": "19:00",
-      "spawnEverySec": [26, 22], "maxActive": [2, 3], "ambientGuests": [2, 4],
-      "weights": { "counter": 2, "kiosk": 1.5, "dirtyTable": 3, "pendingOrder": 1.5, "vehicle": 1.5, "delivery": 1.5 } },
-    { "id": "dinner", "label": "Servicio de cena", "icon": "🌆", "from": "19:00", "to": "23:00",
-      "spawnEverySec": [18, 9], "maxActive": [3, 6], "ambientGuests": [4, 10],
-      "weights": { "counter": 3, "kiosk": 2, "dirtyTable": 2.5, "pendingOrder": 2, "vehicle": 3, "delivery": 2.5 } },
-    { "id": "night", "label": "Servicio nocturno / cierre", "icon": "🌙", "from": "23:00", "to": "01:00",
-      "spawnEverySec": [22, 17], "maxActive": [2, 4], "ambientGuests": [1, 4],
-      "weights": { "counter": 1.5, "kiosk": 1, "dirtyTable": 3, "pendingOrder": 1.5, "vehicle": 2, "delivery": 1.5 } }
+    {
+      "id": "prep",
+      "label": "Preparación de apertura",
+      "icon": "🔧",
+      "from": "09:00",
+      "to": "11:15",
+      "spawnEverySec": [
+        0,
+        0
+      ],
+      "maxActive": [
+        0,
+        0
+      ],
+      "ambientGuests": [
+        0,
+        0
+      ],
+      "weights": {}
+    },
+    {
+      "id": "finalPrep",
+      "label": "CSL / preparación final",
+      "icon": "📋",
+      "from": "11:15",
+      "to": "12:00",
+      "spawnEverySec": [
+        0,
+        0
+      ],
+      "maxActive": [
+        0,
+        0
+      ],
+      "ambientGuests": [
+        0,
+        0
+      ],
+      "weights": {}
+    },
+    {
+      "id": "lunch",
+      "label": "Servicio de comida",
+      "icon": "🍔",
+      "from": "12:00",
+      "to": "16:00",
+      "spawnEverySec": [
+        24,
+        12
+      ],
+      "maxActive": [
+        2,
+        5
+      ],
+      "ambientGuests": [
+        2,
+        9
+      ],
+      "weights": {
+        "counter": 3,
+        "kiosk": 2,
+        "dirtyTable": 2,
+        "pendingOrder": 2,
+        "vehicle": 2,
+        "delivery": 1.5
+      }
+    },
+    {
+      "id": "afternoon",
+      "label": "Tarde / limpieza",
+      "icon": "🧹",
+      "from": "16:00",
+      "to": "19:00",
+      "spawnEverySec": [
+        26,
+        22
+      ],
+      "maxActive": [
+        2,
+        3
+      ],
+      "ambientGuests": [
+        2,
+        4
+      ],
+      "weights": {
+        "counter": 2,
+        "kiosk": 1.5,
+        "dirtyTable": 3,
+        "pendingOrder": 1.5,
+        "vehicle": 1.5,
+        "delivery": 1.5
+      }
+    },
+    {
+      "id": "dinner",
+      "label": "Servicio de cena",
+      "icon": "🌆",
+      "from": "19:00",
+      "to": "23:00",
+      "spawnEverySec": [
+        18,
+        9
+      ],
+      "maxActive": [
+        3,
+        6
+      ],
+      "ambientGuests": [
+        4,
+        10
+      ],
+      "weights": {
+        "counter": 3,
+        "kiosk": 2,
+        "dirtyTable": 2.5,
+        "pendingOrder": 2,
+        "vehicle": 3,
+        "delivery": 2.5
+      }
+    },
+    {
+      "id": "night",
+      "label": "Servicio nocturno / cierre",
+      "icon": "🌙",
+      "from": "23:00",
+      "to": "01:00",
+      "spawnEverySec": [
+        22,
+        17
+      ],
+      "maxActive": [
+        2,
+        4
+      ],
+      "ambientGuests": [
+        1,
+        4
+      ],
+      "weights": {
+        "counter": 1.5,
+        "kiosk": 1,
+        "dirtyTable": 3,
+        "pendingOrder": 1.5,
+        "vehicle": 2,
+        "delivery": 1.5
+      }
+    }
   ],
   "director": {
     "learningEvents": 4,
@@ -39,89 +184,470 @@
   "difficulty": {
     "default": "weekday",
     "levels": {
-      "weekday": { "label": "NORMAL · ENTRESEMANA", "timerScale": 1.0, "spawnScale": 1.0 },
-      "weekend": { "label": "DIFÍCIL · FIN DE SEMANA", "timerScale": 1.0, "spawnScale": 0.78 },
-      "specialHoliday": { "label": "EXPERTO · FESTIVO ESPECIAL", "timerScale": 1.0, "spawnScale": 0.58 }
+      "weekday": {
+        "label": "NORMAL · ENTRESEMANA",
+        "timerScale": 1.0,
+        "spawnScale": 1.0
+      },
+      "weekend": {
+        "label": "DIFÍCIL · FIN DE SEMANA",
+        "timerScale": 1.0,
+        "spawnScale": 0.78
+      },
+      "specialHoliday": {
+        "label": "EXPERTO · FESTIVO ESPECIAL",
+        "timerScale": 1.0,
+        "spawnScale": 0.58
+      }
     }
   },
   "difficultyProfiles": {
-    "weekday": { "staff": 10, "mealShift": 6, "staffRange": [7, 10], "load": [0.055, 0.085], "demand": 0.78, "peak": 0.85, "incidentChance": 0.012, "stockUse": 0.85, "maxConcurrent": 3 },
-    "weekend": { "staff": 12, "mealShift": 7, "staffRange": [9, 12], "load": [0.07, 0.10], "demand": 1.18, "peak": 1.35, "incidentChance": 0.02, "stockUse": 1.1, "maxConcurrent": 5 },
-    "specialHoliday": { "staff": 14, "mealShift": 8, "staffRange": [11, 14], "load": [0.085, 0.11], "demand": 1.55, "peak": 1.8, "incidentChance": 0.03, "stockUse": 1.35, "maxConcurrent": 7 }
+    "weekday": {
+      "staff": 10,
+      "mealShift": 6,
+      "staffRange": [
+        8,
+        10
+      ],
+      "load": [
+        0.055,
+        0.085
+      ],
+      "demand": 0.78,
+      "peak": 0.85,
+      "incidentChance": 0.012,
+      "stockUse": 0.85,
+      "maxConcurrent": 3
+    },
+    "weekend": {
+      "staff": 12,
+      "mealShift": 7,
+      "staffRange": [
+        9,
+        12
+      ],
+      "load": [
+        0.07,
+        0.1
+      ],
+      "demand": 1.18,
+      "peak": 1.35,
+      "incidentChance": 0.02,
+      "stockUse": 1.1,
+      "maxConcurrent": 5
+    },
+    "specialHoliday": {
+      "staff": 14,
+      "mealShift": 8,
+      "staffRange": [
+        11,
+        14
+      ],
+      "load": [
+        0.085,
+        0.11
+      ],
+      "demand": 1.55,
+      "peak": 1.8,
+      "incidentChance": 0.03,
+      "stockUse": 1.35,
+      "maxConcurrent": 7
+    }
   },
   "operations": {
     "checklistDeadline": "11:15",
     "checklistMissPenalty": -100,
-    "openingPenalty": { "incorrectTask": -50, "omittedTask": -100, "pendingTask": -100, "criticalFailure": -200, "latePerMinute": 0 },
-    "openingRisk": { "extraStockUseChance": 0.12 },
+    "openingPenalty": {
+      "incorrectTask": -50,
+      "omittedTask": -100,
+      "pendingTask": -100,
+      "criticalFailure": -200,
+      "latePerMinute": 0
+    },
+    "openingRisk": {
+      "extraStockUseChance": 0.12
+    },
     "simulationWatchdogSec": 24,
-    "restock": { "batch": 8, "preparationSec": 18, "minimumStock": 3 },
+    "restock": {
+      "batch": 8,
+      "preparationSec": 18,
+      "minimumStock": 3
+    },
     "stockPrep": {
-      "coverage": 0.6, "durationSec": 7, "products": ["MAIN_PRODUCT", "FRIES", "DRINKS", "SIDES"],
-      "deliveryShare": 0.12, "wasteToleranceUnits": 6, "wastePenaltyPerUnit": 0.6, "wastePenaltyCap": 120,
+      "coverage": 0.6,
+      "durationSec": 7,
+      "products": [
+        "MAIN_PRODUCT",
+        "FRIES",
+        "DRINKS",
+        "SIDES"
+      ],
+      "deliveryShare": 0.12,
+      "wasteToleranceUnits": 6,
+      "wastePenaltyPerUnit": 0.6,
+      "wastePenaltyCap": 120,
       "tramos": [
-        { "id": "lunch", "label": "Comida", "from": 12, "to": 16 },
-        { "id": "afternoon", "label": "Tarde", "from": 16, "to": 19 },
-        { "id": "dinner", "label": "Cena", "from": 19, "to": 23 },
-        { "id": "night", "label": "Cierre", "from": 23, "to": 25 }
-      ]
+        {
+          "id": "lunch",
+          "label": "Comida",
+          "from": 12,
+          "to": 16,
+          "peak": true
+        },
+        {
+          "id": "afternoon",
+          "label": "Tarde",
+          "from": 16,
+          "to": 19,
+          "peak": false
+        },
+        {
+          "id": "dinner",
+          "label": "Cena",
+          "from": 19,
+          "to": 23,
+          "peak": true
+        },
+        {
+          "id": "night",
+          "label": "Cierre",
+          "from": 23,
+          "to": 25,
+          "peak": false
+        }
+      ],
+      "leadMin": 20,
+      "holdLoss": 0.5,
+      "unitCost": {
+        "MAIN_PRODUCT": 0.95,
+        "FRIES": 0.28,
+        "DRINKS": 0.18,
+        "SIDES": 0.45
+      }
     },
     "products": {
-      "MAIN_PRODUCT": { "label": "Producto principal", "initialStock": 10, "minimumStock": 3, "usePerOrder": 1, "prepAmount": 8, "prepTime": 18, "station": "productPrep" },
-      "FRIES": { "label": "Patatas", "initialStock": 10, "minimumStock": 3, "usePerOrder": 1, "prepAmount": 10, "prepTime": 14, "station": "friesPrep" },
-      "DRINKS": { "label": "Bebidas", "initialStock": 12, "minimumStock": 3, "usePerOrder": 1, "prepAmount": 12, "prepTime": 10, "station": "assembly" },
-      "SIDES": { "label": "Complementos", "initialStock": 8, "minimumStock": 2, "usePerOrder": 1, "prepAmount": 8, "prepTime": 12, "station": "assembly" },
-      "DESSERTS": { "label": "Postres", "initialStock": 6, "minimumStock": 2, "usePerOrder": 1, "prepAmount": 6, "prepTime": 14, "station": "assembly" }
+      "MAIN_PRODUCT": {
+        "label": "Producto principal",
+        "initialStock": 10,
+        "minimumStock": 3,
+        "usePerOrder": 1,
+        "prepAmount": 8,
+        "prepTime": 18,
+        "station": "productPrep"
+      },
+      "FRIES": {
+        "label": "Patatas",
+        "initialStock": 10,
+        "minimumStock": 3,
+        "usePerOrder": 1,
+        "prepAmount": 10,
+        "prepTime": 14,
+        "station": "friesPrep"
+      },
+      "DRINKS": {
+        "label": "Bebidas",
+        "initialStock": 12,
+        "minimumStock": 3,
+        "usePerOrder": 1,
+        "prepAmount": 12,
+        "prepTime": 10,
+        "station": "assembly"
+      },
+      "SIDES": {
+        "label": "Complementos",
+        "initialStock": 8,
+        "minimumStock": 2,
+        "usePerOrder": 1,
+        "prepAmount": 8,
+        "prepTime": 12,
+        "station": "assembly"
+      },
+      "DESSERTS": {
+        "label": "Postres",
+        "initialStock": 6,
+        "minimumStock": 2,
+        "usePerOrder": 1,
+        "prepAmount": 6,
+        "prepTime": 14,
+        "station": "assembly"
+      }
     },
     "patience": {
-      "maxSec": { "counter": 60, "kiosk": 55, "delivery": 75, "autoking": 100 },
+      "maxSec": {
+        "counter": 60,
+        "kiosk": 55,
+        "delivery": 75,
+        "autoking": 100
+      },
       "queueAcceleration": 0.2,
       "abandonPenalty": -40,
       "autokingAbandonPenalty": -50
     },
     "autonomy": {
       "reactionSec": 4,
-      "workSec": { "counter": 5, "kiosk": 6, "pendingOrder": 4, "delivery": 4, "vehicle": 4, "dirtyTable": 6, "restroom": 9 },
+      "workSec": {
+        "counter": 5,
+        "kiosk": 6,
+        "pendingOrder": 4,
+        "delivery": 4,
+        "vehicle": 4,
+        "dirtyTable": 6,
+        "restroom": 9
+      },
       "autoPoints": 15,
       "idleTableCleanAfterSec": 8,
       "restockAfterBlockedSec": 20
     },
-    "restroom": { "usesPerCleaning": 22, "cooldownSec": 35, "failUsesRetained": 14 },
-    "coverageTargets": { "kitchen": 2, "fries": 1, "assembly": 2, "counter": 1, "autoking": 2, "delivery": 1, "hall": 1 },
+    "restroom": {
+      "usesPerCleaning": 22,
+      "cooldownSec": 35,
+      "failUsesRetained": 14
+    },
+    "coverageTargets": {
+      "kitchen": 2,
+      "fries": 1,
+      "assembly": 2,
+      "counter": 1,
+      "autoking": 2,
+      "delivery": 1,
+      "hall": 1
+    },
     "managerCoverageCapacity": 1,
     "stations": {
-      "grill": { "label": "Cocina / Broiler", "category": "kitchen", "pos": [542, 623], "requires": ["kitchen"] },
-      "fryer": { "label": "Fritos", "category": "fries", "pos": [456, 659], "requires": ["fries"] },
-      "fries": { "label": "Patatas", "category": "fries", "pos": [579, 651], "requires": ["fries"] },
-      "assembly": { "label": "Montaje / Expedición", "category": "assembly", "pos": [654, 567], "requires": ["assembly"] },
-      "counter": { "label": "Mostrador", "category": "counter", "pos": [654, 638], "requires": ["counter"] },
-      "autoPay": { "label": "AutoKing", "category": "autoking", "pos": [647, 749], "requires": ["autoking"] },
-      "delivery": { "label": "Delivery", "category": "delivery", "pos": [1317, 520], "requires": ["delivery"] },
-      "hall": { "label": "Sala / limpieza", "category": "hall", "pos": [800, 450], "requires": ["hall"] },
-      "support": { "label": "Apoyo", "category": "support", "pos": [790, 690], "requires": ["support"] }
+      "grill": {
+        "label": "Cocina / Broiler",
+        "category": "kitchen",
+        "pos": [
+          542,
+          623
+        ],
+        "requires": [
+          "kitchen"
+        ]
+      },
+      "fryer": {
+        "label": "Fritos",
+        "category": "fries",
+        "pos": [
+          456,
+          659
+        ],
+        "requires": [
+          "fries"
+        ]
+      },
+      "fries": {
+        "label": "Patatas",
+        "category": "fries",
+        "pos": [
+          579,
+          651
+        ],
+        "requires": [
+          "fries"
+        ]
+      },
+      "assembly": {
+        "label": "Montaje / Expedición",
+        "category": "assembly",
+        "pos": [
+          654,
+          567
+        ],
+        "requires": [
+          "assembly"
+        ]
+      },
+      "counter": {
+        "label": "Mostrador",
+        "category": "counter",
+        "pos": [
+          654,
+          638
+        ],
+        "requires": [
+          "counter"
+        ]
+      },
+      "autoPay": {
+        "label": "AutoKing",
+        "category": "autoking",
+        "pos": [
+          647,
+          749
+        ],
+        "requires": [
+          "autoking"
+        ]
+      },
+      "delivery": {
+        "label": "Delivery",
+        "category": "delivery",
+        "pos": [
+          1317,
+          520
+        ],
+        "requires": [
+          "delivery"
+        ]
+      },
+      "hall": {
+        "label": "Sala / limpieza",
+        "category": "hall",
+        "pos": [
+          800,
+          450
+        ],
+        "requires": [
+          "hall"
+        ]
+      },
+      "support": {
+        "label": "Apoyo",
+        "category": "support",
+        "pos": [
+          790,
+          690
+        ],
+        "requires": [
+          "support"
+        ]
+      }
     },
-    "positioningOrder": ["grill", "fries", "assembly", "counter", "autoPay", "delivery", "hall", "fryer", "support"],
+    "positioningOrder": [
+      "grill",
+      "fries",
+      "assembly",
+      "counter",
+      "autoPay",
+      "delivery",
+      "hall",
+      "fryer",
+      "support"
+    ],
     "stationInfo": {
-      "grill": { "icon": "🔥", "tag": "COCINA", "name": "Cocina / producto principal", "recommended": 1, "prepWeight": 1.0, "fn": "Enciende y comprueba los equipos y cocina el producto principal.", "effect": "Los pedidos con producto principal se bloquean o se retrasan." },
-      "fries": { "icon": "🍟", "tag": "PATATAS", "name": "Patatas", "recommended": 1, "prepWeight": 0.9, "fn": "Prepara y mantiene disponible la producción de patatas.", "effect": "Los pedidos que incluyan patatas pueden quedar bloqueados." },
-      "fryer": { "icon": "🍗", "tag": "COMPL.", "name": "Complementos", "recommended": 1, "prepWeight": 0.8, "fn": "Prepara fritos y complementos para completar los pedidos.", "effect": "Los pedidos con complementos esperan más en expedición." },
-      "assembly": { "icon": "📦", "tag": "MONTAJE", "name": "Montaje / expedición (incluye bebidas y postres)", "recommended": 2, "prepWeight": 1.0, "fn": "Monta, añade bebidas y postres, embolsa y entrega los pedidos terminados de mostrador y kiosco.", "effect": "Los pedidos terminados se acumulan en expedición y no llegan al cliente." },
-      "counter": { "icon": "🛎️", "tag": "MOSTRADOR", "name": "Atención de mostrador", "recommended": 1, "prepWeight": 0.6, "fn": "Atiende y cobra a los clientes en caja y ayuda en el kiosco.", "effect": "Las colas del mostrador crecen y los clientes se impacientan." },
-      "autoPay": { "icon": "🚗", "tag": "AUTO", "name": "Atención de AutoKing", "recommended": 1, "prepWeight": 0.6, "fn": "Toma pedidos en el altavoz, cobra y entrega en las ventanas.", "effect": "Los coches esperan sin ser atendidos y pueden abandonar." },
-      "delivery": { "icon": "🛵", "tag": "DELIVERY", "name": "Delivery", "recommended": 1, "prepWeight": 0.6, "fn": "Prepara el punto de recogida y entrega los pedidos a los riders.", "effect": "Los riders esperan más y el tiempo de entrega empeora." },
-      "hall": { "icon": "🧹", "tag": "SALA", "name": "Sala y limpieza", "recommended": 1, "prepWeight": 0.7, "fn": "Limpia mesas, papeleras, kioscos y baños, y ayuda a clientes de sala.", "effect": "Las mesas sucias se acumulan y llegan quejas y reseñas negativas." },
-      "support": { "icon": "🤝", "tag": "APOYO", "name": "Apoyo", "recommended": 0, "prepWeight": 0.8, "fn": "Cubre huecos y ayuda donde haya más carga.", "effect": "Ninguno directo: pierdes flexibilidad ante imprevistos." }
+      "grill": {
+        "icon": "🔥",
+        "tag": "COCINA",
+        "name": "Cocina / producto principal",
+        "recommended": 1,
+        "prepWeight": 1.0,
+        "fn": "Enciende y comprueba los equipos y cocina el producto principal.",
+        "effect": "Los pedidos con producto principal se bloquean o se retrasan."
+      },
+      "fries": {
+        "icon": "🍟",
+        "tag": "PATATAS",
+        "name": "Patatas",
+        "recommended": 1,
+        "prepWeight": 0.9,
+        "fn": "Prepara y mantiene disponible la producción de patatas.",
+        "effect": "Los pedidos que incluyan patatas pueden quedar bloqueados."
+      },
+      "fryer": {
+        "icon": "🍗",
+        "tag": "COMPL.",
+        "name": "Complementos",
+        "recommended": 1,
+        "prepWeight": 0.8,
+        "fn": "Prepara fritos y complementos para completar los pedidos.",
+        "effect": "Los pedidos con complementos esperan más en expedición."
+      },
+      "assembly": {
+        "icon": "📦",
+        "tag": "MONTAJE",
+        "name": "Montaje / expedición (incluye bebidas y postres)",
+        "recommended": 2,
+        "prepWeight": 1.0,
+        "fn": "Monta, añade bebidas y postres, embolsa y entrega los pedidos terminados de mostrador y kiosco.",
+        "effect": "Los pedidos terminados se acumulan en expedición y no llegan al cliente."
+      },
+      "counter": {
+        "icon": "🛎️",
+        "tag": "MOSTRADOR",
+        "name": "Atención de mostrador",
+        "recommended": 1,
+        "prepWeight": 0.6,
+        "fn": "Atiende y cobra a los clientes en caja y ayuda en el kiosco.",
+        "effect": "Las colas del mostrador crecen y los clientes se impacientan."
+      },
+      "autoPay": {
+        "icon": "🚗",
+        "tag": "AUTO",
+        "name": "Atención de AutoKing",
+        "recommended": 1,
+        "prepWeight": 0.6,
+        "fn": "Toma pedidos en el altavoz, cobra y entrega en las ventanas.",
+        "effect": "Los coches esperan sin ser atendidos y pueden abandonar."
+      },
+      "delivery": {
+        "icon": "🛵",
+        "tag": "DELIVERY",
+        "name": "Delivery",
+        "recommended": 1,
+        "prepWeight": 0.6,
+        "fn": "Prepara el punto de recogida y entrega los pedidos a los riders.",
+        "effect": "Los riders esperan más y el tiempo de entrega empeora."
+      },
+      "hall": {
+        "icon": "🧹",
+        "tag": "SALA",
+        "name": "Sala y limpieza",
+        "recommended": 1,
+        "prepWeight": 0.7,
+        "fn": "Limpia mesas, papeleras, kioscos y baños, y ayuda a clientes de sala.",
+        "effect": "Las mesas sucias se acumulan y llegan quejas y reseñas negativas."
+      },
+      "support": {
+        "icon": "🤝",
+        "tag": "APOYO",
+        "name": "Apoyo",
+        "recommended": 0,
+        "prepWeight": 0.8,
+        "fn": "Cubre huecos y ayuda donde haya más carga.",
+        "effect": "Ninguno directo: pierdes flexibilidad ante imprevistos."
+      }
     },
     "kpi": {
       "channels": {
-        "counter": { "label": "Mostrador", "green": 210, "yellow": 300, "red": 420, "abandoned": 540, "factor": 8 },
-        "autoking": { "label": "AutoKing", "green": 210, "yellow": 300, "red": 420, "abandoned": 540, "factor": 12 },
-        "delivery": { "label": "Delivery · tiempo de entrega", "green": 30, "yellow": 45, "red": 60, "abandoned": 90, "factor": 1.5 }
+        "counter": {
+          "label": "Mostrador",
+          "green": 210,
+          "yellow": 300,
+          "red": 420,
+          "abandoned": 540,
+          "factor": 8
+        },
+        "autoking": {
+          "label": "AutoKing",
+          "green": 210,
+          "yellow": 300,
+          "red": 420,
+          "abandoned": 540,
+          "factor": 12
+        },
+        "delivery": {
+          "label": "Delivery · tiempo de entrega",
+          "green": 30,
+          "yellow": 45,
+          "red": 60,
+          "abandoned": 90,
+          "factor": 1.5
+        }
       },
-      "endOfDayScore": { "green": 40, "yellow": 15, "red": -30 }
+      "endOfDayScore": {
+        "green": 40,
+        "yellow": 15,
+        "red": -30
+      }
     },
     "preparation": {
-      "diminishingReturns": [1.0, 0.6, 0.3, 0.15],
+      "diminishingReturns": [
+        1.0,
+        0.6,
+        0.3,
+        0.15
+      ],
       "baseRatePerGameMinute": 0.14,
       "managerSupportModifier": 1.25,
       "taskCycleSec": 12,
@@ -129,53 +655,183 @@
       "openPenaltyPerPct": 0.35,
       "openBonus": 15,
       "openStockRisk": 0.3,
-      "difficultyRate": { "weekday": 1.0, "weekend": 0.9, "specialHoliday": 0.8 }
+      "difficultyRate": {
+        "weekday": 1.0,
+        "weekend": 0.9,
+        "specialHoliday": 0.8
+      }
     },
     "demandCurves": {
-      "prep": { "counter": 0, "kiosk": 0, "autoking": 0, "delivery": 0, "dining": 0 },
-      "lunch": { "counter": 0.65, "kiosk": 0.45, "autoking": 0.7, "delivery": 0.3, "dining": 0.35 },
-      "afternoon": { "counter": 0.3, "kiosk": 0.22, "autoking": 0.28, "delivery": 0.22, "dining": 0.2 },
-      "dinner": { "counter": 0.7, "kiosk": 0.48, "autoking": 0.78, "delivery": 0.56, "dining": 0.46 },
-      "night": { "counter": 0.32, "kiosk": 0.2, "autoking": 0.42, "delivery": 0.35, "dining": 0.12 }
+      "prep": {
+        "counter": 0,
+        "kiosk": 0,
+        "autoking": 0,
+        "delivery": 0,
+        "dining": 0
+      },
+      "lunch": {
+        "counter": 0.65,
+        "kiosk": 0.45,
+        "autoking": 0.7,
+        "delivery": 0.3,
+        "dining": 0.35
+      },
+      "afternoon": {
+        "counter": 0.3,
+        "kiosk": 0.22,
+        "autoking": 0.28,
+        "delivery": 0.22,
+        "dining": 0.2
+      },
+      "dinner": {
+        "counter": 0.7,
+        "kiosk": 0.48,
+        "autoking": 0.78,
+        "delivery": 0.56,
+        "dining": 0.46
+      },
+      "night": {
+        "counter": 0.32,
+        "kiosk": 0.2,
+        "autoking": 0.42,
+        "delivery": 0.35,
+        "dining": 0.12
+      }
     },
-    "serviceKpi": { "targetSec": 210, "warningSec": 210, "criticalSec": 260, "rollingWindowGameMinutes": 60, "definition": "Desde la llegada del pedido a la cola del canal hasta la entrega; proxy didáctico, no definición oficial SOS." },
-    "tableWait": { "complaintSec": 25, "leaveSec": 50, "complaintPenalty": -15, "maxWaiting": 2, "eventDirtyRatio": 0.6 },
-    "navigation": { "stallSec": 5, "maxRecoveries": 3 },
+    "serviceKpi": {
+      "targetSec": 210,
+      "warningSec": 210,
+      "criticalSec": 260,
+      "rollingWindowGameMinutes": 60,
+      "definition": "Desde la llegada del pedido a la cola del canal hasta la entrega; proxy didáctico, no definición oficial SOS."
+    },
+    "tableWait": {
+      "complaintSec": 25,
+      "leaveSec": 50,
+      "complaintPenalty": -15,
+      "maxWaiting": 2,
+      "eventDirtyRatio": 0.6
+    },
+    "navigation": {
+      "stallSec": 5,
+      "maxRecoveries": 3
+    },
     "reviews": {
       "cardSec": 2.5,
       "penalty": -10,
       "bank": {
-        "WAIT_COUNTER": ["Esperé demasiado en el mostrador y nadie me atendió.", "Cola larga y sin atención. No vuelvo."],
-        "WAIT_KIOSK": ["El kiosco se quedó sin ayuda y me fui.", "Nadie me ayudó con mi pedido en el kiosco."],
-        "WAIT_AUTOKING": ["Demasiado tiempo en el AutoKing. Me marché.", "Esperé en el coche y nadie atendió."],
-        "WAIT_DELIVERY": ["El pedido de delivery nunca estuvo listo a tiempo."],
-        "WAIT_DINING": ["No encontré mesa limpia y me fui."],
-        "NO_TABLE": ["No había ninguna mesa limpia y tuve que irme.", "Sala sucia: no había dónde sentarse."],
-        "DIRTY_TABLE": ["Las mesas estaban sucias."],
-        "COMPLAINT": ["Mi queja no se resolvió bien."]
+        "WAIT_COUNTER": [
+          "Esperé demasiado en el mostrador y nadie me atendió.",
+          "Cola larga y sin atención. No vuelvo."
+        ],
+        "WAIT_KIOSK": [
+          "El kiosco se quedó sin ayuda y me fui.",
+          "Nadie me ayudó con mi pedido en el kiosco."
+        ],
+        "WAIT_AUTOKING": [
+          "Demasiado tiempo en el AutoKing. Me marché.",
+          "Esperé en el coche y nadie atendió."
+        ],
+        "WAIT_DELIVERY": [
+          "El pedido de delivery nunca estuvo listo a tiempo."
+        ],
+        "WAIT_DINING": [
+          "No encontré mesa limpia y me fui."
+        ],
+        "NO_TABLE": [
+          "No había ninguna mesa limpia y tuve que irme.",
+          "Sala sucia: no había dónde sentarse."
+        ],
+        "DIRTY_TABLE": [
+          "Las mesas estaban sucias."
+        ],
+        "COMPLAINT": [
+          "Mi queja no se resolvió bien."
+        ]
       }
     },
-    "vehicleKpi": { "targetSec": 210, "warningSec": 210, "criticalSec": 260, "rollingWindowGameMinutes": 60, "phaseTargetSec": { "order": 20, "pickup": 25 }, "definition": "Promedio de dos tiempos: pedido (desde la entrada al carril hasta terminar el pedido) y recogida (desde terminar el pedido hasta entregar)." },
-    "messageTtl": { "minor": 1, "resolution": 0.9, "important": 1.8 },
-    "serviceScore": { "onTarget": 10, "criticalDelay": -15 },
-    "absence": { "enabled": true, "chancePerShift": { "weekday": 0.02, "weekend": 0.03, "specialHoliday": 0.04 }, "delayMinutes": [5, 40], "shiftStarts": { "meal": "09:00", "dinner": "18:00" } },
+    "vehicleKpi": {
+      "targetSec": 210,
+      "warningSec": 210,
+      "criticalSec": 260,
+      "rollingWindowGameMinutes": 60,
+      "phaseTargetSec": {
+        "order": 20,
+        "pickup": 25
+      },
+      "definition": "Promedio de dos tiempos: pedido (desde la entrada al carril hasta terminar el pedido) y recogida (desde terminar el pedido hasta entregar)."
+    },
+    "messageTtl": {
+      "minor": 1,
+      "resolution": 0.9,
+      "important": 1.8
+    },
+    "serviceScore": {
+      "onTarget": 10,
+      "criticalDelay": -15
+    },
+    "absence": {
+      "enabled": true,
+      "chancePerShift": {
+        "weekday": 0.02,
+        "weekend": 0.03,
+        "specialHoliday": 0.04
+      },
+      "delayMinutes": [
+        5,
+        40
+      ],
+      "shiftStarts": {
+        "meal": "09:00",
+        "dinner": "18:00"
+      }
+    },
     "weather": {
       "rampMin": 10,
       "fromStartChance": 0.3,
-      "startRangeMin": [720, 1260],
-      "durationRangeMin": [150, 480],
-      "intensityRange": [0.7, 1],
-      "demandMult": { "counter": 0.25, "kiosk": 0.25, "dining": 0.45, "autoking": 1.4, "delivery": 1.6 }
+      "startRangeMin": [
+        720,
+        1260
+      ],
+      "durationRangeMin": [
+        150,
+        480
+      ],
+      "intensityRange": [
+        0.7,
+        1
+      ],
+      "demandMult": {
+        "counter": 0.25,
+        "kiosk": 0.25,
+        "dining": 0.45,
+        "autoking": 1.4,
+        "delivery": 1.6
+      }
     },
     "vacancies": {
       "maxExtra": 2,
       "options": {
-        "standard": { "label": "Empleado de refuerzo", "cost": 1000, "speed": 1, "demandBoost": 0.06 },
-        "expert": { "label": "Empleado experto", "cost": 2000, "speed": 1.5, "demandBoost": 0.08 }
+        "standard": {
+          "label": "Empleado de refuerzo",
+          "cost": 1000,
+          "speed": 1,
+          "demandBoost": 0.06
+        },
+        "expert": {
+          "label": "Empleado experto",
+          "cost": 2000,
+          "speed": 1.5,
+          "demandBoost": 0.08
+        }
       }
     }
   },
-  "csl": { "start": "16:00", "deadline": "17:15", "missPenalty": -60 },
+  "csl": {
+    "start": "16:00",
+    "deadline": "17:15",
+    "missPenalty": -60
+  },
   "timing": {
     "excellentUntil": 0.4,
     "acceptableUntil": 1.0,
@@ -211,47 +867,241 @@
     "speedBoost": 1.3,
     "panelAutoCloseSec": 20,
     "reassign": {
-      "autoking": { "expedition": [168, 524], "counter": [190, 538] },
-      "counter": { "fryer": [668, 560], "fries": [668, 640] },
-      "delivery": { "hall": [1312, 470], "assembly": [1318, 548] }
+      "autoking": {
+        "expedition": [
+          168,
+          524
+        ],
+        "counter": [
+          190,
+          538
+        ]
+      },
+      "counter": {
+        "fryer": [
+          668,
+          560
+        ],
+        "fries": [
+          668,
+          640
+        ]
+      },
+      "delivery": {
+        "hall": [
+          1312,
+          470
+        ],
+        "assembly": [
+          1318,
+          548
+        ]
+      }
     }
   },
-  "player": { "speed": 138, "radius": 6, "scale": 1.0, "arriveDist": 4 },
-  "npc": { "employeeSpeed": 62, "guestSpeed": 74, "vehicleSpeed": 95, "vehicleLength": 100, "vehicleGap": 14 },
-  "camera": { "minZoom": 1, "maxZoom": 2.3, "mobileFollowZoom": 1.9, "followLerp": 0.08 },
+  "player": {
+    "speed": 138,
+    "radius": 6,
+    "scale": 1.0,
+    "arriveDist": 4
+  },
+  "npc": {
+    "employeeSpeed": 62,
+    "guestSpeed": 74,
+    "vehicleSpeed": 95,
+    "vehicleLength": 100,
+    "vehicleGap": 14
+  },
+  "camera": {
+    "minZoom": 1,
+    "maxZoom": 2.3,
+    "mobileFollowZoom": 1.9,
+    "followLerp": 0.08
+  },
   "lighting": {
     "keys": [
-      { "t": "09:00", "screen": [150, 160, 175, 0.30], "multiply": [255, 255, 255, 0.0], "lamps": 0.15 },
-      { "t": "10:00", "screen": [150, 160, 175, 0.30], "multiply": [255, 255, 255, 0.0], "lamps": 0.15 },
-      { "t": "12:00", "screen": [190, 195, 205, 0.42], "multiply": [255, 255, 255, 0.0], "lamps": 0.05 },
-      { "t": "17:00", "screen": [185, 185, 190, 0.38], "multiply": [255, 255, 255, 0.0], "lamps": 0.10 },
-      { "t": "18:00", "screen": [210, 160, 110, 0.22], "multiply": [255, 225, 190, 0.20], "lamps": 0.35 },
-      { "t": "21:00", "screen": [0, 0, 0, 0.0], "multiply": [150, 150, 195, 0.35], "lamps": 0.85 },
-      { "t": "01:00", "screen": [0, 0, 0, 0.0], "multiply": [95, 105, 160, 0.50], "lamps": 1.0 }
+      {
+        "t": "09:00",
+        "screen": [
+          150,
+          160,
+          175,
+          0.3
+        ],
+        "multiply": [
+          255,
+          255,
+          255,
+          0.0
+        ],
+        "lamps": 0.15
+      },
+      {
+        "t": "10:00",
+        "screen": [
+          150,
+          160,
+          175,
+          0.3
+        ],
+        "multiply": [
+          255,
+          255,
+          255,
+          0.0
+        ],
+        "lamps": 0.15
+      },
+      {
+        "t": "12:00",
+        "screen": [
+          190,
+          195,
+          205,
+          0.42
+        ],
+        "multiply": [
+          255,
+          255,
+          255,
+          0.0
+        ],
+        "lamps": 0.05
+      },
+      {
+        "t": "17:00",
+        "screen": [
+          185,
+          185,
+          190,
+          0.38
+        ],
+        "multiply": [
+          255,
+          255,
+          255,
+          0.0
+        ],
+        "lamps": 0.1
+      },
+      {
+        "t": "18:00",
+        "screen": [
+          210,
+          160,
+          110,
+          0.22
+        ],
+        "multiply": [
+          255,
+          225,
+          190,
+          0.2
+        ],
+        "lamps": 0.35
+      },
+      {
+        "t": "21:00",
+        "screen": [
+          0,
+          0,
+          0,
+          0.0
+        ],
+        "multiply": [
+          150,
+          150,
+          195,
+          0.35
+        ],
+        "lamps": 0.85
+      },
+      {
+        "t": "01:00",
+        "screen": [
+          0,
+          0,
+          0,
+          0.0
+        ],
+        "multiply": [
+          95,
+          105,
+          160,
+          0.5
+        ],
+        "lamps": 1.0
+      }
     ]
   },
   "palette": {
-    "cream": "#F1E5D6", "sand": "#D4C4AB", "brown": "#6B4E3D", "darkBrown": "#3B2A21",
-    "orange": "#F47A2C", "red": "#D83B2D", "black": "#1F1F1F", "grey": "#8A8A8A"
+    "cream": "#F1E5D6",
+    "sand": "#D4C4AB",
+    "brown": "#6B4E3D",
+    "darkBrown": "#3B2A21",
+    "orange": "#F47A2C",
+    "red": "#D83B2D",
+    "black": "#1F1F1F",
+    "grey": "#8A8A8A"
   },
   "summary": {
     "ratings": [
-      { "min": -999999, "label": "Turno complicado", "note": "Hay margen de mejora: prioriza antes y completa la apertura a tiempo." },
-      { "min": 0, "label": "Turno correcto", "note": "Servicio estable. Afina tiempos de respuesta y prioridades." },
-      { "min": 1500, "label": "Buen turno", "note": "Buen control del servicio y de las incidencias." },
-      { "min": 3500, "label": "Turno excelente", "note": "Gestión ágil del equipo y de todos los canales." }
+      {
+        "min": -999999,
+        "label": "Turno complicado",
+        "note": "Hay margen de mejora: prioriza antes y completa la apertura a tiempo."
+      },
+      {
+        "min": 0,
+        "label": "Turno correcto",
+        "note": "Servicio estable. Afina tiempos de respuesta y prioridades."
+      },
+      {
+        "min": 1500,
+        "label": "Buen turno",
+        "note": "Buen control del servicio y de las incidencias."
+      },
+      {
+        "min": 3500,
+        "label": "Turno excelente",
+        "note": "Gestión ágil del equipo y de todos los canales."
+      }
     ]
   },
   "tutorial": [
-    { "text": "Pulsa sobre el suelo para mover al encargado (o usa las flechas / WASD).", "wait": "move" },
-    { "text": "Pulsa las exclamaciones (o tecla E) para atender eventos; las mesas sucias también se limpian pulsándolas." },
-    { "text": "Abre «Operación» (el móvil) con el botón de arriba o con TAB: equipo, puestos, tiempos, stock y vacantes.", "wait": "phoneOpen" },
-    { "text": "Con el móvil fuera ves las etiquetas de posicionamiento y los cuellos de botella 🚧: pulsa uno para ir y apoyar, aunque el puesto ya esté cubierto." },
-    { "text": "Ciérralo con la X, con TAB o volviendo a pulsar Operación.", "wait": "phoneClose" },
-    { "text": "Ahora pulsa sobre un empleado para reasignarlo de puesto.", "wait": "reassign" },
-    { "text": "Pulsa un puesto libre (círculo oscuro) para ocuparlo. Si apoyas un canal, su equipo trabaja un 20 % más rápido. Si un empleado no se presenta, cubre la baja desde Vacantes con un refuerzo o un experto ⭐ (más rápido y cubre dos puestos)." },
-    { "text": "Antes de abrir: 🗣️ Briefing voluntario (3 preguntas, barra de habilidad y ruleta de +5/10/15 % de velocidad; fallar endurece la barra), 🌡️ Toma de Temperatura Carne (pincha entre dos rayas y elige el ángulo correcto; hay que llegar a 68 ºC) y las demás revisiones." },
-    { "text": "Entre las 09:00 y las 10:00 puede llegar el camión de Conway (50 %): reparte las cajas, compáralas con el albarán y firma solo si coinciden; si no, pide abono. Acertar suma 50 pts, fallar resta 50." },
-    { "text": "Abre la puerta antes de las 12:00. Tu puntuación sube o baja con tus decisiones; con ella contratas refuerzos y entras en la clasificación. Si hay saturación, prioriza un canal." }
+    {
+      "text": "Pulsa sobre el suelo para mover al encargado (o usa las flechas / WASD).",
+      "wait": "move"
+    },
+    {
+      "text": "Pulsa las exclamaciones (o tecla E) para atender eventos; las mesas sucias también se limpian pulsándolas."
+    },
+    {
+      "text": "Abre «Operación» (el móvil) con el botón de arriba o con TAB: equipo, puestos, tiempos, stock y vacantes.",
+      "wait": "phoneOpen"
+    },
+    {
+      "text": "Con el móvil fuera ves las etiquetas de posicionamiento y los cuellos de botella 🚧: pulsa uno para ir y apoyar, aunque el puesto ya esté cubierto."
+    },
+    {
+      "text": "Ciérralo con la X, con TAB o volviendo a pulsar Operación.",
+      "wait": "phoneClose"
+    },
+    {
+      "text": "Ahora pulsa sobre un empleado para reasignarlo de puesto.",
+      "wait": "reassign"
+    },
+    {
+      "text": "Pulsa un puesto libre (círculo oscuro) para ocuparlo. Si apoyas un canal, su equipo trabaja un 20 % más rápido. Si un empleado no se presenta, cubre la baja desde Vacantes con un refuerzo o un experto ⭐ (más rápido y cubre dos puestos)."
+    },
+    {
+      "text": "Antes de abrir: 🗣️ Briefing voluntario (3 preguntas, barra de habilidad y ruleta de +5/10/15 % de velocidad; fallar endurece la barra), 🌡️ Toma de Temperatura Carne (pincha entre dos rayas y elige el ángulo correcto; hay que llegar a 68 ºC) y las demás revisiones."
+    },
+    {
+      "text": "Entre las 09:00 y las 10:00 puede llegar el camión de Conway (50 %): reparte las cajas, compáralas con el albarán y firma solo si coinciden; si no, pide abono. Acertar suma 50 pts, fallar resta 50."
+    },
+    {
+      "text": "Abre la puerta antes de las 12:00. Tu puntuación sube o baja con tus decisiones; con ella contratas refuerzos y entras en la clasificación. Si hay saturación, prioriza un canal."
+    }
   ]
 }

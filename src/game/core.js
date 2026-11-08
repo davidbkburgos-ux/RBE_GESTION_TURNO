@@ -75,15 +75,18 @@
   };
 
   BK.loadData = async function () {
-    const names = ['config', 'map', 'events', 'questions', 'opening', 'audioManifest', 'brands'];
+    const names = ['config', 'map', 'events', 'questions', 'opening', 'audioManifest', 'brands', 'manifest'];
+    const paths = { manifest: 'assets/manifest.json' };
+    const optional = { manifest: true }; // sin manifest el juego usa el plano y los peones procedurales
     const out = {};
     const http = location.protocol.startsWith('http');
     for (const n of names) {
       let d = null;
       if (http) {
-        try { const r = await fetch('src/data/' + n + '.json', { cache: 'no-cache' }); if (r.ok) d = await r.json(); } catch (e) { /* usa bundle */ }
+        try { const r = await fetch(paths[n] || 'src/data/' + n + '.json', { cache: 'no-cache' }); if (r.ok) d = await r.json(); } catch (e) { /* usa bundle */ }
       }
       if (!d && window.BK_BUNDLE) d = window.BK_BUNDLE[n];
+      if (!d && optional[n]) continue;
       if (!d) throw new Error('Datos no disponibles: ' + n);
       out[n] = d;
     }

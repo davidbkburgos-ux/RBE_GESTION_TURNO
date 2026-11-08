@@ -14,7 +14,9 @@
       this.boxPositions = S.boxes || BK_BOX_POSITIONS;
       this.cam = S.truckCam || { x: 300, y: 560 };
       this.lane = new BK.Lane(G.map.vehicleLane.path);
-      this.stopS = this.lane.project(G.map.vehicleLane.stops.order.x, G.map.vehicleLane.stops.order.y);
+      // Parada del camión de proveedor frente a la puerta trasera/de servicio (stops.truck); sin ella, el punto de pedido
+      const stop = G.map.vehicleLane.stops.truck || G.map.vehicleLane.stops.order;
+      this.stopS = this.lane.project(stop.x, stop.y);
       this.dropPoint = { x: G.map.points.productPrep[0], y: G.map.points.productPrep[1] };
       this.reset();
     }

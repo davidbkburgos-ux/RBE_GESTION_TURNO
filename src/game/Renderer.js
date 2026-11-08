@@ -8,6 +8,47 @@
   const INDOOR = [[168, 296, 1348, 792], [1148, 204, 1338, 296]];
 
   const FACE = { excellent: '😀', acceptable: '😐', failed: '😠' };
+  const FACE_ICON = { excellent: 'face_happy', acceptable: 'face_neutral', failed: 'face_annoyed' };
+  // Estados del cliente -> icono ilustrado (assets/ui/icons); el emoji queda solo como respaldo.
+  const STATE_ICON = { BEING_SERVED: 'talking', WAITING: 'waiting', WAITING_FOR_ORDER: 'receipt', ORDER_READY: 'ready', SEATED: 'burger', NEEDS_HELP: 'alert', LEAVING: 'leaving', WAIT_FOR_TABLE: 'chair', TABLE_COMPLAINT: 'face_annoyed' };
+
+  // Icono ilustrado centrado en (x, y); si no está cargado, el emoji de respaldo.
+  function drawIcon(ctx, name, x, y, size, emoji) {
+    const img = BK.SpriteLoader && BK.SpriteLoader.icon(name);
+    if (img) { ctx.drawImage(img, Math.round(x - size / 2), Math.round(y - size / 2), size, size); return; }
+    if (!emoji) return;
+    ctx.save(); ctx.font = Math.round(size * 0.8) + 'px "Segoe UI Emoji", system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(emoji, x, y); ctx.restore();
+  }
+  function roundRect(ctx, x, y, w, h, r) {
+    r = Math.min(r, h / 2, w / 2);
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  // Barra de progreso común a todo el juego (limpieza, Auto, kiosco, recogida, preparación, eventos):
+  // cápsula oscura con borde claro, relleno redondeado con brillo superior.
+  const BAR = { good: '#5fc46a', warn: '#f2b72b', bad: '#e5483b', info: '#4fa3e0', brand: '#f47a2c' };
+  function drawBar(ctx, x, y, w, h, f, color) {
+    f = Math.max(0, Math.min(1, f));
+    ctx.save();
+    roundRect(ctx, x - 1.5, y - 1.5, w + 3, h + 3, (h + 3) / 2);
+    ctx.fillStyle = 'rgba(24,16,11,0.88)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,243,212,0.55)'; ctx.lineWidth = 1; ctx.stroke();
+    if (f > 0.001) {
+      const fw = Math.max(h, w * f);
+      roundRect(ctx, x, y, fw, h, h / 2); ctx.fillStyle = color; ctx.fill();
+      roundRect(ctx, x + 1, y + 0.5, fw - 2, h * 0.4, h * 0.2); ctx.fillStyle = 'rgba(255,255,255,0.32)'; ctx.fill();
+    }
+    ctx.restore();
+  }
+  BK.drawBar = drawBar; BK.BAR = BAR; BK.drawIcon = drawIcon;
+  // Emoji de los datos (eventos, tareas) -> icono ilustrado equivalente.
+  const EMOJI_ICON = { '🛎️': 'bell', '🛎': 'bell', '🚗': 'car', '🛵': 'scooter', '🧹': 'broom', '📦': 'box', '🔧': 'wrench', '🚪': 'door',
+    '🌡️': 'thermo', '🌡': 'thermo', '⏱️': 'stopwatch', '⏱': 'stopwatch', '🍟': 'fries', '🍗': 'chicken', '👨‍🍳': 'chef', '🤝': 'handshake',
+    '🔥': 'flame', '🥪': 'sandwich', '⭐': 'star', '★': 'star', '🍔': 'burger', '📋': 'checklist', '😠': 'face_annoyed', '🖥️': 'kiosk', '🧾': 'receipt', '⏳': 'waiting', '💬': 'talking', '❗': 'alert', '✅': 'ready', '👋': 'leaving', '🪑': 'chair', '🗣️': 'briefing' };
+  // Dibuja el icono ilustrado de un emoji si existe; si no, el propio emoji.
+  function drawEmoji(ctx, emoji, x, y, size) { drawIcon(ctx, EMOJI_ICON[emoji] || '', x, y, size, emoji); }
+  BK.EMOJI_ICON = EMOJI_ICON;
 
   function shapePath(ctx, shape, x, y, r) {
     ctx.beginPath();
@@ -40,24 +81,126 @@
       });
       this.resize();
     }
-    // Cambia el plano de fondo según la marca; las imágenes se cargan una sola vez y se reutilizan.
+    // Cambia el plano de fondo según la marca. Con assets/manifest.json usa dos capas (día y noche) que se
+    // funden según la hora; sin manifest, el plano único de BK.BRAND_MAPS. Las imágenes se cargan una vez.
     setBrand(brand) {
       const maps = BK.BRAND_MAPS, key = maps[brand] ? brand : 'bk';
-      let im = this.imgs[key];
-      if (!im) {
-        im = this.imgs[key] = new Image();
-        im.ready = false;
-        im.onload = () => { im.ready = true; if (this.img === im) this.imgReady = true; };
-        im.src = key === 'bk' ? this.G.map.meta.image : maps[key];
+      const M = this.G.manifest, mb = M && M.brands && M.brands[key];
+      this.brandKey = key; this.brandInfo = mb || null;
+      const load = (src) => {
+        let im = this.imgs[src];
+        if (!im) {
+          im = this.imgs[src] = new Image(); im.ready = false;
+          im.onload = () => { im.ready = true; if (this.img === im) this.imgReady = true; this.bgKey = null; this.dirty = true; };
+          im.src = src;
+        }
+        return im;
+      };
+      this.img = load(mb && mb.maps ? mb.maps.day : key === 'bk' ? this.G.map.meta.image : maps[key]);
+      this.imgReady = this.img.ready;
+      this.night = mb && mb.maps && mb.maps.night ? load(mb.maps.night) : null;
+      this.bgKey = null; this.dirty = true;
+    }
+    // Fondo pre-compuesto (plano día + capa noche + rótulos del carril) en un canvas en memoria, ya escalado a
+    // los píxeles físicos de pantalla. Solo se regenera al cambiar marca, zoom/tamaño o el tramo de noche
+    // (1/48); el resto de frames el plano se vuelca 1:1 sin reescalar ni componer.
+    // Devuelve { canvas, k } donde k = píxeles de buffer por unidad de mundo, o null si aún no hay imagen.
+    bgLayer(s) {
+      if (!this.imgReady) return null;
+      const night = this.nightReady ? Math.round(this.nightAmount() * 48) / 48 : 0;
+      let k = s * this.dpr;
+      if (MW * k * MH * k > 16e6) k = Math.sqrt(16e6 / (MW * MH)); // tope de memoria del buffer (~64 MB)
+      const bw = Math.round(MW * k), bh = Math.round(MH * k);
+      const key = this.brandKey + '|' + bw + 'x' + bh + '|' + night;
+      if (key === this.bgKey) return this.bg;
+      // Durante la animación de zoom no se regenera en cada frame: se reutiliza el buffer previo reescalado.
+      if (this.bg && this.cam.zoom !== this.zoomTarget) return this.bg;
+      const c = this.bgCanvas || (this.bgCanvas = document.createElement('canvas'));
+      if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; }
+      const x = c.getContext('2d');
+      x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, bw, bh);
+      x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
+      x.setTransform(bw / MW, 0, 0, bh / MH, 0, 0);
+      x.drawImage(this.img, 0, 0, MW, MH);
+      if (night > 0.004) { x.globalAlpha = night; x.drawImage(this.night, 0, 0, MW, MH); x.globalAlpha = 1; }
+      this.drawLane(x);
+      this.bgKey = key; this.bg = { canvas: c, k: bw / MW };
+      return this.bg;
+    }
+    get nightReady() { return !!(this.night && this.night.ready); }
+    // 0 = pleno día, 1 = noche cerrada. Sigue las claves de iluminación de config.json.
+    nightAmount() {
+      const L = this.G.lighting;
+      if (!L || !this.G.clock) return 0;
+      return U.clamp((L.state(this.G.clock.t).lamps - 0.12) / 0.75, 0, 1);
+    }
+    // Rótulo y flechas pintados en el carril del Auto (texto nítido en lugar de marcas quemadas en el plano).
+    drawLane(ctx) {
+      const lane = this.G.map.vehicleLane, b = this.brandInfo;
+      if (!lane || !b || !b.lane) return;
+      const pts = lane.path, L = b.lane;
+      ctx.save();
+      ctx.fillStyle = 'rgba(236,232,222,0.5)';
+      let acc = 60;
+      for (let i = 1; i < pts.length; i++) {
+        const [x1, y1] = pts[i - 1], [x2, y2] = pts[i];
+        const len = Math.hypot(x2 - x1, y2 - y1), ang = Math.atan2(y2 - y1, x2 - x1);
+        while (acc < len) {
+          const x = x1 + Math.cos(ang) * acc, y = y1 + Math.sin(ang) * acc;
+          if (x > 10 && x < MW - 10 && y > 10 && y < MH - 10 && Math.hypot(x - L.x, y - L.y) > 130) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+            ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(-5, -7); ctx.lineTo(-2, 0); ctx.lineTo(-5, 7); ctx.closePath(); ctx.fill();
+            ctx.restore();
+          }
+          acc += 150;
+        }
+        acc -= len;
       }
-      this.img = im; this.imgReady = im.ready;
+      ctx.translate(L.x, L.y); if (L.ang) ctx.rotate(L.ang);
+      ctx.font = '800 ' + (L.size || 21) + 'px system-ui, "Segoe UI", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'rgba(236,232,222,0.6)';
+      ctx.fillText(L.label, 0, 0);
+      ctx.restore();
+    }
+    // Props del plano de la marca que entran en el orden de profundidad (tótem de pedido del Auto).
+    propList() {
+      const b = this.brandInfo, out = [];
+      if (!b || !b.props || !BK.SpriteLoader) return out;
+      for (const p of b.props) {
+        const img = BK.SpriteLoader.image(p.src);
+        if (img) out.push({ y: p.y, prop: p, img });
+      }
+      return out;
+    }
+    drawProp(ctx, it) {
+      const p = it.prop, x = p.x - p.w * p.anchor[0], y = p.y - p.h * p.anchor[1];
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath(); ctx.ellipse(p.x + 3, p.y - 1, p.w * 0.55, 4.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.drawImage(it.img, x, y, p.w, p.h);
+    }
+    // Brillo nocturno de paneles iluminados (después de la iluminación global para que no se oscurezca).
+    drawPropGlow(ctx, night) {
+      const b = this.brandInfo;
+      if (!b || !b.props || night < 0.05) return;
+      ctx.save(); ctx.globalCompositeOperation = 'screen';
+      for (const p of b.props) {
+        if (!p.glow) continue;
+        const g = ctx.createRadialGradient(p.glow.x, p.glow.y, 1, p.glow.x, p.glow.y, p.glow.r);
+        g.addColorStop(0, 'rgba(255,240,205,' + (0.55 * night).toFixed(3) + ')');
+        g.addColorStop(1, 'rgba(255,200,140,0)');
+        ctx.fillStyle = g; ctx.fillRect(p.glow.x - p.glow.r, p.glow.y - p.glow.r, p.glow.r * 2, p.glow.r * 2);
+      }
+      ctx.restore();
     }
     resize() {
       const r = this.cv.parentElement.getBoundingClientRect();
       const W = Math.max(200, Math.round(r.width)), H = Math.max(150, Math.round(r.height));
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Retina: un dpr de 2-3 multiplica x4-x9 los píxeles por frame sin ganancia visible en este estilo.
+      // Calidad gráfica (Ajustes): «nítida» usa la densidad real de la pantalla hasta 2×; «rendimiento» la limita a 1,5×.
+      const perf = BK.settings && BK.settings.gfxQuality === 'performance';
+      const dpr = Math.min(window.devicePixelRatio || 1, perf ? 1.5 : 2);
       if (W === this.W && H === this.H && dpr === this.dpr && this.cv.width) return;
-      this.W = W; this.H = H; this.dpr = dpr;
+      this.W = W; this.H = H; this.dpr = dpr; this.dirty = true;
       this.cv.width = Math.round(W * dpr); this.cv.height = Math.round(H * dpr);
       this.cv.style.width = W + 'px'; this.cv.style.height = H + 'px';
       this.clampCam();
@@ -76,9 +219,12 @@
       const c = this.G.cfg.camera;
       this.zoomTarget = U.clamp(z, c.minZoom, c.maxZoom);
       if (BK.settings && BK.settings.reduceMotion) { this.cam.zoom = this.zoomTarget; this.clampCam(); }
+      this.dirty = true;
     }
     zoomBy(f) { this.setZoom(this.zoomTarget * f); }
-    pan(dx, dy) { this.cam.x -= dx / this.scale; this.cam.y -= dy / this.scale; this.clampCam(); }
+    pan(dx, dy) { this.cam.x -= dx / this.scale; this.cam.y -= dy / this.scale; this.clampCam(); this.dirty = true; }
+    // true mientras el zoom se anima (el bucle debe seguir pintando aunque la escena esté congelada)
+    get animating() { return this.cam.zoom !== this.zoomTarget; }
     setFollow(on) {
       this.follow = on;
       this.setZoom(on ? this.G.cfg.camera.mobileFollowZoom : 1);
@@ -103,14 +249,27 @@
     draw() {
       const G = this.G, ctx = this.ctx, s = this.scale, now = performance.now() / 1000;
       const rm = BK.settings && BK.settings.reduceMotion;
+      this.dirty = false;
       ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       ctx.fillStyle = '#17100c'; ctx.fillRect(0, 0, this.W, this.H);
-      if (!this.imgReady) return;
+      const bg = this.bgLayer(s);
+      if (!bg) return;
+      // Origen del mundo en píxeles físicos, entero: el plano pre-escalado se vuelca 1:1 y nítido.
+      const ox = Math.round((this.W / 2 - this.cam.x * s) * this.dpr), oy = Math.round((this.H / 2 - this.cam.y * s) * this.dpr);
+      const ws = s * this.dpr, bk = ws / bg.k;
       ctx.save();
-      ctx.translate(this.W / 2 - this.cam.x * s, this.H / 2 - this.cam.y * s);
-      ctx.scale(s, s);
-      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(this.img, 0, 0, MW, MH);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      if (Math.abs(bk - 1) < 1e-6) ctx.drawImage(bg.canvas, ox, oy);
+      else if (this.cam.zoom !== this.zoomTarget) {
+        // animando el zoom: se pinta desde la imagen de origen (alta resolución) para no ver el plano estirado
+        ctx.setTransform(ws, 0, 0, ws, ox, oy); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(this.img, 0, 0, MW, MH);
+        const nq = this.nightReady ? Math.round(this.nightAmount() * 48) / 48 : 0;
+        if (nq > 0.004) { ctx.globalAlpha = nq; ctx.drawImage(this.night, 0, 0, MW, MH); ctx.globalAlpha = 1; }
+        this.drawLane(ctx);
+      } else { ctx.imageSmoothingEnabled = true; ctx.drawImage(bg.canvas, ox, oy, Math.round(bg.canvas.width * bk), Math.round(bg.canvas.height * bk)); }
+      ctx.setTransform(ws, 0, 0, ws, ox, oy);
+      const night = this.nightReady ? this.nightAmount() : 0;
 
       this.drawTables(ctx);
       this.drawBag(ctx);
@@ -121,27 +280,35 @@
 
       // vehículos (suelo) y luego personajes por profundidad
       G.vehicles.cars.forEach((c) => {
-        const sp = BK.carSprite(c.color, c.len, c.wid, c.body, c.acc);
+        const cs = BK.SpriteLoader && BK.SpriteLoader.car(c.id);
         ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.ang);
-        ctx.drawImage(sp.canvas, -(c.len / 2 + sp.pad), -(c.wid / 2 + sp.pad), c.len + sp.pad * 2, c.wid + sp.pad * 2);
+        if (cs) {
+          // sprite cenital de Summer Engine: mismo largo de gameplay, ancho según la proporción del modelo
+          const L = c.len, Wd = L * cs.c.wid / cs.c.len;
+          ctx.fillStyle = 'rgba(0,0,0,0.28)'; roundRect(ctx, -L / 2 + 3, -Wd / 2 + 4, L - 2, Wd - 2, Wd * 0.3); ctx.fill();
+          ctx.drawImage(cs.img, -L / 2, -Wd / 2, L, Wd);
+        } else if (!(BK.SpriteLoader && BK.SpriteLoader.manifest && BK.SpriteLoader.manifest.vehicles)) {
+          const sp = BK.carSprite(c.color, c.len, c.wid, c.body, c.acc);
+          ctx.drawImage(sp.canvas, -(c.len / 2 + sp.pad), -(c.wid / 2 + sp.pad), c.len + sp.pad * 2, c.wid + sp.pad * 2);
+        }
         ctx.restore();
         const b = G.vehicles.bar(c);
         if (b) {
-          const w = 46, h = 7, x = c.x - w / 2, y = c.y - 40, f = Math.min(1, b.f);
+          const w = 46, h = 6, x = c.x - w / 2, y = c.y - 40;
+          drawBar(ctx, x, y, w, h, Math.min(1, b.f), b.f <= 1 ? BAR.good : b.f <= 1.5 ? BAR.warn : BAR.bad);
           ctx.save();
-          ctx.fillStyle = 'rgba(20,14,10,0.78)'; ctx.fillRect(x - 1, y - 1, w + 2, h + 2);
-          ctx.fillStyle = b.f <= 1 ? '#5fbf5a' : b.f <= 1.5 ? '#e8b23a' : '#d9473a';
-          ctx.fillRect(x, y, w * f, h);
-          ctx.font = 'bold 9px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
-          ctx.fillText(b.label, c.x, y - 3);
+          ctx.font = 'bold 9px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(24,16,11,0.9)';
+          ctx.strokeText(b.label, c.x, y - 4); ctx.fillStyle = '#fff'; ctx.fillText(b.label, c.x, y - 4);
           ctx.restore();
         }
       });
       this.drawTruckDelivery(ctx);
-      const chars = [G.player.char].concat(G.employees.list, G.customers.guests);
+      this.drawKitchenLife(ctx, now, rm);
+      const chars = [G.player.char].concat(G.employees.list, G.customers.guests, this.propList());
       chars.sort((a, b) => a.y - b.y);
       const sc = (BK.CHAR_SCALE || 1);
       chars.forEach((c) => {
+        if (c.prop) { this.drawProp(ctx, c); return; }
         const k = sc * (c.scale || 1);
         ctx.fillStyle = 'rgba(0,0,0,0.26)';
         if (c.alpha !== undefined && c.alpha < 0.05) return;
@@ -161,7 +328,8 @@
 
       this.drawPatience(ctx);
       this.drawRain(ctx, now, rm);
-      G.lighting.draw(ctx, MW, MH);
+      G.lighting.draw(ctx, MW, MH, this.nightReady);
+      this.drawPropGlow(ctx, night);
       ctx.restore();
 
       this.drawIndicators(ctx, now, rm);
@@ -179,6 +347,14 @@
         this.drawStationGuidance(ctx, performance.now() / 1000, BK.settings && BK.settings.reduceMotion);
         const showTags = !G.ui.el.operationsPanel.hidden;
         G.employees.list.forEach((c) => {
+          // empleado base cubriendo el puesto vecino: marca discreta con el icono del puesto
+          if (!c.expert && c.extraPosition && c.available && !c.absent && c.alpha >= 0.5) {
+            const p = this.toScreen(c.x, c.y - (showTags ? 108 : 86)), ex = info[c.extraPosition];
+            ctx.font = 'bold ' + Math.round(11 * k) + 'px system-ui, sans-serif'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(24,16,11,0.9)';
+            const t = '↔ ' + (ex ? ex.icon + ' ' + ex.tag : 'APOYO');
+            ctx.strokeText(t, p.x, p.y); ctx.fillStyle = '#9fe3ff'; ctx.fillText(t, p.x, p.y);
+            return;
+          }
           if (!c.expert || !c.available || c.absent || c.alpha < 0.5) return;
           const p = this.toScreen(c.x, c.y - (showTags ? 108 : 86));
           ctx.font = Math.round(15 * k) + 'px system-ui, sans-serif'; ctx.fillStyle = '#ffd24a';
@@ -210,8 +386,7 @@
           ctx.font = 'bold ' + Math.round(9.5 * k) + 'px system-ui, sans-serif'; ctx.fillStyle = '#fff3d4';
           ctx.fillText(b.icon + ' ' + b.text + (b.manager ? ' · TÚ' : ''), p.x, p.y - 4 * k);
           const bw = w - 14 * k, bx = p.x - bw / 2, by = p.y + 3 * k;
-          ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(bx, by, bw, 5 * k);
-          ctx.fillStyle = b.manager ? '#f47a2c' : '#8fd18a'; ctx.fillRect(bx, by, bw * b.f, 5 * k);
+          drawBar(ctx, bx, by, bw, 5 * k, b.f, b.manager ? BAR.brand : BAR.good);
           ctx.font = 'bold ' + Math.round(8 * k) + 'px system-ui, sans-serif'; ctx.fillStyle = '#fff3d4';
           ctx.textAlign = 'right'; ctx.fillText(Math.round(b.f * 100) + ' %', p.x + w / 2 - 4 * k, p.y - 4 * k); ctx.textAlign = 'center';
         });
@@ -223,8 +398,7 @@
           ctx.font = 'bold ' + Math.round(9.5 * k) + 'px system-ui, sans-serif'; ctx.fillStyle = '#fff3d4';
           ctx.fillText('📦 Preparando producto', p.x, p.y - 4 * k);
           const bw = w - 14 * k, bx = p.x - bw / 2, by = p.y + 3 * k;
-          ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(bx, by, bw, 5 * k);
-          ctx.fillStyle = '#f47a2c'; ctx.fillRect(bx, by, bw * f, 5 * k);
+          drawBar(ctx, bx, by, bw, 5 * k, f, BAR.brand);
           ctx.font = 'bold ' + Math.round(8 * k) + 'px system-ui, sans-serif'; ctx.fillStyle = '#fff3d4';
           ctx.textAlign = 'right'; ctx.fillText(left + ' s', p.x + w / 2 - 4 * k, p.y - 4 * k); ctx.textAlign = 'center';
         }
@@ -243,31 +417,21 @@
         .concat(G.vehicles.cars.filter((c) => c.patience > 0.3 && c.state !== 'leaving').map((c) => ({ x: c.x, y: c.y - 34, f: c.patience })));
       items.forEach((it) => {
         const f = Math.min(1, it.f), w = 30;
-        ctx.save();
-        ctx.fillStyle = 'rgba(20,12,8,0.75)'; ctx.fillRect(it.x - w / 2 - 1, it.y - 1, w + 2, 7);
-        ctx.fillStyle = f < 0.6 ? '#f2c230' : f < 0.85 ? '#f08a2a' : '#e5483b';
-        ctx.fillRect(it.x - w / 2, it.y, w * (1 - f), 5);
-        ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-        ctx.fillText(f < 0.6 ? '😐' : f < 0.85 ? '😠' : '🤬', it.x, it.y - 2);
-        ctx.restore();
+        drawBar(ctx, it.x - w / 2, it.y, w, 5, 1 - f, f < 0.6 ? BAR.warn : f < 0.85 ? '#f08a2a' : BAR.bad);
+        drawIcon(ctx, f < 0.6 ? 'face_neutral' : f < 0.85 ? 'face_annoyed' : 'face_furious', it.x, it.y - 11, 18, f < 0.6 ? '😐' : f < 0.85 ? '😠' : '🤬');
       });
       G.customers.guests.forEach((g) => {
         if (g.dead || g.leaving || g.ambientStage !== 'ordering' || g.ambientChannel !== 'kiosk' || !g.orderTotal) return;
         const f = Math.max(0, Math.min(1, 1 - g.orderWait / g.orderTotal)), w = 30;
-        ctx.save();
-        ctx.fillStyle = 'rgba(20,12,8,0.75)'; ctx.fillRect(g.x - w / 2 - 1, g.y - 63, w + 2, 7);
-        ctx.fillStyle = '#4fa3e0'; ctx.fillRect(g.x - w / 2, g.y - 62, w * f, 5);
-        ctx.font = '13px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-        ctx.fillText('🖥️', g.x, g.y - 65);
-        ctx.restore();
+        drawBar(ctx, g.x - w / 2, g.y - 62, w, 5, f, BAR.info);
+        drawIcon(ctx, 'kiosk', g.x, g.y - 73, 18, '🖥️');
       });
       // icono de estado: solo para clientes con un estado informativo (no repite la barra de impaciencia)
       G.customers.guests.forEach((g) => {
         if (g.dead || g.patience > 0.3) return;
         const st = G.customers.stateOf(g), ic = BK.CUSTOMER_STATE_ICON[st];
         if (!ic || st === 'WAITING' || st === 'SEATED') return;
-        ctx.save(); ctx.font = '14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-        ctx.fillText(ic, g.x, g.y - 50); ctx.restore();
+        drawIcon(ctx, STATE_ICON[st], g.x, g.y - 58, 17, ic);
       });
     }
 
@@ -323,8 +487,8 @@
         ctx.beginPath(); ctx.ellipse(x, y + 6, 32 + pulse, 15 + pulse * 0.3, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         if (supporting) {
           ctx.font = 'bold 12px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-          ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(35,24,17,0.9)'; ctx.strokeText('ENCARGADO APOYANDO', x, y - 18);
-          ctx.fillStyle = '#fff3d4'; ctx.fillText('ENCARGADO APOYANDO', x, y - 18);
+          ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(35,24,17,0.9)'; ctx.strokeText(this.G.roleWord(true) + ' APOYANDO', x, y - 18);
+          ctx.fillStyle = '#fff3d4'; ctx.fillText(this.G.roleWord(true) + ' APOYANDO', x, y - 18);
         }
         ctx.restore();
       }
@@ -335,23 +499,27 @@
         if (t.state !== 'dirty') continue;
         const [x1, y1, x2, y2] = t.top, w = x2 - x1, h = y2 - y1;
         ctx.save();
-        ctx.fillStyle = 'rgba(90,55,25,0.28)'; ctx.fillRect(x1, y1, w, h);
-        const plates = [[0.3, 0.3], [0.7, 0.62], [0.35, 0.78]];
-        plates.forEach(([fx, fy], i) => {
-          const px = x1 + w * fx, py = y1 + h * Math.min(0.85, fy);
-          ctx.fillStyle = '#efe6d4'; ctx.beginPath(); ctx.ellipse(px, py, 5.5, 3.6, 0, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = i === 1 ? '#d83b2d' : '#8b5a2b'; ctx.beginPath(); ctx.ellipse(px + 0.5, py, 2.6, 1.7, 0, 0, Math.PI * 2); ctx.fill();
-        });
-        ctx.fillStyle = '#f47a2c'; ctx.fillRect(x1 + w * 0.55, y1 + h * 0.2, 4, 6);
-        ctx.fillStyle = '#c9b48a'; ctx.beginPath(); ctx.arc(x1 + w * 0.2, y1 + h * 0.62, 2.4, 0, Math.PI * 2); ctx.fill();
+        const tray = BK.SpriteLoader && BK.SpriteLoader.prop('bandejaSucia');
+        if (tray && tray.img) {
+          // bandeja ilustrada con restos, ajustada a la mesa
+          const k = Math.min((w * 0.8) / tray.p.w, (h * 0.85) / tray.p.h, 1.2), tw = tray.p.w * k, th = tray.p.h * k;
+          ctx.drawImage(tray.img, (x1 + x2) / 2 - tw / 2, (y1 + y2) / 2 - th / 2, tw, th);
+        } else {
+          ctx.fillStyle = 'rgba(90,55,25,0.28)'; ctx.fillRect(x1, y1, w, h);
+          [[0.3, 0.3], [0.7, 0.62], [0.35, 0.78]].forEach(([fx, fy], i) => {
+            const px = x1 + w * fx, py = y1 + h * Math.min(0.85, fy);
+            ctx.fillStyle = '#efe6d4'; ctx.beginPath(); ctx.ellipse(px, py, 5.5, 3.6, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = i === 1 ? '#d83b2d' : '#8b5a2b'; ctx.beginPath(); ctx.ellipse(px + 0.5, py, 2.6, 1.7, 0, 0, Math.PI * 2); ctx.fill();
+          });
+        }
         const a = this.G.player.char.action;
         const cleaning = a && a.dur > 0 && this.G.events.list.some((e) => e.type === 'dirtyTable' && e.state === 'inProgress' && e.targetEntity === t);
         if (cleaning) {
-          const f = Math.min(1, a.t / a.dur), bw = 36, bx = (x1 + x2) / 2 - bw / 2, by = y1 - 14;
-          ctx.fillStyle = 'rgba(20,12,8,0.8)'; ctx.fillRect(bx - 1, by - 1, bw + 2, 8);
-          ctx.fillStyle = '#5fc46a'; ctx.fillRect(bx, by, bw * f, 6);
+          const f = Math.min(1, a.t / a.dur), bw = 40, bx = (x1 + x2) / 2 - bw / 2, by = y1 - 12;
+          drawBar(ctx, bx, by, bw, 6, f, BAR.good);
           ctx.font = 'bold 9px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-          ctx.fillStyle = '#fff3d4'; ctx.fillText('LIMPIANDO', (x1 + x2) / 2, by - 1);
+          ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(24,16,11,0.9)'; ctx.strokeText('LIMPIANDO', (x1 + x2) / 2, by - 3);
+          ctx.fillStyle = '#fff3d4'; ctx.fillText('LIMPIANDO', (x1 + x2) / 2, by - 3);
         }
         ctx.restore();
       }
@@ -367,7 +535,48 @@
       ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 0.8; ctx.strokeRect(x - 7, y - 10, 14, 16);
       ctx.restore();
     }
+    // Vida de cocina y entrega: bolsas listas en expedición, bolsa que pasa de la ventana al coche y vapor
+    // sobre freidora y parrilla. Todo se calcula a partir del reloj (sin crear objetos por frame).
+    drawKitchenLife(ctx, now, rm) {
+      const G = this.G, SL = BK.SpriteLoader;
+      if (!SL || G.state !== 'playing') return;
+      const bag = SL.prop('bolsa'), st = G.map.stations || {};
+      if (bag && bag.img) {
+        const exp = (G.map.spots && G.map.spots.pendingOrder) || (st.expedition && { x: st.expedition.pos[0], y: st.expedition.pos[1] });
+        if (exp) {
+          let n = 0;
+          for (const o of G.production.orders) if ((o.status === 'ready' || o.status === 'awaiting-channel') && o.channel !== 'autoking' && o.channel !== 'dining') n++;
+          for (let i = 0; i < Math.min(4, n); i++) ctx.drawImage(bag.img, exp.x + 14 + (i % 2) * 11, exp.y - 24 - Math.floor(i / 2) * 9 + (i % 2) * 3, bag.p.w, bag.p.h);
+        }
+        const win = (G.map.spots && G.map.spots.vehicle) || { x: 650, y: 762 };
+        for (const c of G.vehicles.cars) {
+          if (c.state !== 'leaving' || c.serviceResult !== 'resolved' || !(c.dwellLeft > 0) || !c.dwell) continue;
+          const k = Math.min(1, 1 - c.dwellLeft / c.dwell), e = k * k * (3 - 2 * k);
+          const bx = win.x + (c.x - win.x) * e, by = win.y + (c.y - win.y) * e - Math.sin(Math.PI * e) * 14;
+          ctx.drawImage(bag.img, bx - bag.p.w / 2, by - bag.p.h, bag.p.w, bag.p.h);
+        }
+      }
+      const vap = SL.prop('vapor');
+      if (!vap || !vap.img || rm || G.clock.t < 660) return;
+      const src = ['fryer', 'grill', 'fries', 'chef'].map((k) => st[k]).filter(Boolean);
+      ctx.save();
+      src.forEach((s, j) => {
+        for (let i = 0; i < 3; i++) {
+          const ph = ((now * 0.45 + i / 3 + j * 0.37) % 1), a = Math.sin(Math.PI * ph) * 0.45;
+          const x = s.pos[0] + Math.sin(now * 1.3 + i * 2.1 + j) * 5 + (i - 1) * 6, y = s.pos[1] - 28 - ph * 34, k = 0.6 + ph * 0.7;
+          ctx.globalAlpha = a; ctx.drawImage(vap.img, x - vap.p.w * k / 2, y - vap.p.h * k / 2, vap.p.w * k, vap.p.h * k);
+        }
+      });
+      ctx.restore();
+    }
     drawCarton(ctx, x, y, scale = 1) {
+      const box = BK.SpriteLoader && BK.SpriteLoader.prop('caja');
+      if (box && box.img) {
+        const w = box.p.w * scale, h = box.p.h * scale;
+        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(x + 1, y + h * 0.42, w * 0.5, h * 0.18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.drawImage(box.img, x - w / 2, y - h / 2, w, h);
+        return;
+      }
       ctx.save();
       ctx.translate(x, y); ctx.scale(scale, scale);
       ctx.fillStyle = '#8b5a32'; ctx.fillRect(-9, -7, 18, 14);
@@ -380,6 +589,15 @@
       const delivery = this.G.truckDelivery;
       if (!delivery || !delivery.active || !delivery.truck) return;
       const truck = delivery.truck;
+      const ts = BK.SpriteLoader && BK.SpriteLoader.truck();
+      if (ts) {
+        // camión frigorífico de Conway (sprite cenital): claramente mayor que un turismo, puertas traseras hacia -x
+        const L = ts.t.len, Wd = ts.t.wid;
+        ctx.save(); ctx.translate(truck.x, truck.y); ctx.rotate(truck.angle);
+        ctx.fillStyle = 'rgba(0,0,0,0.3)'; roundRect(ctx, -L / 2 + 4, -Wd / 2 + 5, L - 2, Wd - 2, 6); ctx.fill();
+        ctx.drawImage(ts.img, -L / 2, -Wd / 2, L, Wd);
+        ctx.restore();
+      } else {
       ctx.save();
       ctx.translate(truck.x, truck.y); ctx.rotate(truck.angle); ctx.scale(1.3, 1.3);
       ctx.fillStyle = 'rgba(0,0,0,0.28)';
@@ -405,6 +623,7 @@
         });
       }
       ctx.restore();
+      }
       delivery.boxes.forEach((box) => {
         if (box.status === 'delivered' || box.status === 'carried') return;
         this.drawCarton(ctx, box.x, box.y);
@@ -577,7 +796,8 @@
           shapePath(ctx, 'square', p.x, y + bob, 15);
           ctx.fill(); ctx.stroke();
           ctx.font = '17px system-ui, "Segoe UI Emoji", sans-serif'; ctx.fillStyle = '#fff';
-          ctx.fillText(it.kind === 'briefing' ? '🗣️' : it.task.action === 'door' ? '🚪' : it.task.icon || '📋', p.x, y + bob + 1);
+          if (it.kind === 'briefing') drawIcon(ctx, 'briefing', p.x, y + bob, 24, '🗣️');
+          else drawEmoji(ctx, it.task.action === 'door' ? '🚪' : it.task.icon || '📋', p.x, y + bob, 24);
           if (it.kind === 'briefing') {
             ctx.fillStyle = 'rgba(20,75,43,0.94)';
             ctx.fillRect(p.x - 29, y + bob - 27, 58, 12);
@@ -613,18 +833,21 @@
             ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]);
             shapePath(ctx, e.visualIndicator.shape, cx, cy, r + 6); ctx.stroke(); ctx.setLineDash([]);
           }
-          ctx.fillStyle = f >= 0.75 ? '#fff' : '#1f1f1f';
-          ctx.font = 'bold ' + Math.round(20 * sc) + 'px system-ui, sans-serif';
-          ctx.fillText(e.state === 'inProgress' ? '…' : '!', cx, cy + 1);
+          // icono ilustrado: alerta (!) o en curso (…), sobre la forma de color del canal
+          drawIcon(ctx, e.state === 'inProgress' ? 'talking' : 'alert', cx, cy, Math.round(26 * sc));
+          if (!(BK.SpriteLoader && BK.SpriteLoader.icon('alert'))) {
+            ctx.fillStyle = f >= 0.75 ? '#fff' : '#1f1f1f';
+            ctx.font = 'bold ' + Math.round(20 * sc) + 'px system-ui, sans-serif';
+            ctx.fillText(e.state === 'inProgress' ? '…' : '!', cx, cy + 1);
+          }
           // icono pequeño del tipo
           ctx.font = '13px "Segoe UI Emoji", system-ui, sans-serif';
           ctx.fillStyle = '#fff'; ctx.strokeStyle = '#3b2a21'; ctx.lineWidth = 1;
-          ctx.fillText(e.visualIndicator.icon, cx + r + 6, cy - r + 2);
+          drawEmoji(ctx, e.visualIndicator.icon, cx + r + 6, cy - r + 2, 18);
           // barra de tiempo
           if (e.state !== 'inProgress') {
             const bw = 46, bh = 7, bx = cx - bw / 2, by = cy + r + 6;
-            ctx.fillStyle = 'rgba(30,20,14,0.85)'; ctx.fillRect(bx - 1.5, by - 1.5, bw + 3, bh + 3);
-            ctx.fillStyle = col; ctx.fillRect(bx, by, bw * (1 - f), bh);
+            drawBar(ctx, bx, by, bw, bh, 1 - f, col);
             ctx.fillStyle = '#fff'; ctx.font = 'bold 10px system-ui, sans-serif';
             ctx.fillText(Math.ceil(E.remainingSec(e)) + 's', cx, by + bh + 9);
           }
@@ -637,7 +860,11 @@
           ctx.fillStyle = color; ctx.strokeStyle = '#2a1d16'; ctx.lineWidth = 2.2;
           shapePath(ctx, shape, cx, cy, r); ctx.fill(); ctx.stroke();
           ctx.font = '20px "Segoe UI Emoji", system-ui, sans-serif'; ctx.fillStyle = '#000';
-          ctx.fillText(FACE[e.result], cx, cy + (e.result === 'failed' ? 4 : 1));
+          if (e.result === 'excellent' && !rm && k < 0.6) {
+            for (let i = 0; i < 6; i++) { const ang = i / 6 * Math.PI * 2 + 0.3, d = 14 + k * 46; drawIcon(ctx, 'star', cx + Math.cos(ang) * d, cy + Math.sin(ang) * d, 13 * (1 - k)); }
+          }
+          if (BK.SpriteLoader && BK.SpriteLoader.icon(FACE_ICON[e.result])) drawIcon(ctx, FACE_ICON[e.result], cx, cy, 30);
+          else ctx.fillText(FACE[e.result], cx, cy + (e.result === 'failed' ? 4 : 1));
           if (e.points) {
             ctx.font = 'bold 13px system-ui, sans-serif'; ctx.lineWidth = 3; ctx.strokeStyle = '#2a1d16';
             const txt = (e.points > 0 ? '+' : '') + e.points;

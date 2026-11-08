@@ -3,7 +3,12 @@
   const U = BK.util;
 
   const CHANNEL_OF = { autoPay: 'autoking', delivery: 'delivery' };
-  const WORK_ANIM = { grill: 'work', fryer: 'work', fries: 'work', assembly: 'work', expedition: 'deliver', counter: 'talk', autoPay: 'talk', delivery: 'deliver', hall: 'clean' };
+  // Puestos vecinos por zona para la cobertura secundaria de los empleados base (orden = cercanía).
+  const NEIGHBORS = {
+    kitchen: ['fries', 'assembly', 'chef'], chef: ['kitchen', 'assembly'], fries: ['kitchen', 'assembly'], assembly: ['fries', 'kitchen', 'chef'],
+    counter: ['delivery', 'autoking'], autoking: ['counter'], delivery: ['counter']
+  };
+  const WORK_ANIM = { grill: 'work', fryer: 'work', fries: 'work', assembly: 'work', expedition: 'deliver', counter: 'talk', autoPay: 'talk', delivery: 'deliver', hall: 'idle' }; // sala: limpia solo durante la tarea (AutonomySystem)
   const TASK_TXT = {
     grill: 'Preparando hamburguesas', fryer: 'Atendiendo fritos', fries: 'Preparando patatas', assembly: 'Montando y embolsando',
     expedition: 'Entregando pedidos', counter: 'Atendiendo mostrador', autoPay: 'Cobrando en ' + BK.autoName, delivery: 'Preparando delivery', hall: 'Limpiando sala'
@@ -234,7 +239,15 @@
         }
       });
     }
-    // El experto cubre una segunda posición cuando la suya no tiene trabajo pendiente.
+    // Trabajo pendiente de una categoría: producción de su etapa + eventos de cliente de su canal.
+    workFor(category) {
+      const G = this.G, EV = { counter: ['counter', 'kiosk', 'pendingOrder'], autoking: ['vehicle'], delivery: ['delivery'] }[category];
+      const evs = EV ? G.events.list.filter((e) => EV.includes(e.type) && (e.state === 'pending' || e.state === 'appearing')).length : 0;
+      return G.production.pendingFor(category) + evs;
+    }
+    // Cobertura secundaria. El experto cubre cualquier puesto crítico; el empleado base solo el puesto más
+    // cercano de su misma zona (cocina: parrilla, patatas/complementos, montaje; frente: mostrador, entregas,
+    // Auto), y siempre que el suyo no tenga trabajo. Así nadie se queda parado mientras al lado hay cola.
     updateExperts(dt) {
       this.expertT = (this.expertT || 0) - dt;
       if (this.expertT > 0) return;
@@ -242,15 +255,17 @@
       const G = this.G, info = G.cfg.operations.stationInfo, stations = G.cfg.operations.stations;
       const CRIT = this.criticalCategories();
       for (const c of this.list) {
-        if (!c.expert) continue;
-        if (!c.available || c.absent || c.status !== 'WORKING' || !c.position || G.state !== 'playing') { c.extraCategory = null; c.extraPosition = null; continue; }
-        const ownBusy = G.production.pendingFor(c.category) > 0 || G.events.byChannel(c.channel).length > 0;
+        if (!c.available || c.absent || c.status !== 'WORKING' || !c.position || G.state !== 'playing' || c.autoJob || c.override) { c.extraCategory = null; c.extraPosition = null; continue; }
+        const ownBusy = this.workFor(c.category) > 0 || G.events.byChannel(c.channel).length > 0;
         if (ownBusy) { c.extraCategory = null; c.extraPosition = null; continue; }
         // Mantiene la segunda posición mientras siga habiendo trabajo en ella; si no, elige la de más urgencia.
+        const pool = c.expert ? CRIT : (NEIGHBORS[c.category] || []).filter((cat) => CRIT.includes(cat));
         let best = null, bestScore = 0;
-        for (const cat of CRIT) {
+        for (const cat of pool) {
           if (cat === c.category) continue;
-          const pending = G.production.pendingFor(cat);
+          // un empleado base no se suma a una zona que ya tiene a otro ayudando
+          if (!c.expert && this.list.some((o) => o !== c && o.extraCategory === cat && !o.expert)) continue;
+          const pending = this.workFor(cat);
           const score = (this.capacity(cat) === 0 ? 2 : 0) + Math.min(3, pending) + (c.extraCategory === cat ? 0.5 : 0);
           if (pending > 0 && score > bestScore) { best = cat; bestScore = score; }
         }

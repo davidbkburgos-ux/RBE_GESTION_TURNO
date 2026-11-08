@@ -1,1 +1,1946 @@
-{"popeyes":{"openingTaskOverrides":{"opening-equipment":{"label":"Toma temperatura pollo","prompt":"Toma temperatura pollo","point":"chickenTemp","minigame":"chickenTemp"}},"textReplacements":[["Toma de Temperatura Carne \\([^)]*\\)","Toma temperatura pollo (pincha la zona con más carne sin tocar hueso y ajusta la fuerza; hay que llegar a 74 ºC), ⏱️ Medir la viscosidad (cronometra el mix desde que cae hasta que se vacía y decide si es válido)"]],"map":{"walkable":[{"id":"kitchenMain","area":"back","rect":[330,290,862,614]},{"id":"aisle","area":"back","rect":[300,425,350,606]},{"id":"blueRoom","area":"back","rect":[225,505,336,606]},{"id":"westDoor","area":"staff","rect":[178,555,235,600]},{"id":"wcHall","area":"wc","rect":[480,198,862,295]},{"id":"wcRooms","area":"wc","rect":[495,130,860,200]},{"id":"wcLink","area":"wc","rect":[750,290,830,320]},{"id":"hallDoor","area":"staff","rect":[860,340,900,392]},{"id":"hall","area":"front","rect":[895,125,1350,628]},{"id":"entrance","area":"door","rect":[1128,612,1216,700]},{"id":"sidewalkS","area":"ext","rect":[1100,692,1410,748]}],"guestBlock":[[860,340,900,392]],"obstacles":[{"id":"cookTop","rect":[480,290,742,384]},{"id":"topLeft","rect":[445,300,522,426]},{"id":"sandLine","rect":[555,412,724,484]},{"id":"lowLine","rect":[560,508,718,588]},{"id":"racksV","rect":[446,471,500,620]},{"id":"shelves","rect":[775,386,830,590]},{"id":"rightRooms","rect":[350,428,426,606]},{"id":"blueStock","rect":[240,512,290,545]},{"id":"tpv","rect":[862,400,895,570]},{"id":"plantsL","rect":[892,515,928,628]},{"id":"bench","rect":[925,125,1190,190]},{"id":"rooster","rect":[1210,125,1315,205]},{"id":"plantBank","rect":[992,372,1160,436]},{"id":"kiosks","rect":[1008,448,1150,526]},{"id":"tA1","rect":[964,200,996,228]},{"id":"tA2","rect":[1021,200,1053,228]},{"id":"tA3","rect":[1082,200,1114,228]},{"id":"tA4","rect":[1146,200,1178,228]},{"id":"tB1","rect":[994,300,1026,328]},{"id":"tB2","rect":[1052,300,1084,328]},{"id":"tB3","rect":[1139,300,1171,328]},{"id":"tB4","rect":[1197,300,1229,328]},{"id":"tR1","rect":[1200,400,1232,428]},{"id":"tR2","rect":[1296,400,1328,428]},{"id":"tR3","rect":[1210,493,1242,521]},{"id":"tR4","rect":[1302,500,1334,528]},{"id":"tC1","rect":[976,579,1008,607]},{"id":"tC2","rect":[1050,579,1082,607]},{"id":"tC3","rect":[1121,579,1153,607]},{"id":"tC4","rect":[1217,579,1249,607]}],"zones":[{"id":"kitchen","name":"Cocina","rect":[330,290,862,614]},{"id":"hotProduction","name":"Producción caliente","rect":[480,290,742,384]},{"id":"assembly","name":"Sándwiches / montaje","rect":[555,412,724,588]},{"id":"fries","name":"Freidora y complementos","rect":[555,384,724,412]},{"id":"expedition","name":"Preparación y expedición","rect":[830,400,895,570]},{"id":"office","name":"Office / almacén seco","rect":[225,505,336,606]},{"id":"technical","name":"Zonas técnicas","rect":[338,428,426,606]},{"id":"coldRooms","name":"Cámaras y almacenes","rect":[300,425,350,606]},{"id":"restrooms","name":"Baños","rect":[480,130,862,295]},{"id":"counter","name":"Mostrador","rect":[895,400,990,570]},{"id":"kiosks","name":"Kioscos","rect":[1008,448,1150,560]},{"id":"hall","name":"Sala","rect":[895,125,1350,628]},{"id":"terrace","name":"Terraza","rect":[1100,692,1410,760]},{"id":"entrance","name":"Acceso principal","rect":[1128,612,1216,700]},{"id":"autoking","name":"AutoKing","rect":[0,100,880,880]},{"id":"window1","name":"Ventana de cobro","rect":[740,590,810,640]},{"id":"window2","name":"Ventana de entrega","rect":[810,590,860,640]},{"id":"delivery","name":"Zona delivery","rect":[1270,560,1410,740]},{"id":"staffDoor","name":"Acceso de empleados","rect":[150,542,235,614]},{"id":"motos","name":"Aparcamiento de motos","rect":[1270,690,1450,780]}],"points":{"checkKitchen":[538,450],"criticalFactors":[538,398],"checkHall":[960,285],"checkRestroom":[690,240],"mainDoor":[1172,640],"productPrep":[312,556],"friesPrep":[700,398],"assembly":[846,432],"cleanEquipment":[740,500],"cleanDining":[1100,562],"exteriorReview":[164,600],"startEquipment":[740,455],"chickenTemp":[742,400],"windowPay":[790,600],"windowDeliver":[830,604],"deliveryHatch":[1305,606],"kiosk1":[1026,542],"kiosk2":[1079,542],"counterSlots":[[940,418],[940,446],[940,474],[940,502]],"pickup":[940,540],"tableWaitSpots":[[950,268],[1000,268]],"guestSpawn":[1385,728],"guestExit":[1385,728],"riderSpawn":[1405,735],"riderWait":[1318,728],"riderWait2":[1280,728],"viscosity":[530,500]},"orderDestinations":{"note":"Zonas aproximadas del plano de Popeyes. Solo datos de navegación; se dibujan únicamente en modo debug.","KIOSK_ORDER_DESTINATION":{"label":"Zona kioscos","rect":[1008,448,1150,560],"points":["kiosk1","kiosk2"],"collectAt":"COUNTER_ZONE"},"DINE_IN_ORDER_DESTINATION":{"label":"Zona mostrador y quejas","rect":[895,400,990,570],"points":"counterSlots","then":"table"},"COUNTER_ZONE":{"label":"Zona mostrador y quejas","rect":[895,400,990,570]},"HD_ZONE":{"label":"Zona HD (delivery)","rect":[1270,560,1410,740]},"AUTO_ORDER_ZONE":{"label":"Zona auto pedido","rect":[20,500,70,640]},"AUTO_PICKUP_ZONE":{"label":"Zona auto recogida","rect":[740,740,860,820]}},"stations":{"grill":{"pos":[654,494],"face":"S","role":"Sándwiches"},"fries":{"pos":[660,398],"face":"N","role":"Freidora"},"chef":{"pos":[530,557],"face":"E","role":"Chef"},"assembly":{"pos":[846,430],"face":"E","role":"Montaje y embolsado"},"expedition":{"pos":[846,468],"face":"E","role":"Entrega"},"counter":{"pos":[846,520],"face":"E","role":"Mostrador"},"autoPay":{"pos":[790,600],"face":"S","role":"AutoKing"},"delivery":{"pos":[1305,606],"face":"S","role":"Delivery"},"hall":{"pos":[950,345],"face":"S","role":"Limpieza / sala"}},"hallPatrol":[[950,300],[950,440],[1000,265],[1180,265],[1180,340],[1255,470],[1180,560],[1000,550]],"kitchenWander":{"grill":[[654,494],[620,494],[690,494]],"fries":[[660,398],[620,398],[700,398]],"chef":[[530,557],[530,520],[530,590]],"assembly":[[846,430],[846,410],[846,450]],"expedition":[[846,468],[846,448],[846,490]],"counter":[[846,520],[846,500],[846,545]]},"tables":[{"id":"A1","top":[964,202,996,226],"seats":[[956,220,"E"],[1004,220,"W"]]},{"id":"A2","top":[1021,202,1053,226],"seats":[[1013,220,"E"],[1061,220,"W"]]},{"id":"A3","top":[1082,202,1114,226],"seats":[[1074,220,"E"],[1122,220,"W"]]},{"id":"A4","top":[1146,202,1178,226],"seats":[[1138,220,"E"],[1186,220,"W"]]},{"id":"B1","top":[994,302,1026,326],"seats":[[986,320,"E"],[1034,320,"W"]]},{"id":"B2","top":[1052,302,1084,326],"seats":[[1044,320,"E"],[1092,320,"W"]]},{"id":"B3","top":[1139,302,1171,326],"seats":[[1131,320,"E"],[1179,320,"W"]]},{"id":"B4","top":[1197,302,1229,326],"seats":[[1189,320,"E"],[1237,320,"W"]]},{"id":"R1","top":[1200,402,1232,426],"seats":[[1192,420,"E"],[1240,420,"W"]]},{"id":"R2","top":[1296,402,1328,426],"seats":[[1288,410,"E"],[1288,428,"E"]]},{"id":"R3","top":[1210,495,1242,519],"seats":[[1202,513,"E"],[1250,513,"W"]]},{"id":"R4","top":[1302,502,1334,526],"seats":[[1294,512,"E"],[1294,530,"E"]]},{"id":"C1","top":[976,581,1008,605],"seats":[[968,599,"E"],[1016,599,"W"]]},{"id":"C2","top":[1050,581,1082,605],"seats":[[1042,599,"E"],[1090,599,"W"]]},{"id":"C3","top":[1121,581,1153,605],"seats":[[1113,599,"E"],[1161,599,"W"]]},{"id":"C4","top":[1217,581,1249,605],"seats":[[1209,599,"E"],[1257,599,"W"]]}],"vehicleLane":{"path":[[1500,-80],[1490,10],[1440,45],[1300,48],[900,45],[500,45],[330,45],[230,48],[170,80],[150,140],[120,215],[90,290],[70,380],[62,470],[62,560],[65,640],[90,705],[140,748],[230,766],[500,768],[900,768],[1200,770],[1290,800],[1360,825],[1480,832],[1640,832]],"stops":{"order":{"x":62,"y":560},"pickup":{"x":800,"y":768}}},"lights":[{"x":1000,"y":150,"r":90},{"x":1250,"y":150,"r":90},{"x":1000,"y":330,"r":80},{"x":1240,"y":330,"r":80},{"x":1030,"y":590,"r":80},{"x":1200,"y":590,"r":80},{"x":640,"y":420,"r":90},{"x":640,"y":560,"r":90},{"x":500,"y":420,"r":80},{"x":800,"y":470,"r":80},{"x":1172,"y":710,"r":90},{"x":42,"y":560,"r":90},{"x":800,"y":790,"r":90}],"spots":{"counter":{"x":846,"y":574},"counterX":846,"kiosk":{"x":1040,"y":540},"pendingOrder":{"x":846,"y":540},"delivery":{"x":1305,"y":608},"deliveryFace":"S","riderFace":"N","vehicle":{"x":790,"y":602},"complaint":{"x":956,"y":470},"pickSpots":[[972,424],[972,452],[972,480],[972,508],[972,536]],"meeting":{"x":985,"y":487},"formationArc":{"rx":64,"ry":56},"boxes":[{"x":158,"y":556},{"x":172,"y":556},{"x":158,"y":578},{"x":172,"y":578},{"x":158,"y":600},{"x":172,"y":600}],"truckCam":{"x":220,"y":570}},"indoor":[[205,120,1395,692]],"player":{"x":319,"y":470},"camStart":{"x":768,"y":512},"audio":{"kitchen":{"x":640,"y":450},"dining":{"x":1100,"y":380},"driveThru":{"x":60,"y":560},"delivery":{"x":1330,"y":600}}},"config":{"operations":{"stations":{"grill":{"label":"Sándwiches","category":"kitchen","pos":[654,494],"requires":["kitchen"]},"fryer":null,"fries":{"label":"Patatas","category":"fries","pos":[660,398],"requires":["fries"]},"chef":{"label":"Chef","category":"chef","pos":[530,557],"requires":["chef"]},"assembly":{"label":"Montaje / Expedición","category":"assembly","pos":[846,430],"requires":["assembly"]},"counter":{"label":"Mostrador","category":"counter","pos":[846,520],"requires":["counter"]},"autoPay":{"label":"AutoKing","category":"autoking","pos":[790,600],"requires":["autoking"]},"delivery":{"label":"Delivery","category":"delivery","pos":[1305,606],"requires":["delivery"]},"hall":{"label":"Sala / limpieza","category":"hall","pos":[950,345],"requires":["hall"]},"support":{"label":"Apoyo","category":"support","pos":[1180,470],"requires":["support"]}},"rosterOrder":["chef","grill","fries","fryer","assembly","counter","autoPay","delivery","hall","support"],"positioningOrder":["chef","grill","fries","assembly","counter","autoPay","delivery","hall","support"],"stationInfo":{"grill":{"icon":"🥪","tag":"SANDWICH","name":"Sándwiches / producto principal","fn":"Enciende y comprueba los equipos y prepara los sándwiches."},"fries":{"tag":"PATATAS","name":"Patatas","fn":"Prepara y mantiene disponible la producción de patatas."},"fryer":null,"chef":{"icon":"👨‍🍳","tag":"CHEF","recommended":1,"prepWeight":1.0,"name":"Chef","fn":"Cocina el pollo y mantiene su stock; los sándwiches los lleva el puesto de cocina.","effect":"Sin pollo preparado los pedidos se bloquean y se acumulan."}},"taskText":{"grill":"Preparando sándwiches","chef":"Cocinando pollo","fries":"Preparando patatas","fryer":null},"workAnim":{"chef":"work"},"orderComponents":["MAIN_PRODUCT","CHICKEN","FRIES","DRINKS"],"stageCategory":{"CHICKEN":"chef"},"stageSec":{"CHICKEN":8},"products":{"CHICKEN":{"label":"Pollo","initialStock":10,"minimumStock":3,"usePerOrder":1,"prepAmount":8,"prepTime":18,"station":"productPrep"}},"stockPrep":{"products":["MAIN_PRODUCT","CHICKEN","FRIES","DRINKS","SIDES"]}},"priority":{"reassign":{"autoking":{"expedition":[846,468],"counter":[846,520]},"counter":{"fryer":null,"chef":[846,500],"fries":[846,540]},"delivery":{"hall":[1280,560],"assembly":[1305,590]}}}},"openingTasksAdd":[{"after":"opening-equipment","task":{"id":"opening-viscosity","zone":"hotProduction","label":"Medir la viscosidad","required":true,"questionPool":"kitchen-opening","minigame":"viscosity","icon":"⏱️","point":"viscosity","action":"inspect","prompt":"Medir la viscosidad","checklist":true}}]}}
+{
+  "popeyes": {
+    "openingTaskOverrides": {
+      "opening-equipment": {
+        "label": "Toma temperatura pollo",
+        "prompt": "Toma temperatura pollo",
+        "point": "chickenTemp",
+        "minigame": "chickenTemp"
+      }
+    },
+    "textReplacements": [
+      [
+        "Toma de Temperatura Carne \\([^)]*\\)",
+        "Toma temperatura pollo (pincha la zona con más carne sin tocar hueso y ajusta la fuerza; hay que llegar a 74 ºC), ⏱️ Medir la viscosidad (cronometra el mix desde que cae hasta que se vacía y decide si es válido)"
+      ]
+    ],
+    "map": {
+      "walkable": [
+        {
+          "id": "kitchenMain",
+          "area": "back",
+          "rect": [
+            330,
+            300,
+            745,
+            614
+          ]
+        },
+        {
+          "id": "kitchenRight",
+          "area": "back",
+          "rect": [
+            745,
+            318,
+            862,
+            614
+          ]
+        },
+        {
+          "id": "aisle",
+          "area": "back",
+          "rect": [
+            300,
+            425,
+            350,
+            606
+          ]
+        },
+        {
+          "id": "blueRoom",
+          "area": "back",
+          "rect": [
+            225,
+            505,
+            336,
+            606
+          ]
+        },
+        {
+          "id": "wcHall",
+          "area": "wc",
+          "rect": [
+            480,
+            198,
+            862,
+            284
+          ]
+        },
+        {
+          "id": "wcAlcove",
+          "area": "wc",
+          "rect": [
+            745,
+            284,
+            860,
+            306
+          ]
+        },
+        {
+          "id": "wcRooms",
+          "area": "wc",
+          "rect": [
+            495,
+            130,
+            860,
+            200
+          ]
+        },
+        {
+          "id": "wcDoor",
+          "area": "wc",
+          "rect": [
+            850,
+            206,
+            902,
+            246
+          ]
+        },
+        {
+          "id": "hallDoor",
+          "area": "staff",
+          "rect": [
+            860,
+            340,
+            900,
+            392
+          ]
+        },
+        {
+          "id": "hall",
+          "area": "front",
+          "rect": [
+            895,
+            125,
+            1350,
+            628
+          ]
+        },
+        {
+          "id": "entrance",
+          "area": "door",
+          "rect": [
+            1128,
+            612,
+            1216,
+            700
+          ]
+        },
+        {
+          "id": "sidewalkS",
+          "area": "ext",
+          "rect": [
+            1100,
+            692,
+            1410,
+            748
+          ]
+        },
+        {
+          "id": "serviceDoor",
+          "area": "staff",
+          "rect": [
+            240,
+            600,
+            292,
+            690
+          ]
+        },
+        {
+          "id": "serviceLanding",
+          "area": "staff",
+          "rect": [
+            205,
+            684,
+            320,
+            745
+          ]
+        }
+      ],
+      "guestBlock": [
+        [
+          860,
+          340,
+          900,
+          392
+        ]
+      ],
+      "obstacles": [
+        {
+          "id": "cookTop",
+          "rect": [
+            480,
+            290,
+            742,
+            384
+          ]
+        },
+        {
+          "id": "topLeft",
+          "rect": [
+            445,
+            300,
+            522,
+            426
+          ]
+        },
+        {
+          "id": "sandLine",
+          "rect": [
+            555,
+            412,
+            724,
+            484
+          ]
+        },
+        {
+          "id": "lowLine",
+          "rect": [
+            560,
+            508,
+            718,
+            588
+          ]
+        },
+        {
+          "id": "racksV",
+          "rect": [
+            446,
+            471,
+            500,
+            620
+          ]
+        },
+        {
+          "id": "shelves",
+          "rect": [
+            775,
+            386,
+            830,
+            590
+          ]
+        },
+        {
+          "id": "rightRooms",
+          "rect": [
+            350,
+            428,
+            426,
+            606
+          ]
+        },
+        {
+          "id": "blueStock",
+          "rect": [
+            240,
+            512,
+            290,
+            545
+          ]
+        },
+        {
+          "id": "tpv",
+          "rect": [
+            862,
+            400,
+            895,
+            570
+          ]
+        },
+        {
+          "id": "plantsL",
+          "rect": [
+            892,
+            515,
+            928,
+            628
+          ]
+        },
+        {
+          "id": "bench",
+          "rect": [
+            925,
+            125,
+            1190,
+            190
+          ]
+        },
+        {
+          "id": "rooster",
+          "rect": [
+            1210,
+            125,
+            1315,
+            205
+          ]
+        },
+        {
+          "id": "plantBank",
+          "rect": [
+            992,
+            372,
+            1160,
+            436
+          ]
+        },
+        {
+          "id": "kiosks",
+          "rect": [
+            1008,
+            448,
+            1150,
+            526
+          ]
+        },
+        {
+          "id": "tA1",
+          "rect": [
+            964,
+            200,
+            996,
+            228
+          ]
+        },
+        {
+          "id": "tA2",
+          "rect": [
+            1021,
+            200,
+            1053,
+            228
+          ]
+        },
+        {
+          "id": "tA3",
+          "rect": [
+            1082,
+            200,
+            1114,
+            228
+          ]
+        },
+        {
+          "id": "tA4",
+          "rect": [
+            1146,
+            200,
+            1178,
+            228
+          ]
+        },
+        {
+          "id": "tB1",
+          "rect": [
+            994,
+            300,
+            1026,
+            328
+          ]
+        },
+        {
+          "id": "tB2",
+          "rect": [
+            1052,
+            300,
+            1084,
+            328
+          ]
+        },
+        {
+          "id": "tB3",
+          "rect": [
+            1139,
+            300,
+            1171,
+            328
+          ]
+        },
+        {
+          "id": "tB4",
+          "rect": [
+            1197,
+            300,
+            1229,
+            328
+          ]
+        },
+        {
+          "id": "tR1",
+          "rect": [
+            1200,
+            400,
+            1232,
+            428
+          ]
+        },
+        {
+          "id": "tR2",
+          "rect": [
+            1296,
+            400,
+            1328,
+            428
+          ]
+        },
+        {
+          "id": "tR3",
+          "rect": [
+            1210,
+            493,
+            1242,
+            521
+          ]
+        },
+        {
+          "id": "tR4",
+          "rect": [
+            1302,
+            500,
+            1334,
+            528
+          ]
+        },
+        {
+          "id": "tC1",
+          "rect": [
+            976,
+            579,
+            1008,
+            607
+          ]
+        },
+        {
+          "id": "tC2",
+          "rect": [
+            1050,
+            579,
+            1082,
+            607
+          ]
+        },
+        {
+          "id": "tC3",
+          "rect": [
+            1121,
+            579,
+            1153,
+            607
+          ]
+        },
+        {
+          "id": "tC4",
+          "rect": [
+            1217,
+            579,
+            1249,
+            607
+          ]
+        }
+      ],
+      "zones": [
+        {
+          "id": "kitchen",
+          "name": "Cocina",
+          "rect": [
+            330,
+            290,
+            862,
+            614
+          ]
+        },
+        {
+          "id": "hotProduction",
+          "name": "Producción caliente",
+          "rect": [
+            480,
+            290,
+            742,
+            384
+          ]
+        },
+        {
+          "id": "assembly",
+          "name": "Sándwiches / montaje",
+          "rect": [
+            555,
+            412,
+            724,
+            588
+          ]
+        },
+        {
+          "id": "fries",
+          "name": "Freidora y complementos",
+          "rect": [
+            555,
+            384,
+            724,
+            412
+          ]
+        },
+        {
+          "id": "expedition",
+          "name": "Preparación y expedición",
+          "rect": [
+            830,
+            400,
+            895,
+            570
+          ]
+        },
+        {
+          "id": "office",
+          "name": "Office / almacén seco",
+          "rect": [
+            225,
+            505,
+            336,
+            606
+          ]
+        },
+        {
+          "id": "technical",
+          "name": "Zonas técnicas",
+          "rect": [
+            338,
+            428,
+            426,
+            606
+          ]
+        },
+        {
+          "id": "coldRooms",
+          "name": "Cámaras y almacenes",
+          "rect": [
+            300,
+            425,
+            350,
+            606
+          ]
+        },
+        {
+          "id": "restrooms",
+          "name": "Baños",
+          "rect": [
+            480,
+            130,
+            862,
+            295
+          ]
+        },
+        {
+          "id": "counter",
+          "name": "Mostrador",
+          "rect": [
+            895,
+            400,
+            990,
+            570
+          ]
+        },
+        {
+          "id": "kiosks",
+          "name": "Kioscos",
+          "rect": [
+            1008,
+            448,
+            1150,
+            560
+          ]
+        },
+        {
+          "id": "hall",
+          "name": "Sala",
+          "rect": [
+            895,
+            125,
+            1350,
+            628
+          ]
+        },
+        {
+          "id": "terrace",
+          "name": "Terraza",
+          "rect": [
+            1100,
+            692,
+            1410,
+            760
+          ]
+        },
+        {
+          "id": "entrance",
+          "name": "Acceso principal",
+          "rect": [
+            1128,
+            612,
+            1216,
+            700
+          ]
+        },
+        {
+          "id": "autoking",
+          "name": "AutoKing",
+          "rect": [
+            0,
+            100,
+            880,
+            880
+          ]
+        },
+        {
+          "id": "window1",
+          "name": "Ventana de cobro",
+          "rect": [
+            740,
+            590,
+            810,
+            640
+          ]
+        },
+        {
+          "id": "window2",
+          "name": "Ventana de entrega",
+          "rect": [
+            810,
+            590,
+            860,
+            640
+          ]
+        },
+        {
+          "id": "delivery",
+          "name": "Zona delivery",
+          "rect": [
+            1270,
+            560,
+            1410,
+            740
+          ]
+        },
+        {
+          "id": "staffDoor",
+          "name": "Acceso de empleados (puerta de servicio)",
+          "rect": [
+            240,
+            640,
+            292,
+            690
+          ]
+        },
+        {
+          "id": "motos",
+          "name": "Aparcamiento de motos",
+          "rect": [
+            1270,
+            690,
+            1450,
+            780
+          ]
+        },
+        {
+          "id": "backExit",
+          "name": "Puerta de servicio · descarga de proveedor",
+          "rect": [
+            200,
+            600,
+            330,
+            750
+          ]
+        }
+      ],
+      "points": {
+        "checkKitchen": [
+          538,
+          450
+        ],
+        "criticalFactors": [
+          538,
+          398
+        ],
+        "checkHall": [
+          960,
+          285
+        ],
+        "checkRestroom": [
+          690,
+          240
+        ],
+        "mainDoor": [
+          1172,
+          640
+        ],
+        "productPrep": [
+          312,
+          556
+        ],
+        "friesPrep": [
+          700,
+          398
+        ],
+        "assembly": [
+          846,
+          432
+        ],
+        "cleanEquipment": [
+          740,
+          500
+        ],
+        "cleanDining": [
+          1100,
+          562
+        ],
+        "exteriorReview": [
+          262,
+          712
+        ],
+        "startEquipment": [
+          740,
+          455
+        ],
+        "chickenTemp": [
+          742,
+          400
+        ],
+        "windowPay": [
+          790,
+          600
+        ],
+        "windowDeliver": [
+          830,
+          604
+        ],
+        "deliveryHatch": [
+          1305,
+          606
+        ],
+        "kiosk1": [
+          1026,
+          542
+        ],
+        "kiosk2": [
+          1079,
+          542
+        ],
+        "counterSlots": [
+          [
+            940,
+            418
+          ],
+          [
+            940,
+            446
+          ],
+          [
+            940,
+            474
+          ],
+          [
+            940,
+            502
+          ]
+        ],
+        "pickup": [
+          940,
+          540
+        ],
+        "tableWaitSpots": [
+          [
+            950,
+            268
+          ],
+          [
+            1000,
+            268
+          ]
+        ],
+        "guestSpawn": [
+          1385,
+          728
+        ],
+        "guestExit": [
+          1385,
+          728
+        ],
+        "riderSpawn": [
+          1405,
+          735
+        ],
+        "riderWait": [
+          1318,
+          728
+        ],
+        "riderWait2": [
+          1280,
+          728
+        ],
+        "viscosity": [
+          530,
+          500
+        ],
+        "backDoor": [
+          266,
+          660
+        ],
+        "storageDrop": [
+          266,
+          560
+        ]
+      },
+      "orderDestinations": {
+        "note": "Zonas aproximadas del plano de Popeyes. Solo datos de navegación; se dibujan únicamente en modo debug.",
+        "KIOSK_ORDER_DESTINATION": {
+          "label": "Zona kioscos",
+          "rect": [
+            1008,
+            448,
+            1150,
+            560
+          ],
+          "points": [
+            "kiosk1",
+            "kiosk2"
+          ],
+          "collectAt": "COUNTER_ZONE"
+        },
+        "DINE_IN_ORDER_DESTINATION": {
+          "label": "Zona mostrador y quejas",
+          "rect": [
+            895,
+            400,
+            990,
+            570
+          ],
+          "points": "counterSlots",
+          "then": "table"
+        },
+        "COUNTER_ZONE": {
+          "label": "Zona mostrador y quejas",
+          "rect": [
+            895,
+            400,
+            990,
+            570
+          ]
+        },
+        "HD_ZONE": {
+          "label": "Zona HD (delivery)",
+          "rect": [
+            1270,
+            560,
+            1410,
+            740
+          ]
+        },
+        "AUTO_ORDER_ZONE": {
+          "label": "Zona auto pedido",
+          "rect": [
+            20,
+            500,
+            70,
+            640
+          ]
+        },
+        "AUTO_PICKUP_ZONE": {
+          "label": "Zona auto recogida",
+          "rect": [
+            740,
+            740,
+            860,
+            820
+          ]
+        }
+      },
+      "stations": {
+        "grill": {
+          "pos": [
+            654,
+            494
+          ],
+          "face": "S",
+          "role": "Sándwiches"
+        },
+        "fries": {
+          "pos": [
+            660,
+            398
+          ],
+          "face": "N",
+          "role": "Freidora"
+        },
+        "chef": {
+          "pos": [
+            530,
+            557
+          ],
+          "face": "E",
+          "role": "Chef"
+        },
+        "assembly": {
+          "pos": [
+            846,
+            430
+          ],
+          "face": "E",
+          "role": "Montaje y embolsado"
+        },
+        "expedition": {
+          "pos": [
+            846,
+            468
+          ],
+          "face": "E",
+          "role": "Entrega"
+        },
+        "counter": {
+          "pos": [
+            846,
+            520
+          ],
+          "face": "E",
+          "role": "Mostrador"
+        },
+        "autoPay": {
+          "pos": [
+            790,
+            600
+          ],
+          "face": "S",
+          "role": "AutoKing"
+        },
+        "delivery": {
+          "pos": [
+            1305,
+            606
+          ],
+          "face": "S",
+          "role": "Delivery"
+        },
+        "hall": {
+          "pos": [
+            950,
+            345
+          ],
+          "face": "S",
+          "role": "Limpieza / sala"
+        }
+      },
+      "hallPatrol": [
+        [
+          950,
+          300
+        ],
+        [
+          950,
+          440
+        ],
+        [
+          1000,
+          265
+        ],
+        [
+          1180,
+          265
+        ],
+        [
+          1180,
+          340
+        ],
+        [
+          1255,
+          470
+        ],
+        [
+          1180,
+          560
+        ],
+        [
+          1000,
+          550
+        ]
+      ],
+      "kitchenWander": {
+        "grill": [
+          [
+            654,
+            494
+          ],
+          [
+            620,
+            494
+          ],
+          [
+            690,
+            494
+          ]
+        ],
+        "fries": [
+          [
+            660,
+            398
+          ],
+          [
+            620,
+            398
+          ],
+          [
+            700,
+            398
+          ]
+        ],
+        "chef": [
+          [
+            530,
+            557
+          ],
+          [
+            530,
+            520
+          ],
+          [
+            530,
+            590
+          ]
+        ],
+        "assembly": [
+          [
+            846,
+            430
+          ],
+          [
+            846,
+            410
+          ],
+          [
+            846,
+            450
+          ]
+        ],
+        "expedition": [
+          [
+            846,
+            468
+          ],
+          [
+            846,
+            448
+          ],
+          [
+            846,
+            490
+          ]
+        ],
+        "counter": [
+          [
+            846,
+            520
+          ],
+          [
+            846,
+            500
+          ],
+          [
+            846,
+            545
+          ]
+        ]
+      },
+      "tables": [
+        {
+          "id": "A1",
+          "top": [
+            964,
+            202,
+            996,
+            226
+          ],
+          "seats": [
+            [
+              956,
+              220,
+              "E"
+            ],
+            [
+              1004,
+              220,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "A2",
+          "top": [
+            1021,
+            202,
+            1053,
+            226
+          ],
+          "seats": [
+            [
+              1013,
+              220,
+              "E"
+            ],
+            [
+              1061,
+              220,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "A3",
+          "top": [
+            1082,
+            202,
+            1114,
+            226
+          ],
+          "seats": [
+            [
+              1074,
+              220,
+              "E"
+            ],
+            [
+              1122,
+              220,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "A4",
+          "top": [
+            1146,
+            202,
+            1178,
+            226
+          ],
+          "seats": [
+            [
+              1138,
+              220,
+              "E"
+            ],
+            [
+              1186,
+              220,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "B1",
+          "top": [
+            994,
+            302,
+            1026,
+            326
+          ],
+          "seats": [
+            [
+              986,
+              320,
+              "E"
+            ],
+            [
+              1034,
+              320,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "B2",
+          "top": [
+            1052,
+            302,
+            1084,
+            326
+          ],
+          "seats": [
+            [
+              1044,
+              320,
+              "E"
+            ],
+            [
+              1092,
+              320,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "B3",
+          "top": [
+            1139,
+            302,
+            1171,
+            326
+          ],
+          "seats": [
+            [
+              1131,
+              320,
+              "E"
+            ],
+            [
+              1179,
+              320,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "B4",
+          "top": [
+            1197,
+            302,
+            1229,
+            326
+          ],
+          "seats": [
+            [
+              1189,
+              320,
+              "E"
+            ],
+            [
+              1237,
+              320,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "R1",
+          "top": [
+            1200,
+            402,
+            1232,
+            426
+          ],
+          "seats": [
+            [
+              1192,
+              420,
+              "E"
+            ],
+            [
+              1240,
+              420,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "R2",
+          "top": [
+            1296,
+            402,
+            1328,
+            426
+          ],
+          "seats": [
+            [
+              1288,
+              410,
+              "E"
+            ],
+            [
+              1288,
+              428,
+              "E"
+            ]
+          ]
+        },
+        {
+          "id": "R3",
+          "top": [
+            1210,
+            495,
+            1242,
+            519
+          ],
+          "seats": [
+            [
+              1202,
+              513,
+              "E"
+            ],
+            [
+              1250,
+              513,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "R4",
+          "top": [
+            1302,
+            502,
+            1334,
+            526
+          ],
+          "seats": [
+            [
+              1294,
+              512,
+              "E"
+            ],
+            [
+              1294,
+              530,
+              "E"
+            ]
+          ]
+        },
+        {
+          "id": "C1",
+          "top": [
+            976,
+            581,
+            1008,
+            605
+          ],
+          "seats": [
+            [
+              968,
+              599,
+              "E"
+            ],
+            [
+              1016,
+              599,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "C2",
+          "top": [
+            1050,
+            581,
+            1082,
+            605
+          ],
+          "seats": [
+            [
+              1042,
+              599,
+              "E"
+            ],
+            [
+              1090,
+              599,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "C3",
+          "top": [
+            1121,
+            581,
+            1153,
+            605
+          ],
+          "seats": [
+            [
+              1113,
+              599,
+              "E"
+            ],
+            [
+              1161,
+              599,
+              "W"
+            ]
+          ]
+        },
+        {
+          "id": "C4",
+          "top": [
+            1217,
+            581,
+            1249,
+            605
+          ],
+          "seats": [
+            [
+              1209,
+              599,
+              "E"
+            ],
+            [
+              1257,
+              599,
+              "W"
+            ]
+          ]
+        }
+      ],
+      "vehicleLane": {
+        "path": [
+          [
+            1500,
+            -80
+          ],
+          [
+            1490,
+            10
+          ],
+          [
+            1440,
+            45
+          ],
+          [
+            1300,
+            48
+          ],
+          [
+            900,
+            45
+          ],
+          [
+            500,
+            45
+          ],
+          [
+            330,
+            45
+          ],
+          [
+            230,
+            48
+          ],
+          [
+            170,
+            80
+          ],
+          [
+            150,
+            140
+          ],
+          [
+            120,
+            215
+          ],
+          [
+            90,
+            290
+          ],
+          [
+            70,
+            380
+          ],
+          [
+            62,
+            470
+          ],
+          [
+            62,
+            560
+          ],
+          [
+            65,
+            640
+          ],
+          [
+            90,
+            705
+          ],
+          [
+            140,
+            748
+          ],
+          [
+            230,
+            766
+          ],
+          [
+            500,
+            768
+          ],
+          [
+            900,
+            768
+          ],
+          [
+            1200,
+            770
+          ],
+          [
+            1290,
+            800
+          ],
+          [
+            1360,
+            825
+          ],
+          [
+            1480,
+            832
+          ],
+          [
+            1640,
+            832
+          ]
+        ],
+        "stops": {
+          "order": {
+            "x": 62,
+            "y": 560
+          },
+          "pickup": {
+            "x": 800,
+            "y": 768
+          },
+          "truck": {
+            "x": 262,
+            "y": 767
+          }
+        }
+      },
+      "lights": [
+        {
+          "x": 1000,
+          "y": 150,
+          "r": 90
+        },
+        {
+          "x": 1250,
+          "y": 150,
+          "r": 90
+        },
+        {
+          "x": 1000,
+          "y": 330,
+          "r": 80
+        },
+        {
+          "x": 1240,
+          "y": 330,
+          "r": 80
+        },
+        {
+          "x": 1030,
+          "y": 590,
+          "r": 80
+        },
+        {
+          "x": 1200,
+          "y": 590,
+          "r": 80
+        },
+        {
+          "x": 640,
+          "y": 420,
+          "r": 90
+        },
+        {
+          "x": 640,
+          "y": 560,
+          "r": 90
+        },
+        {
+          "x": 500,
+          "y": 420,
+          "r": 80
+        },
+        {
+          "x": 800,
+          "y": 470,
+          "r": 80
+        },
+        {
+          "x": 1172,
+          "y": 710,
+          "r": 90
+        },
+        {
+          "x": 42,
+          "y": 560,
+          "r": 90
+        },
+        {
+          "x": 800,
+          "y": 790,
+          "r": 90
+        }
+      ],
+      "spots": {
+        "counter": {
+          "x": 846,
+          "y": 574
+        },
+        "counterX": 846,
+        "kiosk": {
+          "x": 1040,
+          "y": 540
+        },
+        "pendingOrder": {
+          "x": 846,
+          "y": 540
+        },
+        "delivery": {
+          "x": 1305,
+          "y": 608
+        },
+        "deliveryFace": "S",
+        "riderFace": "N",
+        "vehicle": {
+          "x": 790,
+          "y": 602
+        },
+        "complaint": {
+          "x": 956,
+          "y": 470
+        },
+        "pickSpots": [
+          [
+            972,
+            424
+          ],
+          [
+            972,
+            452
+          ],
+          [
+            972,
+            480
+          ],
+          [
+            972,
+            508
+          ],
+          [
+            972,
+            536
+          ]
+        ],
+        "meeting": {
+          "x": 985,
+          "y": 487
+        },
+        "formationArc": {
+          "rx": 64,
+          "ry": 56
+        },
+        "boxes": [
+          {
+            "x": 226,
+            "y": 702
+          },
+          {
+            "x": 252,
+            "y": 702
+          },
+          {
+            "x": 278,
+            "y": 702
+          },
+          {
+            "x": 226,
+            "y": 724
+          },
+          {
+            "x": 252,
+            "y": 724
+          },
+          {
+            "x": 278,
+            "y": 724
+          }
+        ],
+        "truckCam": {
+          "x": 262,
+          "y": 690
+        }
+      },
+      "indoor": [
+        [
+          205,
+          120,
+          1395,
+          692
+        ]
+      ],
+      "player": {
+        "x": 319,
+        "y": 470
+      },
+      "camStart": {
+        "x": 768,
+        "y": 512
+      },
+      "audio": {
+        "kitchen": {
+          "x": 640,
+          "y": 450
+        },
+        "dining": {
+          "x": 1100,
+          "y": 380
+        },
+        "driveThru": {
+          "x": 60,
+          "y": 560
+        },
+        "delivery": {
+          "x": 1330,
+          "y": 600
+        }
+      }
+    },
+    "config": {
+      "operations": {
+        "stations": {
+          "grill": {
+            "label": "Sándwiches",
+            "category": "kitchen",
+            "pos": [
+              654,
+              494
+            ],
+            "requires": [
+              "kitchen"
+            ]
+          },
+          "fryer": null,
+          "fries": {
+            "label": "Patatas",
+            "category": "fries",
+            "pos": [
+              660,
+              398
+            ],
+            "requires": [
+              "fries"
+            ]
+          },
+          "chef": {
+            "label": "Chef",
+            "category": "chef",
+            "pos": [
+              530,
+              557
+            ],
+            "requires": [
+              "chef"
+            ]
+          },
+          "assembly": {
+            "label": "Montaje / Expedición",
+            "category": "assembly",
+            "pos": [
+              846,
+              430
+            ],
+            "requires": [
+              "assembly"
+            ]
+          },
+          "counter": {
+            "label": "Mostrador",
+            "category": "counter",
+            "pos": [
+              846,
+              520
+            ],
+            "requires": [
+              "counter"
+            ]
+          },
+          "autoPay": {
+            "label": "AutoKing",
+            "category": "autoking",
+            "pos": [
+              790,
+              600
+            ],
+            "requires": [
+              "autoking"
+            ]
+          },
+          "delivery": {
+            "label": "Delivery",
+            "category": "delivery",
+            "pos": [
+              1305,
+              606
+            ],
+            "requires": [
+              "delivery"
+            ]
+          },
+          "hall": {
+            "label": "Sala / limpieza",
+            "category": "hall",
+            "pos": [
+              950,
+              345
+            ],
+            "requires": [
+              "hall"
+            ]
+          },
+          "support": {
+            "label": "Apoyo",
+            "category": "support",
+            "pos": [
+              1180,
+              470
+            ],
+            "requires": [
+              "support"
+            ]
+          }
+        },
+        "rosterOrder": [
+          "chef",
+          "grill",
+          "fries",
+          "fryer",
+          "assembly",
+          "counter",
+          "autoPay",
+          "delivery",
+          "hall",
+          "support"
+        ],
+        "positioningOrder": [
+          "chef",
+          "grill",
+          "fries",
+          "assembly",
+          "counter",
+          "autoPay",
+          "delivery",
+          "hall",
+          "support"
+        ],
+        "stationInfo": {
+          "grill": {
+            "icon": "🥪",
+            "tag": "SANDWICH",
+            "name": "Sándwiches / producto principal",
+            "fn": "Enciende y comprueba los equipos y prepara los sándwiches."
+          },
+          "fries": {
+            "tag": "PATATAS",
+            "name": "Patatas",
+            "fn": "Prepara y mantiene disponible la producción de patatas."
+          },
+          "fryer": null,
+          "chef": {
+            "icon": "👨‍🍳",
+            "tag": "CHEF",
+            "recommended": 1,
+            "prepWeight": 1.0,
+            "name": "Chef",
+            "fn": "Cocina el pollo y mantiene su stock; los sándwiches los lleva el puesto de cocina.",
+            "effect": "Sin pollo preparado los pedidos se bloquean y se acumulan."
+          }
+        },
+        "taskText": {
+          "grill": "Preparando sándwiches",
+          "chef": "Cocinando pollo",
+          "fries": "Preparando patatas",
+          "fryer": null
+        },
+        "workAnim": {
+          "chef": "work"
+        },
+        "orderComponents": [
+          "MAIN_PRODUCT",
+          "CHICKEN",
+          "FRIES",
+          "DRINKS"
+        ],
+        "stageCategory": {
+          "CHICKEN": "chef"
+        },
+        "stageSec": {
+          "CHICKEN": 8
+        },
+        "products": {
+          "CHICKEN": {
+            "label": "Pollo",
+            "initialStock": 10,
+            "minimumStock": 3,
+            "usePerOrder": 1,
+            "prepAmount": 8,
+            "prepTime": 18,
+            "station": "productPrep"
+          }
+        },
+        "stockPrep": {
+          "products": [
+            "MAIN_PRODUCT",
+            "CHICKEN",
+            "FRIES",
+            "DRINKS",
+            "SIDES"
+          ]
+        }
+      },
+      "priority": {
+        "reassign": {
+          "autoking": {
+            "expedition": [
+              846,
+              468
+            ],
+            "counter": [
+              846,
+              520
+            ]
+          },
+          "counter": {
+            "fryer": null,
+            "chef": [
+              846,
+              500
+            ],
+            "fries": [
+              846,
+              540
+            ]
+          },
+          "delivery": {
+            "hall": [
+              1280,
+              560
+            ],
+            "assembly": [
+              1305,
+              590
+            ]
+          }
+        }
+      }
+    },
+    "openingTasksAdd": [
+      {
+        "after": "opening-equipment",
+        "task": {
+          "id": "opening-viscosity",
+          "zone": "hotProduction",
+          "label": "Medir la viscosidad",
+          "required": true,
+          "questionPool": "kitchen-opening",
+          "minigame": "viscosity",
+          "icon": "⏱️",
+          "point": "viscosity",
+          "action": "inspect",
+          "prompt": "Medir la viscosidad",
+          "checklist": true
+        }
+      }
+    ]
+  }
+}

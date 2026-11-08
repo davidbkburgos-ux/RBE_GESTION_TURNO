@@ -35,7 +35,7 @@
       this.pendingArrivals = 0;
       this.indicatorElapsed = 0;
       this.spinElapsed = 0;
-      this.spinTargetAngle = 0;
+      this.spinTargetAngle = -90; this.spinSweeps = 3;
       this.odds = null;
       this.rouletteSegments = [];
       this.result = null;
@@ -59,10 +59,14 @@
       const e = this.zoneEdges;
       return position < e[0] || position > e[3] ? 'red' : position < e[1] || position > e[2] ? 'yellow' : 'green';
     }
+    // La ruleta es un semicírculo: la aguja barre de extremo a extremo (-90° izquierda, +90° derecha)
+    // como un péndulo que se frena, sin salir nunca de la mitad visible, y se detiene en el resultado.
     get needleAngle() {
       const progress = Math.min(1, this.spinElapsed / 2.6);
       const eased = 1 - Math.pow(1 - progress, 3);
-      return this.spinTargetAngle * eased;
+      const travel = eased * (360 * this.spinSweeps + this.spinTargetAngle + 90);
+      const m = travel % 360, pos = m <= 180 ? m : 360 - m;
+      return -90 + pos;
     }
 
     start() {
@@ -205,7 +209,8 @@
       const chosen = choices[Math.floor(Math.random() * choices.length)];
       const angleInHalfCircle = chosen.start + Math.random() * chosen.weight;
       this.result = { zone, reward };
-      this.spinTargetAngle = 360 * 4 + 270 + angleInHalfCircle * 1.8;
+      this.spinTargetAngle = -90 + angleInHalfCircle * 1.8; // ángulo final dentro del semicírculo
+      this.spinSweeps = 3; // idas y vueltas completas antes de frenar
       this.spinElapsed = 0;
       this.state = 'roulette';
       this.G.ui.showBriefingRoulette();

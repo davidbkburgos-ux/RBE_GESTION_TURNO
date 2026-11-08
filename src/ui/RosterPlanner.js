@@ -55,7 +55,11 @@
       const raw = BK.ArrivalDirector.hourlyForecast(G.cfg, p).map((v) => v * (0.9 + rnd() * 0.2));
       const counts = raw.map((v) => Math.round(v));
       const meal = counts.slice(0, 7).reduce((x, y) => x + y, 0), total = counts.reduce((x, y) => x + y, 0);
-      this.profile = p; this.total = p.staff; this.meal = p.mealShift;
+      this.profile = p; this.total = p.staff;
+      // Reparto propuesto según la demanda prevista de cada turno (no 50/50), con un mínimo operativo de
+      // 4 personas por turno para que ningún turno quede sin poder cubrir cocina, montaje y frente.
+      const share = total > 0 ? meal / total : 0.5, MIN = Math.min(4, Math.floor(p.staff / 2));
+      this.meal = Math.max(MIN, Math.min(p.staff - MIN, Math.round(p.staff * share)));
       this.forecast = { counts, meal, dinner: total - meal, total };
     }
     chartSvg(f) {
@@ -135,6 +139,12 @@
       for (const id of order) { if (left <= 0) break; this.counts[id]++; left--; }
       for (let i = 0; left > 0 && i < 40; i++, left--) this.counts[order[i % order.length]]++;
     }
+    // índices (0..n-1) de los empleados que caen en ese puesto, en el mismo orden que employeeNames
+    employeeIndexes(id) {
+      let n = 0; const out = [];
+      for (const sid of this.stationIds) { for (let k = 0; k < this.counts[sid]; k++) { if (sid === id) out.push(n); n++; } }
+      return out;
+    }
     employeeNames(id) {
       let n = 0; const out = [];
       for (const sid of this.stationIds) { for (let k = 0; k < this.counts[sid]; k++) { n++; if (sid === id) out.push('Equipo ' + String(n).padStart(2, '0')); } }
@@ -147,7 +157,12 @@
         const s = info[id], n = this.counts[id], sel = this.selected === id;
         const head = h('button', { type: 'button', class: 'rp-head', 'aria-expanded': String(sel), onclick: () => { this.selected = sel ? null : id; this.highlight(this.selected); this.renderStations(); } },
           h('span', { class: 'ic' }, s.icon), h('b', {}, s.name), h('em', { class: n >= s.recommended ? 'ok' : n === 0 ? 'bad' : 'warn' }, n + ' / ' + s.recommended));
-        const kids = [head, h('p', { class: 'fn' }, s.fn),
+        // mini-retratos del equipo asignado (sprite nuevo de la marca, chico o chica según el empleado)
+        const faces = this.employeeIndexes(id).map((i) => {
+          const url = BK.SpriteLoader && BK.SpriteLoader.faceURL({ pal: 'employee' + i });
+          return url ? h('img', { class: 'rp-face', src: url, alt: 'Equipo ' + String(i + 1).padStart(2, '0'), title: 'Equipo ' + String(i + 1).padStart(2, '0') }) : null;
+        }).filter(Boolean);
+        const kids = [head, faces.length ? h('div', { class: 'rp-faces' }, ...faces) : '', h('p', { class: 'fn' }, s.fn),
           h('div', { class: 'rp-row' }, this.stepper(n, () => { this.counts[id]--; this.renderStations(); }, () => { this.counts[id]++; this.renderStations(); }, n <= 0, free <= 0, s.name))];
         if (this.moving && this.moving !== id) kids.push(h('button', { type: 'button', class: 'btn small', onclick: this.press(() => { this.counts[this.moving]--; this.counts[id]++; this.moving = null; this.renderStations(); }) }, 'Mover aquí'));
         if (sel) {

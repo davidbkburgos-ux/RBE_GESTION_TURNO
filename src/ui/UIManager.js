@@ -1,6 +1,22 @@
 (function () {
   const BK = window.BK;
   const U = BK.util;
+  // Sprites de los minijuegos (Summer Engine): se cargan una vez al iniciar y se reutilizan en cada frame.
+  const MG_FILES = ['bg_parrilla.jpg', 'patty.png', 'sonda.png', 'bg_bandeja.jpg', 'pechuga.png', 'bg_viscosidad.jpg', 'cronometro.png'];
+  const MG = {};
+  MG_FILES.forEach((f) => { const im = new Image(); im.src = 'assets/minigames/' + f; MG[f] = im; });
+  const mg = (f) => { const im = MG[f]; return im && im.complete && im.naturalWidth ? im : null; };
+  // Sonda del termómetro con la punta en (x, y) y el mango en la dirección deg (0 = derecha, 90 = arriba).
+  const SONDA = { len: 124, tipY: 0.514, ar: 0.1057 };
+  function drawSondaSprite(ctx, x, y, deg) {
+    const im = mg('sonda.png'); if (!im) return false;
+    const h = SONDA.len * SONDA.ar;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(-deg * Math.PI / 180);
+    ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+    ctx.drawImage(im, 0, -h * SONDA.tipY, SONDA.len, h);
+    ctx.restore();
+    return true;
+  }
 
   const $ = (id) => document.getElementById(id);
   function h(tag, attrs, ...kids) {
@@ -162,12 +178,20 @@
       bus.on('production:restocked', (e) => this.toast('Stock repuesto: ' + G.cfg.operations.products[e.id].label + ' (' + e.stock + ').', 'good', G.cfg.operations.messageTtl.resolution * 1000));
       bus.on('production:restock-blocked', (e) => this.toast(e.reason, 'warn', G.cfg.operations.messageTtl.important * 1000));
       bus.on('production:prep-needed', (e) => this.toast('📦 Tramo de ' + e.tramo.label + ': prepara producto en la cámara de congelado.', 'warn', 6000));
+      bus.on('production:peak-soon', (e) => {
+        const t = e.tramo;
+        this.toast(t.peak
+          ? '⏰ En ' + e.inMin + ' min empieza la PUNTA de ' + t.label + '. Prepara producto (+' + e.batch.MAIN_PRODUCT + ' uds.) y refuerza mostrador y Auto.'
+          : '🌙 En ' + e.inMin + ' min llega el VALLE (' + t.label + '). Prepara solo lo justo: lo que sobre caducará.', t.peak ? 'warn' : 'good', 7000);
+        G.audio.play(t.peak ? 'alert' : 'hour');
+      });
+      bus.on('production:expired', (e) => this.toast('🗑️ Caducan ' + e.units + ' uds. de producto preparado (≈' + e.eur.toFixed(2).replace('.', ',') + ' € de COGS).', 'bad', 5000));
       bus.on('production:prepared', (e) => this.toast('📦 Producto preparado para ' + e.tramo.label + ': +' + e.batch.MAIN_PRODUCT + ' uds. disponibles para reponer.', 'good', 3500));
       bus.on('employees:critical', (e) => this.toast('⚠ Posición crítica sin cobertura: ' + e.label + '.', 'warn', G.cfg.operations.messageTtl.important * 1000));
       bus.on('manager:positioned', ({ position }) => {
         const channel = G.employees.managerSupportChannel();
         const label = channel === 'autoking' ? BK.autoName : channel === 'delivery' ? 'Delivery' : channel === 'dining' ? 'Sala' : 'Mostrador / kiosco';
-        this.toast('ENCARGADO APOYANDO · ' + G.cfg.operations.stations[position].label + ' · +20 % velocidad en ' + label, 'info', 3000);
+        this.toast(G.roleWord(true) + ' APOYANDO · ' + G.cfg.operations.stations[position].label + ' · +20 % velocidad en ' + label, 'info', 3000);
       });
       bus.on('manager:left-position', () => this.toast('El encargado deja el puesto para atender el restaurante.', 'warn', 2200));
       bus.on('employees:shift-warning', (e) => this.toast('Cambio de turno: entra el equipo de cena (' + e.active + ' activos).', 'info', G.cfg.operations.messageTtl.important * 1000));
@@ -456,6 +480,11 @@
         h('span', { class: 'briefing-red', style: w(0.2) }), h('span', { class: 'briefing-yellow', style: w(0.3 - gh) }),
         h('span', { class: 'briefing-green', style: w(gh * 2) }), h('span', { class: 'briefing-yellow', style: w(0.3 - gh) }),
         h('span', { class: 'briefing-red', style: w(0.2) }), h('i', { class: 'briefing-marker', 'aria-hidden': 'true' }));
+      // Degradado continuo (no bloques): cada color en el centro de su zona; las zonas de acierto no cambian.
+      const pc = (v) => (v * 100).toFixed(2) + '%', yb = 0.3 - gh;
+      bar.classList.add('smooth');
+      bar.style.background = 'linear-gradient(90deg, #d8463a 0%, #e0503c ' + pc(0.1) + ', #f2c230 ' + pc(0.2 + yb / 2) + ', #3cc46a ' + pc(0.5 - gh * 0.5) +
+        ', #3cc46a ' + pc(0.5 + gh * 0.5) + ', #f2c230 ' + pc(0.8 - yb / 2) + ', #e0503c ' + pc(0.9) + ', #d8463a 100%)';
       const box = h('div', { class: 'qbox briefing-q briefing-game', role: 'dialog', 'aria-label': 'Precisión del briefing' },
         h('div', { class: 'qhead' },
           h('span', { class: 'qtitle', text: '🎯 Mide el ritmo del equipo' }),
@@ -571,17 +600,25 @@
       const MARKS = [-100, -60, -20, 20, 60, 100];
       const drawPatty = () => {
         ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H);
-        ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(CX + 4, CY + 8, R + 4, R - 2, 0, 0, 7); ctx.fill();
-        ctx.fillStyle = '#6b3d1e'; ctx.beginPath(); ctx.arc(CX, CY, R, 0, 7); ctx.fill();
-        ctx.fillStyle = '#85502a'; ctx.beginPath(); ctx.arc(CX - 6, CY - 6, R - 12, 0, 7); ctx.fill();
-        ctx.save(); ctx.beginPath(); ctx.arc(CX, CY, R - 2, 0, 7); ctx.clip();
-        ctx.strokeStyle = '#1b1208'; ctx.lineWidth = 8; ctx.lineCap = 'butt';
-        MARKS.forEach((u) => { ctx.beginPath(); ctx.moveTo(CX + u + 200, CY - 200); ctx.lineTo(CX + u - 200, CY + 200); ctx.stroke(); });
+        const bg = mg('bg_parrilla.jpg'), pt = mg('patty.png');
+        if (bg) ctx.drawImage(bg, 0, 0, W, H); else { ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H); }
+        ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(CX + 4, CY + 8, R + 4, R - 2, 0, 0, 7); ctx.fill();
+        if (pt) { ctx.save(); ctx.beginPath(); ctx.arc(CX, CY, R, 0, 7); ctx.clip(); ctx.drawImage(pt, CX - R - 2, CY - R - 2, R * 2 + 4, R * 2 + 4); ctx.restore(); }
+        else {
+          ctx.fillStyle = '#6b3d1e'; ctx.beginPath(); ctx.arc(CX, CY, R, 0, 7); ctx.fill();
+          ctx.fillStyle = '#85502a'; ctx.beginPath(); ctx.arc(CX - 6, CY - 6, R - 12, 0, 7); ctx.fill();
+        }
+        // marcas de parrilla (definen el punto correcto): carbonizadas con borde tostado
+        ctx.save(); ctx.beginPath(); ctx.arc(CX, CY, R - 2, 0, 7); ctx.clip(); ctx.lineCap = 'butt';
+        MARKS.forEach((u) => {
+          ctx.strokeStyle = 'rgba(70,32,10,.55)'; ctx.lineWidth = 11; ctx.beginPath(); ctx.moveTo(CX + u + 200, CY - 200); ctx.lineTo(CX + u - 200, CY + 200); ctx.stroke();
+          ctx.strokeStyle = 'rgba(22,10,3,.92)'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(CX + u + 200, CY - 200); ctx.lineTo(CX + u - 200, CY + 200); ctx.stroke();
+        });
         ctx.restore();
-        ctx.strokeStyle = '#3a2008'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(CX, CY, R, 0, 7); ctx.stroke();
+        if (!pt) { ctx.strokeStyle = '#3a2008'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(CX, CY, R, 0, 7); ctx.stroke(); }
       };
       const drawProbe = (x, y, deg) => {
+        if (drawSondaSprite(ctx, x, y, deg)) { ctx.fillStyle = '#e53935'; ctx.beginPath(); ctx.arc(x, y, 3.2, 0, 7); ctx.fill(); return; }
         const a = deg * Math.PI / 180, len = 92, bx = x + Math.cos(a) * len, by = y - Math.sin(a) * len;
         ctx.lineCap = 'round';
         ctx.strokeStyle = '#d9dde2'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(bx, by); ctx.stroke();
@@ -733,8 +770,28 @@
       const inPiece = (x, y) => { let r = false; withPiece(() => { shape(); r = ctx.isPointInPath(x, y); }); return r; };
       const drawPiece = () => {
         ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H);
-        ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(CX + 6, CY + 12, 90, 64, 0, 0, 7); ctx.fill();
+        const bg = mg('bg_bandeja.jpg'), pc = mg('pechuga.png');
+        if (bg) ctx.drawImage(bg, 0, 0, W, H); else { ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H); }
+        ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(CX + 6, CY + 12, 90, 64, 0, 0, 7); ctx.fill();
+        if (pc) {
+          // pechuga ilustrada recortada al contorno de juego (que define carne y hueso), con la quilla insinuada
+          withPiece((p) => {
+            ctx.save(); shape(); ctx.clip();
+            ctx.drawImage(pc, -94, -64, 186, 186 * 0.645);
+            // hueso de la quilla transparentado (como en rayos X): indica por dónde NO pinchar
+            const bonePath = () => { ctx.beginPath(); p.bone.forEach((b, i) => (i ? ctx.lineTo(b[0], b[1]) : ctx.moveTo(b[0], b[1]))); };
+            ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            ctx.strokeStyle = 'rgba(90,50,15,.45)'; ctx.lineWidth = 13; bonePath(); ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,246,222,.62)'; ctx.lineWidth = 9; bonePath(); ctx.stroke();
+            ctx.setLineDash([3, 4]); ctx.strokeStyle = 'rgba(200,170,120,.7)'; ctx.lineWidth = 1.5; bonePath(); ctx.stroke(); ctx.setLineDash([]);
+            ctx.fillStyle = '#f1e4c4'; ctx.strokeStyle = '#7a5a2c'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.ellipse(-70, 14, 12, 8, -0.5, 0, 7); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#d8c59a'; ctx.beginPath(); ctx.ellipse(-70, 14, 4.5, 3, -0.5, 0, 7); ctx.fill();
+            ctx.restore();
+            shape(); ctx.strokeStyle = 'rgba(120,58,10,.55)'; ctx.lineWidth = 2; ctx.stroke();
+          });
+          return;
+        }
         withPiece((p) => {
           shape(); ctx.fillStyle = p.tone; ctx.fill();
           ctx.save(); shape(); ctx.clip();
@@ -761,6 +818,7 @@
         const a = 60 * Math.PI / 180, ux = Math.cos(a), uy = -Math.sin(a), len = 92, inside = depth * 0.45;
         ctx.lineCap = 'round';
         if (inside > 0) { ctx.strokeStyle = 'rgba(217,221,226,.45)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x - ux * inside, y - uy * inside); ctx.lineTo(x, y); ctx.stroke(); }
+        if (drawSondaSprite(ctx, x, y, 60)) { ctx.fillStyle = tipColor || '#e53935'; ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 1; ctx.stroke(); return; }
         ctx.strokeStyle = '#d9dde2'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + ux * len, y + uy * len); ctx.stroke();
         ctx.strokeStyle = '#23272d'; ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(x + ux * len, y + uy * len); ctx.lineTo(x + ux * (len + 22), y + uy * (len + 22)); ctx.stroke();
         ctx.fillStyle = tipColor || '#e53935'; ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill(); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 1; ctx.stroke();
@@ -913,10 +971,17 @@
       const remaining = () => { const f = flowT(); if (f <= 0) return 1; if (f >= D) return 0; const k = 1 - f / D; return k * k; };
       const watch = () => (started ? ((stopped ? tStop : tm) - tStart) * scale : 0);
       const drawDial = (v) => {
-        const cx = 234, cy = 76, r = 34;
-        ctx.fillStyle = '#6a7078'; ctx.fillRect(cx - 5, cy - r - 10, 10, 8);
-        ctx.fillStyle = '#f4f1ea'; ctx.strokeStyle = '#25282d'; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); ctx.stroke();
+        const cx = 234, cy = 76, r = 34, cw = mg('cronometro.png');
+        if (cw) {
+          // cronómetro ilustrado: esfera en (0.49, 0.62) del sprite con radio 0.39 del ancho
+          const sw = r / 0.39, sh = sw * cw.naturalHeight / cw.naturalWidth;
+          ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
+          ctx.drawImage(cw, cx - sw * 0.4925, cy - sh * 0.621, sw, sh); ctx.restore();
+        } else {
+          ctx.fillStyle = '#6a7078'; ctx.fillRect(cx - 5, cy - r - 10, 10, 8);
+          ctx.fillStyle = '#f4f1ea'; ctx.strokeStyle = '#25282d'; ctx.lineWidth = 4;
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); ctx.stroke();
+        }
         ctx.strokeStyle = '#25282d'; ctx.lineWidth = 1.5;
         for (let i = 0; i < 15; i++) { const a = i / 15 * Math.PI * 2 - Math.PI / 2, l = i % 5 === 0 ? 8 : 4; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (r - 3), cy + Math.sin(a) * (r - 3)); ctx.lineTo(cx + Math.cos(a) * (r - 3 - l), cy + Math.sin(a) * (r - 3 - l)); ctx.stroke(); }
         ctx.fillStyle = '#25282d'; ctx.font = '700 9px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -927,7 +992,8 @@
       };
       const render = (now) => {
         ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H);
+        const bgv = mg('bg_viscosidad.jpg');
+        if (bgv) ctx.drawImage(bgv, 0, 0, W, H); else { ctx.fillStyle = '#7a8088'; ctx.fillRect(0, 0, W, H); }
         const sx = shake > 0 ? Math.sin(now * 0.08) * 3 * shake : 0;
         ctx.save(); ctx.translate(sx, 0);
         const u = remaining(), f = flowT(), flowing = f > 0 && u > 0;
@@ -1175,7 +1241,86 @@
       return false;
     }
 
+    // Pantalla de inicio a pantalla completa: fondo de la marca, panel de configuración y retrato del avatar.
+    // Sin assets/manifest.json se usa la pantalla clásica.
     showStart() {
+      const G = this.G, run = G.save.state.run, best = G.save.state.best, S = G.save.settings, M = G.manifest;
+      if (!M || !M.brands || !BK.SpriteLoader) return this.showStartClassic();
+      if (G.state !== 'playing') G.restaurantState = 'PRE_SHIFT';
+      this.hideTitleLogo();
+      const b = M.brands[G.brand] || M.brands.bk, gender = S.managerGender === 'f' ? 'f' : 'm', av = (M.avatars || {})[gender] || {};
+      const diffSel = h('select', { id: 'selDiff', 'aria-label': 'Dificultad' }, Object.entries(G.cfg.difficulty.levels).map(([k, v]) => h('option', { value: k, selected: k === S.difficulty, text: v.label })));
+      const spdSel = h('select', { id: 'selSpd', 'aria-label': 'Velocidad del reloj' }, G.cfg.day.timeScaleOptions.map((v) => h('option', { value: v, selected: v === (S.timeScale || G.cfg.day.timeScale), text: v + ' min de juego / seg' })));
+      const go = (fn) => () => { this.applyStartSelects(); this.closeModal(); fn(); };
+      const btn = (label, cls, onclick) => h('button', { type: 'button', class: 'btn ' + cls, onclick }, label);
+
+      // Marca: logotipos oficiales (cambiar de marca recarga el juego con su plano y su operativa)
+      const brandRow = h('div', { class: 'pick-row', role: 'radiogroup', 'aria-label': 'Marca' }, ...Object.entries(M.brands).map(([k, mb]) => {
+        const on = G.brand === k;
+        return h('button', { type: 'button', class: 'pick brand-pick' + (on ? ' on' : ''), role: 'radio', 'aria-checked': String(on), 'aria-label': mb.label, onclick: () => { if (!on) G.setBrand(k); } },
+          h('img', { class: 'brand-logo', src: mb.logo, alt: '', draggable: 'false' }), h('span', { class: 'brand-word', text: mb.label }));
+      }));
+      // Tu encargado: retratos con el uniforme de la marca activa
+      const avatarRow = h('div', { class: 'pick-row', role: 'radiogroup', 'aria-label': 'Tu encargado' }, ...Object.entries(M.avatars || {}).map(([g, a]) => {
+        const on = gender === g, img = h('img', { class: 'pick-portrait', alt: '' });
+        BK.SpriteLoader.setPortrait(img, g, G.brand, () => img.replaceWith(this.avatarCanvas(64, 84, 1.05, g === 'f' ? 'managerF' : 'manager')));
+        return h('button', { type: 'button', class: 'pick avatar-pick' + (on ? ' on' : ''), role: 'radio', 'aria-checked': String(on), 'aria-label': a.label,
+          onclick: () => { G.setManagerGender(g); this.showStart(); } }, img, h('span', { text: a.label }));
+      }));
+
+      const primary = btn('Organizar posicionamiento', 'primary ss-cta', go(() => this.showRosterPlan()));
+      const actions = [primary];
+      if (run && (run.brand || 'bk') === G.brand) actions.push(btn('Continuar turno · ' + BK.util.fmtClock(run.t) + ' · ' + run.scoring.score + ' pts', 'ss-continue', go(() => G.resumeGame(run))));
+      const heroImg = h('img', { class: 'ss-hero-img', alt: av.label || '' });
+      BK.SpriteLoader.setPortrait(heroImg, gender, G.brand);
+
+      const panel = h('section', { class: 'ss-panel' },
+        h('p', { class: 'ss-kicker' }, 'RBE · Simulador de gestión de turno', h('span', { class: 'ss-badge', text: 'versión ' + (G.cfg.meta.version || 'v2.0.0') })),
+        h('h1', { id: 'ssTitle', class: 'ss-title' }, 'Turno de ', h('span', { class: 'ss-role', text: G.roleWord() })),
+        h('p', { class: 'ss-brand-tag', text: b.tagline || '' }),
+        h('div', { class: 'identity' },
+          h('div', { class: 'pick-group' }, h('b', { class: 'pick-title', text: 'Marca' }), brandRow),
+          h('div', { class: 'pick-group' }, h('b', { class: 'pick-title', text: 'Tu encargado' }), avatarRow)),
+        h('div', { class: 'ss-config' },
+          h('label', {}, h('span', { text: 'Dificultad' }), diffSel),
+          h('label', {}, h('span', { text: 'Reloj' }), spdSel)),
+        h('div', { class: 'ss-actions' }, ...actions),
+        h('div', { class: 'ss-secondary' },
+          btn('🏆 Clasificación', 'ghost', () => this.showLeaderboard(() => this.showStart())),
+          btn('❔ Ayuda', 'ghost', () => this.showHelp(true)),
+          btn('⚙ Ajustes', 'ghost', () => this.showSettings())),
+        h('details', { class: 'ss-how' }, h('summary', { text: 'Cómo se juega' }),
+          h('p', { text: 'Planifica el equipo antes de iniciar el reloj. Después gestiona preparación, producto, producción, colas y atención al cliente hasta la 01:00.' }),
+          h('ul', {}, G.openingData.legend.map((l) => h('li', { text: l })))),
+        h('p', { class: 'ss-foot' }, best !== null ? h('span', { class: 'ss-best' }, 'Mejor puntuación ', h('b', { text: String(best) })) : '',
+          h('span', { class: 'ss-ver', text: 'Versión ' + (G.cfg.meta.version || '') })));
+
+      // Mini TOP 3 del ranking global con el avatar de cada récord (se rellena al llegar los datos).
+      const top3 = h('aside', { class: 'ss-top3', 'aria-label': 'Top 3 de la clasificación' }, h('b', { class: 'ss-top3-t', text: '🏆 Top 3' }), h('span', { class: 'sub', text: 'Cargando…' }));
+      const fillTop = (lb) => {
+        if (!top3.isConnected && top3.parentNode) return;
+        top3.replaceChildren(h('b', { class: 'ss-top3-t', text: '🏆 Top 3' }));
+        if (!lb || !lb.length) { top3.appendChild(h('span', { class: 'sub', text: G.save.boardError ? 'Clasificación no disponible' : '¡Sé el primero!' })); return; }
+        lb.slice(0, 3).forEach((e, i) => top3.appendChild(h('div', { class: 'ss-top3-row' }, h('span', { class: 'pos', text: String(i + 1) }), this.recordAvatar(e, 'lb-mini'), h('span', { class: 'n', text: e.name }), h('b', { text: String(e.score) }))));
+      };
+      if (G.save.leaderboard && G.save.leaderboard.length) fillTop(G.save.leaderboard);
+      G.save.refreshLeaderboard().then(fillTop).catch(() => fillTop([]));
+      const screen = h('div', { class: 'start-screen', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'ssTitle' },
+        h('div', { class: 'ss-bg', 'aria-hidden': 'true', style: b.menu ? 'background-image:url("' + b.menu + '")' : '' }),
+        h('div', { class: 'ss-shade', 'aria-hidden': 'true' }),
+        h('div', { class: 'ss-motes', 'aria-hidden': 'true' }, ...Array.from({ length: 14 }, (_, i) => h('i', { style: 'left:' + ((i * 37) % 100) + '%;animation-delay:' + (-i * 1.7).toFixed(1) + 's;animation-duration:' + (11 + (i * 3) % 8) + 's;--s:' + (0.5 + (i % 4) * 0.25) }))),
+        this.menuParade(),
+        panel,
+        top3,
+        h('figure', { class: 'ss-hero' }, heroImg,
+          h('figcaption', { class: 'ss-hero-cap' }, h('b', { text: av.label || G.roleWord() }), h('span', { text: 'Turno 10:00 – 01:00 · ' + b.label }))));
+      const root = this.el.modalRoot;
+      root.innerHTML = ''; root.appendChild(screen);
+      this.modalOpts = { closable: false };
+      G.uiPause = G.state !== 'playing';
+      setTimeout(() => primary.focus(), 30);
+    }
+    showStartClassic() {
       const G = this.G, run = G.save.state.run, best = G.save.state.best, S = G.save.settings;
       if (G.state !== 'playing') G.restaurantState = 'PRE_SHIFT';
       const diffSel = h('select', { id: 'selDiff', 'aria-label': 'Dificultad' }, Object.entries(G.cfg.difficulty.levels).map(([k, v]) => h('option', { value: k, selected: k === S.difficulty, text: v.label })));
@@ -1225,7 +1370,10 @@
       const G = this.G, S = G.save.settings;
       const vol = h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: S.volume, 'aria-label': 'Volumen', oninput: (e) => G.audio.setVolume(parseFloat(e.target.value)) });
       const mute = h('input', { type: 'checkbox', checked: S.muted, onchange: (e) => G.audio.setMuted(e.target.checked) });
-      const music = h('input', { type: 'checkbox', checked: false, disabled: true, 'aria-label': 'Música desactivada en esta versión' });
+      const music = h('input', { type: 'checkbox', checked: S.musicEnabled !== false, onchange: (e) => G.save.setSetting('musicEnabled', e.target.checked) });
+      const gfx = h('select', { 'aria-label': 'Calidad gráfica', onchange: (e) => { G.save.setSetting('gfxQuality', e.target.value); G.renderer.resize(); } },
+        h('option', { value: 'sharp', selected: S.gfxQuality !== 'performance', text: 'Nítida (recomendada)' }),
+        h('option', { value: 'performance', selected: S.gfxQuality === 'performance', text: 'Rendimiento (equipos modestos)' }));
       const ambience = h('input', { type: 'checkbox', checked: G.audio.ambienceEnabled, onchange: (e) => G.audio.setAmbienceEnabled(e.target.checked) });
       const effects = h('input', { type: 'checkbox', checked: G.audio.effectsEnabled, onchange: (e) => G.audio.setEffectsEnabled(e.target.checked) });
       const ambienceVolume = h('input', { type: 'range', min: 0, max: 1, step: 0.05, value: G.audio.ambienceVolume, 'aria-label': 'Volumen ambiente', oninput: (e) => G.audio.setAmbienceVolume(parseFloat(e.target.value)) });
@@ -1239,7 +1387,8 @@
       const diff = h('select', { 'aria-label': 'Dificultad', disabled: G.state === 'playing', onchange: (e) => G.setDifficulty(e.target.value) }, Object.entries(G.cfg.difficulty.levels).map(([k, v]) => h('option', { value: k, selected: k === S.difficulty, text: v.label })));
       const spd = h('select', { 'aria-label': 'Velocidad del reloj', onchange: (e) => G.setTimeScale(parseFloat(e.target.value)) }, G.cfg.day.timeScaleOptions.map((v) => h('option', { value: v, selected: Math.abs(v - G.clock.scale) < 0.01, text: v + ' min / seg' })));
       const body = h('div', { class: 'form' },
-        h('label', {}, music, ' Música · OFF por defecto (sin pista disponible)'),
+        h('label', {}, music, ' Música del local'),
+        h('label', {}, 'Calidad gráfica ', gfx),
         h('label', {}, ambience, ' Ambiente'), h('label', {}, 'Volumen ambiente ', ambienceVolume),
         h('label', {}, effects, ' Efectos'), h('label', {}, 'Volumen efectos ', effectsVolume),
         h('label', {}, 'Volumen alertas ', alertsVolume), h('label', {}, 'Volumen interfaz ', uiVolume),
@@ -1309,7 +1458,13 @@
       const box = h('div', { class: 'qbox', role: 'dialog', 'aria-label': 'Gestión de queja' },
         h('div', { class: 'qhead' }, h('span', { class: 'qtitle', text: '❓ Gestión de queja' }),
           h('button', { class: 'xbtn', 'aria-label': 'Cerrar pregunta', onclick: () => this.closeQuestion() }, '✕')),
-        h('p', { class: 'qtext', text: q.question }),
+        // retrato del cliente que reclama (su sprite) junto a la pregunta
+        (() => {
+          const guest = ev && (ev.targetEntity || ev.guest), url = guest && guest.pal && BK.SpriteLoader && BK.SpriteLoader.faceURL(guest);
+          return h('div', { class: 'complaint-who' + (url ? '' : ' noface') },
+            url ? h('img', { class: 'complaint-face', src: url, alt: 'Cliente que reclama' }) : '',
+            h('p', { class: 'qtext', text: q.question }));
+        })(),
         q.options.map((o, i) => h('button', { class: 'opt', onclick: () => finish(i) }, h('span', { class: 'num', text: String(i + 1) }), h('span', { text: o.text }))),
         h('p', { class: 'sub', text: 'La base documental disponible no especifica un protocolo de recuperación de quejas; este punto evalúa el objetivo de experiencia documentado.' }));
       this.q = this.addBubble({ el: box, anchor: () => ({ x: G.player.char.x, y: G.player.char.y - 70 }), dock: true, gap: 8, gapBelow: 40, kind: 'complaint' });
@@ -1396,31 +1551,130 @@
       };
       let saved = s.savedRank || 0;
       renderSave();
-      const body = h('div', {},
-        h('p', { class: 'big' + (s.score < 0 ? ' neg' : ''), text: s.score + ' puntos de eventos' }),
-        h('p', { class: 'lead', text: 'Puntuación KPI de fin de día: ' + (kpi.total > 0 ? '+' : '') + kpi.total + ' · Total: ' + total }),
-        board,
-        h('p', { class: 'lead', text: rating.label + '. ' + rating.note }),
+      // ---------- Resumen condensado + valoración de clientes + Plan de Acción SMART ----------
+      const P = G.production, cogsEur = P.wasteEuros ? P.wasteEuros() : 0, wasteU = P.wasteUnitsFinal != null ? P.wasteUnitsFinal : (P.wasteUnits ? P.wasteUnits() : 0);
+      const events = (m.excellent || 0) + (m.acceptable || 0) + (m.failed || 0);
+      const failRate = events ? m.failed / events : 0, excRate = events ? m.excellent / events : 0;
+      const bands = Object.values(kpi.lines).map((l) => l.meanBand).filter(Boolean);
+      const bandPen = bands.reduce((n, b) => n + (b === 'RED' ? 0.3 : b === 'YELLOW' ? 0.12 : 0), 0);
+      const clamp = (v) => Math.max(1, Math.min(5, v));
+      // Valoración simulada de clientes: OSAT pesa tiempos y fallos; Google pesa más las reseñas y los abandonos.
+      const osat = clamp(5 - 1.4 * failRate - bandPen - 0.06 * (m.abandoned || 0) - 0.2 * (m.negativeReviews || 0) + 0.15 * excRate);
+      const google = clamp(4.7 - 0.25 * (m.negativeReviews || 0) - 0.05 * (m.abandoned || 0) - 0.8 * failRate + 0.2 * excRate);
+      const stars = (v) => h('span', { class: 'stars', 'aria-label': v.toFixed(1) + ' de 5' }, ...[0, 1, 2, 3, 4].map((i) => h('i', { class: v >= i + 0.75 ? 'on' : v >= i + 0.25 ? 'half' : '' })), h('b', { text: v.toFixed(1).replace('.', ',') }));
+      const card = (title, rows, tone) => h('div', { class: 'sum-card ' + (tone || '') }, h('h4', { text: title }), h('ul', {}, ...rows.map(([a, b, cls]) => h('li', {}, h('span', { text: a }), h('b', { class: cls || '', text: String(b) })))));
+      const band = (b) => (b ? 'band-' + b.toLowerCase() : '');
+      const chRows = Object.keys(kpi.lines).map((k) => { const l = kpi.lines[k]; return [(labelOf[k] || l.label).replace('DELIVERY · TIEMPO DE ENTREGA', 'Delivery'), l.mean === null ? '—' : this.formatDuration(l.mean), band(l.meanBand)]; });
+      const tone = (bad, warn) => (bad ? 'bad' : warn ? 'warn' : 'ok');
+      const eur = (v) => v.toFixed(2).replace('.', ',') + ' €';
+      const sp = G.cfg.operations.stockPrep;
+
+      // Plan de Acción: las dos áreas con más margen de mejora, en formato Qué / Cómo / Quién / Cuándo / KPI.
+      const worst = Object.keys(kpi.lines).map((k) => ({ k, l: kpi.lines[k] })).filter((x) => x.l.meanBand && x.l.meanBand !== 'GREEN').sort((a, b) => (b.l.mean || 0) - (a.l.mean || 0))[0];
+      const target = G.cfg.operations.serviceKpi.targetSec;
+      const cands = [
+        { sev: worst ? (worst.l.meanBand === 'RED' ? 3 : 2) + (m.abandoned || 0) * 0.1 : 0, area: 'Tiempo de servicio',
+          que: 'Bajar la media de ' + (worst ? (labelOf[worst.k] || worst.l.label).replace('DELIVERY · TIEMPO DE ENTREGA', 'Delivery') : 'servicio') + ' a verde.',
+          como: 'Refuerza ese canal 20 min antes de cada punta, cubre tú el puesto si se acumula cola y fija prioridad de canal al llegar a 3 eventos.',
+          quien: 'Encargado/a y equipo de ' + (worst ? (labelOf[worst.k] || worst.l.label).replace('DELIVERY · TIEMPO DE ENTREGA', 'Delivery').toLowerCase() : 'frente'), cuando: 'Próximo turno, puntas de comida y cena',
+          kpi: 'Media < ' + this.formatDuration(target) + ' (verde)' },
+        { sev: wasteU > sp.wasteToleranceUnits ? 1.5 + (wasteU - sp.wasteToleranceUnits) / 10 : 0, area: 'COGS · desperdicio',
+          que: 'Reducir el producto preparado que caduca.', como: 'Prepara la tanda recomendada al aviso de punta y solo lo justo en los valles (tarde y cierre); no repitas preparación si queda reserva.',
+          quien: 'Encargado/a (cámara de congelado)', cuando: 'Cada cambio de tramo', kpi: '≤ ' + sp.wasteToleranceUnits + ' uds. desperdiciadas (' + eur(cogsEur) + ' hoy)' },
+        { sev: (P.shortages || 0) >= 3 ? 1.5 + P.shortages * 0.15 : 0, area: 'Roturas de stock',
+          que: 'Que no falte producto en las puntas.', como: 'Prepara en cuanto salte el aviso de punta (20 min antes) y repón al llegar al mínimo, sin esperar al bloqueo.',
+          quien: 'Encargado/a y cocina', cuando: 'Antes de las 12:00 y de las 19:00', kpi: '0 pedidos bloqueados por falta de producto (hoy ' + (P.shortages || 0) + ')' },
+        { sev: (m.checksMissed || 0) + (m.checksWrong || 0) + (m.lateMin > 0 ? 1.5 : 0), area: 'Apertura',
+          que: 'Apertura completa, correcta y a tiempo.', como: 'Sigue el checklist en orden, haz las tomas de temperatura y viscosidad sin prisa y abre la puerta solo con todo revisado.',
+          quien: 'Encargado/a', cuando: 'De 9:00 a 11:15', kpi: 'Checklist 100 % y apertura a tiempo' },
+        { sev: (m.cslWrong || 0) + (m.cslMissed || 0) * 0.8, area: 'Recorrido CSL',
+          que: 'Completar el recorrido CSL tras la comida.', como: 'Bloquea 15 min tras la punta de comida para el recorrido y corrige en el momento lo que encuentres.',
+          quien: 'Encargado/a', cuando: 'Tras la punta de comida', kpi: '100 % del recorrido sin incidencias' },
+        { sev: (m.negativeReviews || 0) * 1.2 + (m.abandoned || 0) * 0.15, area: 'Experiencia de cliente',
+          que: 'Menos abandonos y reseñas negativas.', como: 'Atiende primero a quien lleva más espera, recupera las quejas en el momento y mantén la sala limpia.',
+          quien: 'Encargado/a y equipo de sala', cuando: 'Todo el turno', kpi: 'OSAT ≥ 4,5 y 0 reseñas negativas' },
+        { sev: failRate > 0.15 ? failRate * 8 : 0, area: 'Eventos fallidos',
+          que: 'Que ningún aviso llegue a expirar.', como: 'Delega lo rutinario en el equipo, cubre el puesto que se quede vacío y usa la prioridad de canal en las acumulaciones.',
+          quien: 'Encargado/a', cuando: 'Puntas de comida y cena', kpi: '< 10 % de eventos fallidos (hoy ' + Math.round(failRate * 100) + ' %)' }
+      ].filter((c) => c.sev > 0).sort((a, b) => b.sev - a.sev).slice(0, 2);
+      if (!cands.length) cands.push({ area: 'Mantener el estándar', que: 'Repetir el resultado en una dificultad mayor.', como: 'Mantén la preparación por tramos y el posicionamiento por demanda; prueba Fin de semana o Festivo.', quien: 'Encargado/a', cuando: 'Próxima partida', kpi: 'Todas las medias en verde y OSAT ≥ 4,5' });
+      const plan = h('div', { class: 'sum-plan' }, h('h3', { text: '🎯 Plan de acción para el próximo turno' }),
+        ...cands.map((c) => h('div', { class: 'smart' },
+          h('div', { class: 'smart-h' }, h('b', { text: 'OBJETIVO · ' + c.area.toUpperCase() })),
+          h('p', { class: 'smart-que' }, h('b', { text: 'Qué: ' }), c.que),
+          h('div', { class: 'smart-grid' },
+            h('div', {}, h('small', { text: 'Cómo' }), h('span', { text: c.como })),
+            h('div', {}, h('small', { text: 'Quién' }), h('span', { text: c.quien })),
+            h('div', {}, h('small', { text: 'Cuándo' }), h('span', { text: c.cuando })),
+            h('div', {}, h('small', { text: 'KPI objetivo' }), h('span', { text: c.kpi }))))));
+
+      const cards = h('div', { class: 'sum-cards' },
+        card('Servicio', [['Excelentes', m.excellent], ['Aceptables', m.acceptable], ['Fallidos', m.failed, m.failed ? 'band-red' : ''], ['Respuesta media', avg]], tone(failRate > 0.2, failRate > 0.1)),
+        card('Tiempos por canal', chRows.length ? chRows : [['Sin datos', '—']], tone(bands.includes('RED'), bands.includes('YELLOW'))),
+        card('Clientes', [['Se marcharon', m.abandoned || 0, (m.abandoned || 0) > 3 ? 'band-red' : ''], ['Reseñas negativas', m.negativeReviews || 0, (m.negativeReviews || 0) ? 'band-red' : ''], ['Mesas limpiadas', m.tablesCleaned]], tone((m.negativeReviews || 0) > 1, (m.abandoned || 0) > 2)),
+        card('Apertura y CSL', [['Apertura', open], ['Revisiones', m.checksOk + ' / ' + G.opening.checks.length], ['CSL', (m.cslOk || 0) + ' ok · ' + ((m.cslWrong || 0) + (m.cslMissed || 0)) + ' a mejorar']], tone(m.lateMin > 0 || (m.checksMissed || 0) > 1, (m.checksMissed || 0) > 0)),
+        card('Equipo', [['Resuelto por el equipo', m.autoResolved || 0], ['Prioridades efectivas', m.priorityEffective + ' / ' + m.priorityChanges], ['Mejor combo', m.bestStreak]], 'ok'),
+        card('Producto · COGS', [['Desperdicio', wasteU + ' uds.', wasteU > sp.wasteToleranceUnits ? 'band-red' : ''], ['Coste estimado', eur(cogsEur)], ['Pedidos sin producto', P.shortages || 0, (P.shortages || 0) > 2 ? 'band-red' : '']], tone(wasteU > sp.wasteToleranceUnits * 2 || (P.shortages || 0) > 4, wasteU > sp.wasteToleranceUnits || (P.shortages || 0) > 1)));
+
+      const body = h('div', { class: 'sum' },
+        h('div', { class: 'sum-head' },
+          h('div', {}, h('p', { class: 'big' + (total < 0 ? ' neg' : ''), text: String(total) }), h('p', { class: 'sub', text: s.score + ' eventos ' + (kpi.total >= 0 ? '+ ' : '− ') + Math.abs(kpi.total) + ' KPI' })),
+          h('div', { class: 'sum-rating' }, h('b', { text: rating.label }), h('span', { class: 'sub', text: rating.note }),
+            h('div', { class: 'sum-stars' }, h('span', { text: 'OSAT' }), stars(osat)), h('div', { class: 'sum-stars' }, h('span', { text: 'Google' }), stars(google)))),
         s.newBest ? h('p', { class: 'best', text: '🏆 ¡Nueva mejor puntuación!' }) : (G.save.state.best !== null ? h('p', { class: 'best', text: 'Mejor puntuación: ' + G.save.state.best }) : ''),
-        h('ul', { class: 'stats' },
-          li('Apertura', open), li('Revisiones correctas', m.checksOk + ' de ' + G.opening.checks.length),
-          li('😀 Excelentes', m.excellent), li('😐 Aceptables', m.acceptable), li('😠 Fallidos', m.failed),
-          li('Tiempo medio de respuesta', avg), li('Mesas limpiadas', m.tablesCleaned), li('Mejor combo', m.bestStreak),
-          li('Tareas de checklist omitidas', m.checksMissed || 0), li('Reseñas simuladas negativas', m.negativeReviews || 0),
-          li('Recorrido CSL tras la comida', (m.cslOk || 0) + ' correctas · ' + (m.cslWrong || 0) + ' incorrectas · ' + (m.cslMissed || 0) + ' omitidas'),
-          li('Clientes y coches que se marcharon', m.abandoned || 0), li('Incidencias resueltas por el equipo', m.autoResolved || 0),
-          li('Prioridades efectivas', m.priorityEffective + ' de ' + m.priorityChanges), ...channelKpis),
-        h('h3', { text: 'Desglose de puntuación' }),
-        h('ul', { class: 'stats' }, Object.entries(G.scoring.categories).map(([k, v]) => li(({ opening: 'Apertura', service: 'Servicio', team: 'Equipo', customer: 'Cliente y abandonos', operational: 'Operación', csl: 'CSL', preparation: 'Preparación', reputation: 'Reseñas negativas', staffing: 'Vacantes cubiertas', waste: 'Desperdicio de producto' })[k] || k, v))));
-      this.modal({ title: '🌙 ' + G.openingData.texts.gameEnd, body, closable: false, cls: 'wide', buttons: [{ label: 'Jugar de nuevo', primary: true, onClick: () => G.newGame() }, { label: 'Clasificación', close: false, onClick: () => this.showLeaderboard(() => this.showSummary(s)) }, { label: 'Volver al menú', onClick: () => G.toMenu() }] });
+        board, cards, plan,
+        h('details', { class: 'sum-more' }, h('summary', { text: 'Ver todos los indicadores' }),
+          h('ul', { class: 'stats' },
+            li('Tareas de checklist omitidas', m.checksMissed || 0), li('Recorrido CSL tras la comida', (m.cslOk || 0) + ' correctas · ' + (m.cslWrong || 0) + ' incorrectas · ' + (m.cslMissed || 0) + ' omitidas'),
+            ...channelKpis, ...(P.wasteLog || []).map((w) => li('Caducado al cerrar ' + w.tramo, w.units + ' uds. · ' + eur(w.eur)))),
+          h('h3', { text: 'Desglose de puntuación' }),
+          h('ul', { class: 'stats' }, Object.entries(G.scoring.categories).map(([k, v]) => li(({ opening: 'Apertura', service: 'Servicio', team: 'Equipo', customer: 'Cliente y abandonos', operational: 'Operación', csl: 'CSL', preparation: 'Preparación', reputation: 'Reseñas negativas', staffing: 'Vacantes cubiertas', waste: 'Desperdicio de producto' })[k] || k, v)))));
+      s.osat = +osat.toFixed(1); s.google = +google.toFixed(1);
+      this.modal({ title: '🌙 ' + G.openingData.texts.gameEnd, body, closable: false, cls: 'wide summary', buttons: [{ label: 'Jugar de nuevo', primary: true, onClick: () => G.newGame() }, { label: 'Clasificación', close: false, onClick: () => this.showLeaderboard(() => this.showSummary(s)) }, { label: 'Volver al menú', onClick: () => G.toMenu() }] });
     }
 
     avatarCanvas(w = 64, h2 = 84, k = 1, pal) {
       const c = document.createElement('canvas');
       c.width = w; c.height = h2; c.className = 'lb-avatar';
-      const ch = new BK.Character({ id: 'LB', kind: 'manager', pal: pal || (this.G.save.settings.managerGender === 'f' ? 'managerF' : 'manager'), x: w / 2, y: h2 * 0.84, dir: 0 });
+      const ch = new BK.Character({ id: 'LB', kind: 'manager', pal: pal || (this.G.save.settings.managerGender === 'f' ? 'managerF' : 'manager'), x: w / 2, y: h2 * 0.92, dir: 0 });
       BK.CharacterAnimationSystem.draw(c.getContext('2d'), ch, k, 1);
       return c;
+    }
+    // Retrato del avatar con el que se hizo un récord ("marca:género") con el logo de la marca; sin dato, genérico.
+    recordAvatar(e, cls) {
+      const M = this.G.manifest, [brand, g] = String(e.avatar || '').split(':');
+      const gender = g === 'f' ? 'f' : 'm', b = M && M.brands && M.brands[brand] ? brand : null;
+      const label = M && M.avatars && M.avatars[gender] ? M.avatars[gender].label : '';
+      const wrap = h('span', { class: cls + (b ? ' brand-' + b : ''), title: b ? label + ' · ' + M.brands[b].label : '' });
+      if (!e.avatar || !BK.SpriteLoader || !M) { wrap.textContent = '👤'; return wrap; }
+      const img = h('img', { alt: label, draggable: 'false' });
+      BK.SpriteLoader.setPortrait(img, gender, b || 'bk', () => { img.replaceWith(document.createTextNode('👤')); });
+      wrap.appendChild(img);
+      if (b && M.brands[b].logo) wrap.appendChild(h('img', { class: 'lb-brand', src: M.brands[b].logo, alt: M.brands[b].label }));
+      return wrap;
+    }
+    // Desfile del menú: personajes de la marca caminando con su animación real (CSS, sin canvas ni bucle JS).
+    menuParade() {
+      const G = this.G, M = G.manifest, SL = BK.SpriteLoader;
+      const wrap = h('div', { class: 'ss-parade', 'aria-hidden': 'true' });
+      if (!M || !SL) return wrap;
+      const brand = G.brand, gender = G.save.settings.managerGender === 'f' ? 'f' : 'm';
+      const emp = (M.palettes.employee || {})[brand] || [];
+      const ids = [].concat(SL.avatarField(gender, 'character', brand).slice(0, 1), emp, (M.palettes.guest || {}).pool || [], [M.palettes.rider && M.palettes.rider.any]).filter((id) => id && M.characters[id]);
+      const K = 0.62; // escala del sprite (celda 128x168 a 2x)
+      ids.forEach((id, i) => {
+        const c = M.characters[id], walk = c.anims.walk && c.anims.walk.dirs.right;
+        if (!walk) return;
+        const cw = c.cell[0] * K, ch = c.cell[1] * K, cols = 8, left = i % 2 === 1;
+        const dur = 16 + (i * 7) % 9, delay = -((i * 5.3) % dur);
+        const el = h('i', { class: 'walker' + (left ? ' left' : ''), style:
+          'width:' + cw + 'px;height:' + ch + 'px;bottom:' + (6 + (i % 3) * 7) + 'px;' +
+          'background-image:url("' + c.sheet + '");background-size:' + (cols * cw) + 'px auto;' +
+          'background-position-y:' + (-walk.row * ch) + 'px;--sheet-w:' + (-cols * cw) + 'px;' +
+          'animation-duration:' + dur + 's, .8s;animation-delay:' + delay + 's, 0s;z-index:' + (3 - (i % 3)) });
+        wrap.appendChild(el);
+      });
+      return wrap;
     }
     brandPicker() {
       const G = this.G;
@@ -1462,12 +1716,13 @@
     showLeaderboard(back) {
       const G = this.G;
       const fmt = (d) => { try { return new Date(d).toLocaleDateString('es-ES'); } catch (e) { return ''; } };
+      const avatarOf = (e, cls) => this.recordAvatar(e, cls);
       const render = (lb, status) => {
         const slot = (i, cls) => {
           const e = lb[i];
           return h('div', { class: 'lb-pod ' + cls + (e ? '' : ' empty') },
             h('div', { class: 'lb-medal', text: ['🥇', '🥈', '🥉'][i] }),
-            e ? this.avatarCanvas(64, 84, 1.25) : h('div', { class: 'lb-ghost', text: '?' }),
+            e ? avatarOf(e, 'lb-portrait') : h('div', { class: 'lb-ghost', text: '?' }),
             h('b', { class: 'lb-name', text: e ? e.name : '—' }),
             h('span', { class: 'lb-score', text: e ? String(e.score) : '' }),
             h('div', { class: 'lb-step', text: String(i + 1) }));
@@ -1475,7 +1730,7 @@
         const rest = [];
         for (let i = 3; i < 10; i++) {
           const e = lb[i];
-          rest.push(h('li', { class: e ? '' : 'empty' }, h('span', { class: 'lb-pos', text: String(i + 1) }), h('span', { class: 'lb-n', text: e ? e.name : '—' }), h('span', { class: 'lb-d', text: e ? fmt(e.date) : '' }), h('b', { text: e ? String(e.score) : '' })));
+          rest.push(h('li', { class: e ? '' : 'empty' }, h('span', { class: 'lb-pos', text: String(i + 1) }), e ? avatarOf(e, 'lb-mini') : h('span', { class: 'lb-mini' }), h('span', { class: 'lb-n', text: e ? e.name : '—' }), h('span', { class: 'lb-d', text: e ? fmt(e.date) : '' }), h('b', { text: e ? String(e.score) : '' })));
         }
         const note = status === 'loading' ? 'Cargando la clasificación…' : status === 'error' ? 'Clasificación no disponible ahora mismo. Inténtalo más tarde.' : lb.length ? '' : 'Aún no hay puntuaciones. Termina un turno para entrar en la clasificación.';
         const body = h('div', { class: 'lb' },
