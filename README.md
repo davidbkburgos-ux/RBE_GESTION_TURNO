@@ -1,4 +1,4 @@
-# Turno de Encargado — mock jugable (vertical slice)
+# Escuela de Encargados — mock jugable (vertical slice)
 
 Juego de gestión semi-isométrico en HTML5 Canvas + HTML/CSS. Un único encargado recorre el restaurante (plano suministrado), completa la apertura y atiende eventos de mostrador, kiosco, mesas, AutoKing y delivery de 10:00 a 01:00. Sin backend.
 

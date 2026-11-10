@@ -1275,8 +1275,8 @@
       BK.SpriteLoader.setPortrait(heroImg, gender, G.brand);
 
       const panel = h('section', { class: 'ss-panel' },
-        h('p', { class: 'ss-kicker' }, 'RBE · Simulador de gestión de turno', h('span', { class: 'ss-badge', text: 'versión ' + (G.cfg.meta.version || 'v2.0.0') })),
-        h('h1', { id: 'ssTitle', class: 'ss-title' }, 'Turno de ', h('span', { class: 'ss-role', text: G.roleWord() })),
+        h('p', { class: 'ss-kicker' }, 'RBE · Simulador de turno', h('span', { class: 'ss-badge', text: 'versión ' + (G.cfg.meta.version || 'v2.0.0') })),
+        h('h1', { id: 'ssTitle', class: 'ss-title' }, 'Escuela de ', h('span', { class: 'ss-role', text: G.roleWord() + 's' })),
         h('p', { class: 'ss-brand-tag', text: b.tagline || '' }),
         h('div', { class: 'identity' },
           h('div', { class: 'pick-group' }, h('b', { class: 'pick-title', text: 'Marca' }), brandRow),
@@ -1336,14 +1336,14 @@
       if (run && (run.brand || 'bk') === G.brand) buttons.push({ label: 'Continuar turno (' + BK.util.fmtClock(run.t) + ', ' + run.scoring.score + ' pts)', close: false, onClick: () => { this.applyStartSelects(); this.closeModal(); G.resumeGame(run); } });
       buttons.push({ label: '🏆 Clasificación', close: false, onClick: () => { this.hideTitleLogo(); this.showLeaderboard(() => this.showStart()); } });
       buttons.push({ label: 'Ayuda', close: false, onClick: () => this.showHelp(true) });
-      this.modal({ title: '🍔 Turno de Encargado', body, buttons, closable: false, cls: 'wide' });
+      this.modal({ title: '🍔 Escuela de Encargados', body, buttons, closable: false, cls: 'wide' });
       this.showTitleLogo();
     }
     showTitleLogo() {
       this.hideTitleLogo();
       const word = (txt, cls) => h('span', { class: 'tl-word ' + cls }, ...[...txt].map((c, i) => h('span', { class: 'tl-ch', style: 'animation-delay:' + (i * 0.12).toFixed(2) + 's', text: c === ' ' ? '\u00A0' : c })));
       this.titleLogo = h('div', { class: 'title-logo', 'aria-hidden': 'true' },
-        word('RBE', 'tl-rbe'), word('TURNO DE', 'tl-sub'), word('ENCARGADO', 'tl-main'),
+        word('RBE', 'tl-rbe'), word('ESCUELA DE', 'tl-sub'), word('ENCARGADOS', 'tl-main'),
         h('span', { class: 'tl-tag', text: 'Gestiona el turno · prioriza · lidera al equipo' }),
         h('span', { class: 'tl-tag tl-ver', text: 'Versión ' + (this.G.cfg.meta.version || '') }));
       document.body.appendChild(this.titleLogo);
